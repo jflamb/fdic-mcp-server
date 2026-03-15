@@ -44,6 +44,59 @@ TRANSPORT=http PORT=3000 node dist/index.js
 - Preserve tool contracts. Changes to tool names, argument shapes, `content`, or `structuredContent` should be treated as breaking unless intentionally coordinated.
 - Keep changes small and explicit. Add or update tests whenever tool behavior, output structure, filtering, ranking, or error handling changes.
 - Do not add secrets or API keys. The FDIC BankFind API is public and this server should work without credentials.
+- Prefer the simplest change that solves the real problem. Avoid speculative refactors and temporary fixes.
+- Find root causes. Do not stop at symptom treatment if the underlying defect is identifiable.
+
+## Workflow Orchestration
+
+- Enter plan mode for non-trivial tasks, especially work with multiple implementation steps, verification steps, or architectural choices.
+- If execution goes sideways, stop and re-plan instead of pushing through a weak plan.
+- For non-trivial work, write a detailed spec up front to reduce ambiguity before editing.
+- Use parallel exploration where tooling allows it to keep the main execution path focused.
+- For larger problems, break work into focused tracks rather than mixing research, implementation, and verification in one pass.
+
+## Change Management
+
+- Treat `main` as protected. Do not develop directly on `main` for substantive work.
+- Create a clearly named branch scoped to the work before making non-trivial changes.
+- Open or reference an issue before implementation. The issue should describe the work, acceptance criteria, and any supporting context needed to execute cleanly.
+- Use sub-tasks when the work naturally splits into distinct deliverables or validation tracks.
+- Commit in logical chunks with clear, concise commit messages.
+- When the work is ready for review, open a pull request that explains what changed, why it changed, how it was validated, and any follow-up risk or context.
+- If validation passes, merge the PR and clean up local and remote working branches.
+- If validation fails, investigate the root cause, fix it, and iterate until checks pass.
+
+## Task Management
+
+- Use `tasks/todo.md` for non-trivial tasks. If the `tasks/` directory does not exist yet, create it when the task justifies explicit tracking.
+- Write plans as checkable items.
+- Update progress as work advances.
+- Add a short review/results section before closing the task.
+- After any user correction, update `tasks/lessons.md`. If it does not exist yet, create it at that point.
+
+## Self-Improvement Loop
+
+- After any user correction, capture the mistake pattern in `tasks/lessons.md`.
+- Write the lesson as a prevention rule that can be applied on future tasks.
+- Revisit relevant lessons at the start of later tasks in this repo when applicable.
+
+## Verification Before Done
+
+- Do not mark work complete without evidence.
+- Run tests, compare behavior, inspect logs, or otherwise demonstrate correctness as appropriate to the change.
+- For behavior changes, verify both the intended path and likely regressions.
+- Ask whether the result would meet a strong senior or staff-level review standard before presenting it as done.
+
+## Demand Elegance
+
+- For non-trivial changes, pause and ask whether there is a more elegant design with less complexity or better boundaries.
+- Do not over-engineer simple fixes, but do replace hacky solutions when a cleaner approach is apparent and proportionate.
+
+## Autonomous Bug Fixing
+
+- When given a concrete bug report, move directly into diagnosis and repair.
+- Use failing tests, logs, stack traces, and reproducible behavior as the path to root cause.
+- Do not require unnecessary back-and-forth from the user when the issue can be investigated directly from the repo and runtime behavior.
 
 ## FDIC Data Notes
 
