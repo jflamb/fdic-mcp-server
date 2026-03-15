@@ -91,7 +91,7 @@ npm version patch
 git push origin main --follow-tags
 ```
 
-Publishing from GitHub Actions requires an `NPM_TOKEN` repository secret.
+Publishing from GitHub Actions is intended to use npm trusted publishing via GitHub Actions OIDC rather than a long-lived `NPM_TOKEN`.
 
 ### Local Secrets With direnv
 
