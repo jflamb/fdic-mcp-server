@@ -69,3 +69,27 @@ Reference: issues #44, #55, #56, and #57 and the follow-up bug triage work.
 ## Review / Results
 
 - [ ] Final verification and PR creation pending.
+
+# Correctness Bug Batch
+
+Reference: issue #62 and bugs #46, #53, and #59.
+
+## Goals
+
+- [x] Fix all-null asset series handling in timeseries analysis output.
+- [x] Make `scripts/deploy-local.sh` fail immediately on shell command errors.
+- [x] Validate `PORT` explicitly for HTTP startup and return a clearer configuration error.
+- [x] Add or update tests for the code-path changes where practical.
+- [ ] Open a PR for the resulting fixes.
+
+## Acceptance Criteria
+
+- [x] Timeseries analysis handles all-null asset series without producing `-Infinity`.
+- [x] `scripts/deploy-local.sh` uses strict shell failure handling.
+- [x] Invalid `PORT` values fail with a clear startup error message.
+- [x] Relevant tests pass for the changed code paths.
+
+## Review / Results
+
+- [x] Issue created and linked: #62.
+- [x] Verified `npm test -- tests/analysis.test.ts tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.

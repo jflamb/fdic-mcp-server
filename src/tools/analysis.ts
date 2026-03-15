@@ -104,6 +104,11 @@ function asNumber(value: unknown): number | null {
   return typeof value === "number" ? value : null;
 }
 
+export function maxOrNull(values: Array<number | null>): number | null {
+  const nonNullValues = values.filter((value): value is number => value !== null);
+  return nonNullValues.length > 0 ? Math.max(...nonNullValues) : null;
+}
+
 function buildCertFilters(certs: number[]): string[] {
   const filters: string[] = [];
 
@@ -416,7 +421,7 @@ function summarizeTimeSeries(
   const depositsPerOfficeEnd = ratio(depEnd, officesEnd);
   const depositsToAssetsStart = ratio(depStart, assetStart);
   const depositsToAssetsEnd = ratio(depEnd, assetEnd);
-  const peakAsset = Math.max(...assetSeries.filter((value): value is number => value !== null));
+  const peakAsset = maxOrNull(assetSeries);
   const troughRoaValues = roaSeries.filter((value): value is number => value !== null);
   const troughRoa = troughRoaValues.length > 0 ? Math.min(...troughRoaValues) : null;
   const comparison: ComparisonRecord = {

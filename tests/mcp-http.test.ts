@@ -27,7 +27,7 @@ vi.mock("axios", () => {
   };
 });
 
-import { createApp } from "../src/index.js";
+import { createApp, parseHttpPort } from "../src/index.js";
 import { clearQueryCache } from "../src/services/fdicClient.js";
 import packageJson from "../package.json";
 
@@ -56,6 +56,22 @@ describe("HTTP MCP server", () => {
       server: "fdic-mcp-server",
       version: expectedVersion,
     });
+  });
+
+  it("parses the default HTTP port when PORT is not set", () => {
+    expect(parseHttpPort(undefined)).toBe(3000);
+  });
+
+  it("throws a clear error for a non-numeric PORT", () => {
+    expect(() => parseHttpPort("abc")).toThrow(
+      "Invalid PORT value: abc",
+    );
+  });
+
+  it("throws a clear error for an out-of-range PORT", () => {
+    expect(() => parseHttpPort("70000")).toThrow(
+      "PORT must be between 0 and 65535. Received: 70000",
+    );
   });
 
   it("lists all registered tools including demographics", async () => {
