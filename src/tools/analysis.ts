@@ -160,14 +160,37 @@ function change(start: number | null, end: number | null): number | null {
   return end - start;
 }
 
-function yearsBetween(startRepdte: string, endRepdte: string): number {
+function getQuarterIndex(repdte: string): number | null {
+  const year = Number.parseInt(repdte.slice(0, 4), 10);
+  const month = Number.parseInt(repdte.slice(4, 6), 10);
+  const quarter = month / 3;
+
+  if (!Number.isInteger(quarter) || quarter < 1 || quarter > 4) {
+    return null;
+  }
+
+  return year * 4 + quarter;
+}
+
+export function yearsBetween(startRepdte: string, endRepdte: string): number {
+  const startQuarterIndex = getQuarterIndex(startRepdte);
+  const endQuarterIndex = getQuarterIndex(endRepdte);
+
+  if (startQuarterIndex !== null && endQuarterIndex !== null) {
+    return Math.max((endQuarterIndex - startQuarterIndex) / 4, 0);
+  }
+
   const start = new Date(
-    `${startRepdte.slice(0, 4)}-${startRepdte.slice(4, 6)}-${startRepdte.slice(6, 8)}`,
+    `${startRepdte.slice(0, 4)}-${startRepdte.slice(4, 6)}-${startRepdte.slice(6, 8)}T00:00:00Z`,
   );
   const end = new Date(
-    `${endRepdte.slice(0, 4)}-${endRepdte.slice(4, 6)}-${endRepdte.slice(6, 8)}`,
+    `${endRepdte.slice(0, 4)}-${endRepdte.slice(4, 6)}-${endRepdte.slice(6, 8)}T00:00:00Z`,
   );
-  return Math.max((end.getTime() - start.getTime()) / (365.25 * 24 * 60 * 60 * 1000), 0);
+
+  return Math.max(
+    (end.getTime() - start.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+    0,
+  );
 }
 
 function cagr(start: number | null, end: number | null, years: number): number | null {
