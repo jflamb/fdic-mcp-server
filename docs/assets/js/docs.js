@@ -12,16 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
     block.parentNode.insertBefore(wrapper, block);
     wrapper.appendChild(block);
 
-    const toolbar = document.createElement("div");
-    toolbar.className = "code-block__toolbar";
-    wrapper.insertBefore(toolbar, block);
-
     const button = document.createElement("button");
     button.type = "button";
     button.className = "copy-button";
     button.textContent = "Copy";
     button.setAttribute("aria-label", "Copy code block");
-    toolbar.appendChild(button);
+    wrapper.appendChild(button);
 
     button.addEventListener("click", async () => {
       const content = code.innerText;
