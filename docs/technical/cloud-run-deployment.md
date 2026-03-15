@@ -30,7 +30,7 @@ The repository uses a small set of GitHub Actions workflows with distinct respon
 - `Deploy Docs`: builds and publishes the GitHub Pages documentation site from `docs/`
 - `Deploy Cloud Run`: builds the production container image and deploys the public HTTP MCP endpoint to Google Cloud Run
 - `Publish npm and Registry`: publishes tagged releases to npm, updates the official MCP Registry metadata, publishes GitHub Packages, and creates or updates the GitHub release
-- `Publish GitHub Package`: backfills the GitHub release and GitHub Packages artifact from `main` when the primary publish workflow did not produce them
+- `Publish GitHub Package`: backfills the GitHub release and GitHub Packages artifact from `main` when the tagged release workflow did not produce them; it is a recovery path, not a second primary release flow
 
 ## Live Hosting Topology
 
@@ -71,6 +71,30 @@ Set these repository variables before relying on the deploy workflow:
 - `GCP_WORKLOAD_IDENTITY_PROVIDER`
 - `GCP_SERVICE_ACCOUNT`
 - `CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT`
+
+These are stored as GitHub repository variables because they are identifiers and deployment settings, not secrets. They tell the workflow which Google Cloud project, region, service, and identity objects to use.
+
+## GitHub Repository And Environment Configuration
+
+The deployment flow depends on a small amount of GitHub-side configuration:
+
+- Repository variables provide the Google Cloud project, region, Artifact Registry, Cloud Run service, and Workload Identity identifiers
+- The `production` environment is used for the Cloud Run deployment record shown in GitHub Deployments
+- The `production` environment URL is set by the workflow to `https://bankfind.jflamb.com/mcp`
+- The `github-pages` environment is used separately by the docs deployment workflow
+
+No long-lived Google Cloud credential needs to be stored in the repository or in GitHub environment secrets for the Cloud Run deploy path.
+
+## Authentication Model
+
+Google Cloud deployment uses GitHub OIDC plus Workload Identity Federation:
+
+1. GitHub Actions issues an OIDC identity token for the workflow run
+2. Google Workload Identity Federation trusts that token for the configured provider
+3. The workflow impersonates the configured Google service account
+4. Google returns short-lived credentials for Artifact Registry and Cloud Run operations
+
+This is why the workflow only needs repository variables such as `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`. It does not require a checked-in service-account JSON key or a long-lived GitHub secret containing Google credentials.
 
 ## One-Time Manual Steps
 

@@ -24,3 +24,26 @@ Reference: issue #35 and user request to update the docs around the live hosted 
 - [x] Added `server.json` metadata plus release-time version synchronization for the official MCP Registry.
 - [x] Updated onboarding docs to prefer the hosted endpoint and clarify that npm-install-by-prompt only applies to agentic environments with machine access.
 - [x] Verified `npm run typecheck`, `npm test`, `npm run build`, and `npm run registry:sync`.
+
+# Workflow Concurrency And Job Naming Cleanup
+
+Reference: issue #41 and user request to continue with the next-tier workflow hygiene tasks after the workflow-name cleanup.
+
+## Goals
+
+- [x] Normalize concurrency-group naming across GitHub Actions workflows.
+- [x] Standardize job display names for a cleaner Actions UI.
+- [x] Clarify in the technical docs that the GitHub Package workflow is a backfill workflow, not a second primary release path.
+- [ ] Open a PR for the resulting cleanup.
+
+## Acceptance Criteria
+
+- [x] All workflow concurrency groups follow one explicit naming pattern.
+- [x] GitHub Actions jobs have intentional display names where that improves the UI.
+- [x] The technical docs describe the role of the GitHub Package backfill workflow clearly.
+- [x] Workflow behavior is unchanged apart from presentation and concurrency-key cleanup.
+
+## Review / Results
+
+- [x] Issue created and linked: #41.
+- [x] Parsed all workflow YAML files successfully with Ruby `YAML.load_file`.

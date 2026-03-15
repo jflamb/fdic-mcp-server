@@ -12,11 +12,12 @@ permissions:
   packages: write
 
 concurrency:
-  group: publish-${{ github.ref }}
+  group: publish-npm-and-registry-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   publish:
+    name: Publish release artifacts
     runs-on: ubuntu-latest
 
     steps:
