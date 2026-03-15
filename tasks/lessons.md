@@ -7,3 +7,4 @@
 - On docs landing pages, prefer fewer, wider cards when those cards contain body copy; dense four-column layouts make the text harder to scan.
 - When documenting onboarding, lead with the least-friction path that is genuinely available and position local terminal-based setup as the fallback.
 - In end-user docs, do not imply that users must speak in API-native field formats like `YYYYMMDD` unless that is truly required; distinguish user-facing prompt style from tool-level parameter formats.
+- When documenting MCP onboarding, distinguish clearly between hosted-URL connection flows and agentic local-install flows; do not imply that plain chat products can install a local npm package just because coding agents can.

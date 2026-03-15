@@ -33,6 +33,7 @@ The FDIC BankFind Suite API is public and useful, but it is not packaged for MCP
 ## Documentation
 
 - GitHub Pages docs entry point: <https://jflamb.github.io/fdic-mcp-server/>
+- Hosted MCP endpoint: <https://bankfind.jflamb.com/mcp>
 - Local docs home: [docs/index.md](./docs/index.md)
 - Getting started: [docs/getting-started.md](./docs/getting-started.md)
 - Prompting guide: [docs/prompting-guide.md](./docs/prompting-guide.md)
@@ -84,6 +85,14 @@ npm run build
 ```
 
 ## Usage
+
+### Hosted Endpoint
+
+If your MCP host supports remote MCP URLs, use:
+
+```text
+https://bankfind.jflamb.com/mcp
+```
 
 ### Run Locally
 
