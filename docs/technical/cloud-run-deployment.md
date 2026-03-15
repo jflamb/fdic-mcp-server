@@ -22,6 +22,16 @@ Current live endpoint:
 - A GitHub Actions deploy workflow in `.github/workflows/deploy-cloud-run.yml`
 - Cloud Run HTTP mode via `TRANSPORT=http` and `PORT=8080`
 
+## Workflow Roles
+
+The repository uses a small set of GitHub Actions workflows with distinct responsibilities:
+
+- `CI`: runs typechecking, tests, build validation, and package-content checks on pushes to `main` and pull requests
+- `Deploy Docs`: builds and publishes the GitHub Pages documentation site from `docs/`
+- `Deploy Cloud Run`: builds the production container image and deploys the public HTTP MCP endpoint to Google Cloud Run
+- `Publish npm and Registry`: publishes tagged releases to npm, updates the official MCP Registry metadata, publishes GitHub Packages, and creates or updates the GitHub release
+- `Publish GitHub Package`: backfills the GitHub release and GitHub Packages artifact from `main` when the primary publish workflow did not produce them
+
 ## Live Hosting Topology
 
 The production HTTP endpoint is hosted on Google Cloud with this shape:
