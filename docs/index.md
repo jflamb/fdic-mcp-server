@@ -30,8 +30,8 @@ body_class: overview-page
 <div class="card-grid">
   <a class="card" href="{{ '/getting-started/' | relative_url }}">
     <span class="card__eyebrow">First Step</span>
-    <h3>Get running locally</h3>
-    <p>Install the package, start the server, and confirm an MCP client can query FDIC institution data.</p>
+    <h3>Connect to the live endpoint</h3>
+    <p>Start with the hosted MCP URL when your host accepts remote servers. Use the local install path only when your host requires stdio.</p>
   </a>
   <a class="card" href="{{ '/release-notes/v1.1.0/' | relative_url }}">
     <span class="card__eyebrow">Latest Release</span>
@@ -44,6 +44,12 @@ body_class: overview-page
     <p>Use copy-pasteable prompt patterns that are explicit about dates, metrics, and dataset boundaries.</p>
   </a>
 </div>
+
+Hosted MCP URL:
+
+```text
+https://bankfind.jflamb.com/mcp
+```
 
 ## Choose your path
 

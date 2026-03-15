@@ -12,6 +12,10 @@ breadcrumbs:
 
 This project can be deployed to Google Cloud Run with GitHub Actions using Workload Identity Federation rather than a long-lived Google service account key.
 
+Current live endpoint:
+
+- `https://bankfind.jflamb.com/mcp`
+
 ## What The Repo Provides
 
 - A container image definition in `Dockerfile`
@@ -58,6 +62,10 @@ On every push to `main`, the workflow:
 2. Builds the container image
 3. Pushes the image to Artifact Registry
 4. Deploys the new revision to Cloud Run
+
+## Registry Publication
+
+Release tags also publish metadata to the official MCP Registry using the documented `mcp-publisher` GitHub OIDC flow. The registry metadata lives in `server.json` and is kept aligned with `package.json` during the release workflow.
 
 ## Endpoint Shape
 

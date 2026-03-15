@@ -14,6 +14,18 @@ This page collects setup notes for common MCP clients.
 
 ## Before You Configure A Client
 
+Hosted MCP endpoint:
+
+```text
+https://bankfind.jflamb.com/mcp
+```
+
+If your host supports remote MCP URLs, prefer the hosted endpoint over a local install.
+
+Asking a model to install `https://www.npmjs.com/package/fdic-mcp-server` for you only works in agentic environments that can run commands or edit local MCP config. It is not the normal path for chat products that only accept a remote MCP URL.
+
+## When You Need Local Installation
+
 Install the published package:
 
 ```bash
@@ -56,21 +68,19 @@ After editing the file, restart Claude Desktop.
 
 ## ChatGPT
 
-ChatGPT Developer Mode supports MCP apps/connectors, but it expects a remote MCP server over streaming HTTP or SSE, not a local stdio process. This means you cannot point ChatGPT directly at `/opt/homebrew/bin/fdic-mcp-server` unless you expose it through the server's HTTP transport.
+ChatGPT Developer Mode supports MCP apps/connectors, but it expects a remote MCP server over streaming HTTP or SSE, not a local stdio process.
 
-Run the server over HTTP:
+Use this hosted URL:
 
-```bash
-TRANSPORT=http PORT=3000 /opt/homebrew/bin/fdic-mcp-server
+```text
+https://bankfind.jflamb.com/mcp
 ```
-
-Then expose it at a reachable HTTPS URL, for example through a tunnel or your own deployment.
 
 In ChatGPT:
 
 1. Go to `Settings -> Apps -> Advanced settings -> Developer mode` and enable Developer mode.
 2. Open the Apps settings page and create an app for your MCP server.
-3. Use your remote MCP URL.
+3. Use `https://bankfind.jflamb.com/mcp`.
 4. Refresh tools from the app details page if needed.
 
 Notes:

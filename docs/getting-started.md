@@ -12,21 +12,30 @@ breadcrumbs:
 
 This server gives MCP-compatible clients access to public FDIC BankFind datasets and a set of server-side analysis tools for comparing institutions and peer groups.
 
-## Easiest Option: Use A Hosted MCP URL
+## Easiest Option: Use The Hosted Endpoint
 
 If your MCP host supports connecting to a remote MCP server by URL, that is the lowest-friction way to get started because it avoids local installation entirely.
+
+Hosted MCP URL:
+
+```text
+https://bankfind.jflamb.com/mcp
+```
 
 Use this path when:
 
 - your host supports remote MCP URLs or hosted apps
-- you already have a deployed HTTPS copy of this server
 - you want to skip local `npm` and terminal setup
 
-Current example:
+Do not assume a plain chat product can install the npm package for you just from a prompt. That only works in agentic environments that can actually run shell commands or edit MCP configuration on your machine.
 
-- ChatGPT Developer Mode can connect to a remote MCP server URL, as covered in the client setup guidance
+Examples:
 
-If you do not have a deployed URL, or your host only supports local stdio servers, use the local install path below.
+- ChatGPT Developer Mode can connect to the hosted endpoint directly
+- Any MCP host that accepts a public streamable HTTP MCP URL can use the same endpoint
+- Local coding agents such as Codex or Claude Code may be able to install the npm package for you, but that is a separate workflow from connecting to a hosted MCP URL
+
+If your host only supports local stdio servers, use the local install path below.
 
 ## Local Install Path
 
@@ -79,6 +88,12 @@ The HTTP MCP endpoint is available at `http://localhost:3000/mcp`.
 ### Connect A Client
 
 Use the client-specific instructions in [Client Setup]({{ '/clients/' | relative_url }}).
+
+For remote-URL hosts, use:
+
+```text
+https://bankfind.jflamb.com/mcp
+```
 
 For most local MCP hosts, the minimal stdio configuration looks like this:
 

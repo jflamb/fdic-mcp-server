@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.jflamb/fdic-mcp-server",
+  "title": "FDIC BankFind MCP Server",
+  "description": "Search FDIC-insured institutions, branch data, failures, and peer analysis through MCP over stdio or streamable HTTP.",
+  "version": "1.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "fdic-mcp-server",
+      "version": "1.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://bankfind.jflamb.com/mcp"
+    }
+  ]
+}
