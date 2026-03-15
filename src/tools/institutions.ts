@@ -49,7 +49,7 @@ Args:
   - sort_by (string, optional): Field to sort by
   - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
 
-Returns JSON with { total, offset, count, has_more, next_offset?, institutions[] }`,
+Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and institution records.`,
       inputSchema: CommonQuerySchema,
       annotations: {
         readOnlyHint: true,
@@ -94,7 +94,7 @@ Args:
   - cert (number): FDIC Certificate Number (e.g., 3511 for Bank of America)
   - fields (string, optional): Comma-separated list of fields to return
 
-Returns full institution profile including financial metrics, charter info, locations, and regulatory details.`,
+Returns a detailed institution profile suitable for concise summaries, with structured fields available for exact values when needed.`,
       inputSchema: CertSchema,
       annotations: {
         readOnlyHint: true,

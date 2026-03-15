@@ -67,7 +67,7 @@ Args:
   - sort_by (string, optional): Field to sort by (e.g., DEPSUMBR, YEAR)
   - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
 
-Returns JSON with { total, offset, count, has_more, next_offset?, deposits[] }`,
+Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and deposit records.`,
       inputSchema: SodQuerySchema,
       annotations: {
         readOnlyHint: true,

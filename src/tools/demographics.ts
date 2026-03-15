@@ -65,7 +65,7 @@ Args:
   - sort_by (string, optional): Field to sort by
   - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
 
-Returns JSON with { total, offset, count, has_more, next_offset?, demographics[] }`,
+Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and demographic records.`,
       inputSchema: DemographicsQuerySchema,
       annotations: {
         readOnlyHint: true,

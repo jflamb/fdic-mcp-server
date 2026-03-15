@@ -87,7 +87,7 @@ Args:
   - sort_by (string, optional): Field to sort by
   - sort_order ('ASC'|'DESC'): Sort direction (default: 'DESC' recommended for most recent first)
 
-Returns JSON with { total, offset, count, has_more, next_offset?, financials[] }`,
+Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and quarterly financial records.`,
       inputSchema: FinancialQuerySchema,
       annotations: {
         readOnlyHint: true,
@@ -164,7 +164,7 @@ Args:
   - sort_by (string, optional): Field to sort by (e.g., YEAR, ASSET)
   - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
 
-Returns JSON with { total, offset, count, has_more, next_offset?, summary[] }`,
+Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and annual summary records.`,
       inputSchema: SummaryQuerySchema,
       annotations: {
         readOnlyHint: true,

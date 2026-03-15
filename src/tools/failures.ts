@@ -44,7 +44,7 @@ Args:
   - sort_by (string, optional): Field to sort by (e.g., FAILDATE, COST)
   - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
 
-Returns JSON with { total, offset, count, has_more, next_offset?, failures[] }`,
+Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and failure records.`,
       inputSchema: CommonQuerySchema,
       annotations: {
         readOnlyHint: true,
@@ -89,7 +89,7 @@ Args:
   - cert (number): FDIC Certificate Number of the failed institution
   - fields (string, optional): Comma-separated list of fields to return
 
-Returns failure details including failure date, resolution method, and cost to FDIC.`,
+Returns detailed failure information suitable for concise summaries, with structured fields available for exact values when needed.`,
       inputSchema: CertSchema,
       annotations: {
         readOnlyHint: true,

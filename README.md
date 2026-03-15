@@ -93,24 +93,6 @@ git push origin main --follow-tags
 
 Publishing from GitHub Actions is intended to use npm trusted publishing via GitHub Actions OIDC rather than a long-lived `NPM_TOKEN`.
 
-### Local Secrets With direnv
-
-To keep tokens local to this repo without committing them:
-
-```bash
-cp .envrc.example .envrc
-$EDITOR .envrc
-direnv allow
-```
-
-Example `.envrc` entry:
-
-```bash
-export GITHUB_TOKEN="your_pat_here"
-```
-
-The repo ignores `.envrc`, `.envrc.local`, and `.env` so local secrets stay untracked.
-
 ## Usage
 
 ### CLI bundle
@@ -191,7 +173,7 @@ sort_order: DESC
 ## Response Shape
 
 All tools return:
-- human-readable JSON in `content[0].text`
+- a human-readable text representation in `content[0].text`
 - machine-readable data in `structuredContent`
 
 Typical search response shape:
