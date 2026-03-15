@@ -357,6 +357,14 @@ a:hover {
   max-width: 50rem;
 }
 
+.hosted-url-block {
+  margin: 1.5rem 0;
+}
+
+.hosted-url-block p {
+  margin-bottom: 0.8rem;
+}
+
 .callout {
   padding: 1rem 1.1rem;
   border: 1px solid rgba(14, 124, 102, 0.14);

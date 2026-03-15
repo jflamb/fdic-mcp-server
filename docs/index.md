@@ -45,11 +45,10 @@ body_class: overview-page
   </a>
 </div>
 
-Hosted MCP URL:
-
-```text
-https://bankfind.jflamb.com/mcp
-```
+<div class="hosted-url-block">
+  <p>Hosted MCP URL:</p>
+  <pre><code>https://bankfind.jflamb.com/mcp</code></pre>
+</div>
 
 ## Choose your path
 

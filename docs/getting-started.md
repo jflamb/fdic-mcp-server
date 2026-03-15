@@ -16,11 +16,10 @@ This server gives MCP-compatible clients access to public FDIC BankFind datasets
 
 If your MCP host supports connecting to a remote MCP server by URL, that is the lowest-friction way to get started because it avoids local installation entirely.
 
-Hosted MCP URL:
-
-```text
-https://bankfind.jflamb.com/mcp
-```
+<div class="hosted-url-block">
+  <p>Hosted MCP URL:</p>
+  <pre><code>https://bankfind.jflamb.com/mcp</code></pre>
+</div>
 
 Use this path when:
 

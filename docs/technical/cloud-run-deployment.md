@@ -10,7 +10,7 @@ breadcrumbs:
     url: /technical/
 ---
 
-This project can be deployed to Google Cloud Run with GitHub Actions using Workload Identity Federation rather than a long-lived Google service account key.
+This project serves its public HTTP MCP endpoint from Google Cloud Run and deploys that service from GitHub Actions using Workload Identity Federation rather than a long-lived Google service account key.
 
 Current live endpoint:
 
@@ -21,6 +21,20 @@ Current live endpoint:
 - A container image definition in `Dockerfile`
 - A GitHub Actions deploy workflow in `.github/workflows/deploy-cloud-run.yml`
 - Cloud Run HTTP mode via `TRANSPORT=http` and `PORT=8080`
+
+## Live Hosting Topology
+
+The production HTTP endpoint is hosted on Google Cloud with this shape:
+
+- GitHub Actions builds and deploys the container
+- Artifact Registry stores the deployable image
+- Cloud Run serves the HTTP transport
+- `bankfind.jflamb.com` is mapped to the Cloud Run service as the public hostname
+
+Operationally, this means the public MCP endpoint is a stateless Cloud Run revision that only needs the standard HTTP environment for startup:
+
+- `TRANSPORT=http`
+- `PORT=8080`
 
 ## Expected Google Cloud Resources
 
@@ -65,7 +79,25 @@ On every push to `main`, the workflow:
 
 ## Registry Publication
 
-Release tags also publish metadata to the official MCP Registry using the documented `mcp-publisher` GitHub OIDC flow. The registry metadata lives in `server.json` and is kept aligned with `package.json` during the release workflow.
+Release tags are configured to publish server metadata to the official MCP Registry using the documented `mcp-publisher` GitHub OIDC flow.
+
+Relevant repo assets:
+
+- `server.json` contains the MCP Registry metadata for this server
+- `.github/workflows/publish.yml` runs `mcp-publisher login github-oidc` and `mcp-publisher publish` on tagged releases
+- `scripts/sync-server-json.mjs` keeps `server.json` version fields aligned with `package.json`
+
+Registry references:
+
+- Official MCP Registry API: `https://registry.modelcontextprotocol.io/`
+- Official MCP Registry repository and docs: `https://github.com/modelcontextprotocol/registry`
+
+Current status note:
+
+- The repository is configured to publish to the official MCP Registry
+- As of March 15, 2026, a public FDIC BankFind entry was not discoverable in the registry API during verification
+- Because of that, this documentation treats registry publication as configured automation rather than a confirmed public listing
+- GitHub Packages publication is also automated, but that is a package registry, not an MCP registry
 
 ## Endpoint Shape
 

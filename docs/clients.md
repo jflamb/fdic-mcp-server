@@ -26,25 +26,45 @@ Asking a model to install `https://www.npmjs.com/package/fdic-mcp-server` for yo
 
 ## When You Need Local Installation
 
-Install the published package:
+Prefer `npx` in client configs when you need a local server. It avoids hard-coding an install path and works across macOS, Linux, and Windows.
+
+Run locally without a global install:
+
+```bash
+npx -y fdic-mcp-server
+```
+
+If you prefer a global install:
 
 ```bash
 npm install -g fdic-mcp-server
 ```
-
-On this machine, that installs the binary at:
-
-```bash
-/opt/homebrew/bin/fdic-mcp-server
-```
-
-If your global npm prefix differs, adjust the path accordingly.
 
 Client support changes quickly. Treat the linked official docs as the source of truth.
 
 Last verified: March 15, 2026.
 
 ## Claude Desktop
+
+Claude Desktop supports remote MCP connectors. If you have a supported Claude plan, use the hosted endpoint instead of a local binary.
+
+Use this hosted URL:
+
+```text
+https://bankfind.jflamb.com/mcp
+```
+
+In Claude Desktop:
+
+1. Go to `Settings -> Connectors`.
+2. Click `Add connector`.
+3. Name it `FDIC BankFind`.
+4. Paste `https://bankfind.jflamb.com/mcp` as the connector URL.
+5. Save the connector and enable the tools you want available.
+
+Local stdio fallback:
+
+Use this only when you specifically need a local install or do not have access to Claude's remote connector flow.
 
 Config file:
 
@@ -58,13 +78,18 @@ Example:
 {
   "mcpServers": {
     "fdic": {
-      "command": "/opt/homebrew/bin/fdic-mcp-server"
+      "command": "npx",
+      "args": ["-y", "fdic-mcp-server"]
     }
   }
 }
 ```
 
 After editing the file, restart Claude Desktop.
+
+Official docs:
+- Anthropic custom remote connectors: https://support.anthropic.com/en/articles/11175166-about-custom-integrations-using-remote-mcp
+- Anthropic remote MCP build/deploy notes: https://support.anthropic.com/en/articles/11503834-building-custom-connectors-via-remote-mcp-servers
 
 ## ChatGPT
 
@@ -96,23 +121,34 @@ Official docs:
 
 Gemini CLI supports MCP servers through `~/.gemini/settings.json` for user scope or `.gemini/settings.json` for project scope.
 
+Hosted endpoint example:
+
+```json
+{
+  "mcpServers": {
+    "fdic": {
+      "httpUrl": "https://bankfind.jflamb.com/mcp"
+    }
+  }
+}
+```
+
+Use the hosted endpoint when you want the simplest setup and your Gemini CLI environment can reach a public HTTPS MCP server.
+
+Local stdio fallback:
+
 Config example:
 
 ```json
 {
   "mcpServers": {
     "fdic": {
-      "command": "/opt/homebrew/bin/fdic-mcp-server",
+      "command": "npx",
+      "args": ["-y", "fdic-mcp-server"],
       "trust": true
     }
   }
 }
-```
-
-CLI-based setup:
-
-```bash
-gemini mcp add -s user --trust fdic /opt/homebrew/bin/fdic-mcp-server
 ```
 
 Verification:
@@ -122,7 +158,7 @@ gemini mcp list
 ```
 
 Notes:
-- Gemini CLI uses stdio for local MCP servers by default.
+- Gemini CLI supports both local stdio and remote HTTP MCP servers.
 - If the current folder is untrusted, local stdio MCP servers may appear disconnected until you trust the folder.
 
 Official docs:
@@ -139,7 +175,8 @@ Config example:
   "mcpServers": {
     "fdic": {
       "type": "local",
-      "command": "/opt/homebrew/bin/fdic-mcp-server",
+      "command": "npx",
+      "args": ["-y", "fdic-mcp-server"],
       "env": {},
       "tools": ["*"]
     }
@@ -174,7 +211,8 @@ Many other MCP hosts accept the same basic stdio pattern:
 {
   "mcpServers": {
     "fdic": {
-      "command": "/opt/homebrew/bin/fdic-mcp-server"
+      "command": "npx",
+      "args": ["-y", "fdic-mcp-server"]
     }
   }
 }
