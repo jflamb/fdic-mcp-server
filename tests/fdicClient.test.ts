@@ -29,6 +29,7 @@ vi.mock("axios", () => {
 import { AxiosError } from "axios";
 import {
   buildPaginationInfo,
+  clearQueryCache,
   extractRecords,
   formatToolError,
   queryEndpoint,
@@ -41,6 +42,7 @@ const expectedVersion = packageJson.version;
 describe("fdicClient", () => {
   beforeEach(() => {
     getMock.mockReset();
+    clearQueryCache();
   });
 
   it("configures the axios client with the expected base settings", () => {
@@ -98,6 +100,19 @@ describe("fdicClient", () => {
         sort_order: "DESC",
       },
     });
+  });
+
+  it("reuses cached results for identical queries within the cache window", async () => {
+    getMock.mockResolvedValue({
+      data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
+    });
+
+    const first = await queryEndpoint("institutions", { filters: "CERT:3511" });
+    const second = await queryEndpoint("institutions", { filters: "CERT:3511" });
+
+    expect(first.meta.total).toBe(1);
+    expect(second.meta.total).toBe(1);
+    expect(getMock).toHaveBeenCalledTimes(1);
   });
 
   it("maps 400 responses to a filter syntax error", async () => {

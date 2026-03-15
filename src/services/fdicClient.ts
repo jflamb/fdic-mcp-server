@@ -24,10 +24,43 @@ interface FdicResponse {
   meta: { total: number };
 }
 
+interface CacheEntry {
+  expiresAt: number;
+  value: Promise<FdicResponse>;
+}
+
+const QUERY_CACHE_TTL_MS = 60_000;
+const queryCache = new Map<string, CacheEntry>();
+
+function getCacheKey(endpoint: string, params: QueryParams): string {
+  return JSON.stringify([
+    endpoint,
+    params.filters ?? null,
+    params.fields ?? null,
+    params.limit ?? null,
+    params.offset ?? null,
+    params.sort_by ?? null,
+    params.sort_order ?? null,
+  ]);
+}
+
+export function clearQueryCache(): void {
+  queryCache.clear();
+}
+
 export async function queryEndpoint(
   endpoint: string,
   params: QueryParams,
 ): Promise<FdicResponse> {
+  const cacheKey = getCacheKey(endpoint, params);
+  const now = Date.now();
+  const cached = queryCache.get(cacheKey);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.value;
+  }
+
+  const requestPromise = (async () => {
   try {
     const queryParams: Record<string, unknown> = {
       limit: params.limit ?? 20,
@@ -65,6 +98,19 @@ export async function queryEndpoint(
       }
     }
     throw new Error(`Unexpected error calling FDIC API: ${String(err)}`);
+  }
+  })();
+
+  queryCache.set(cacheKey, {
+    expiresAt: now + QUERY_CACHE_TTL_MS,
+    value: requestPromise,
+  });
+
+  try {
+    return await requestPromise;
+  } catch (error) {
+    queryCache.delete(cacheKey);
+    throw error;
   }
 }
 

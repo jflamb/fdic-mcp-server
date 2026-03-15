@@ -28,6 +28,7 @@ vi.mock("axios", () => {
 });
 
 import { createApp } from "../src/index.js";
+import { clearQueryCache } from "../src/services/fdicClient.js";
 import packageJson from "../package.json";
 
 const expectedVersion = packageJson.version;
@@ -43,6 +44,7 @@ function mcpPost(body: Record<string, unknown>) {
 describe("HTTP MCP server", () => {
   beforeEach(() => {
     getMock.mockReset();
+    clearQueryCache();
   });
 
   it("serves the health endpoint", async () => {
@@ -65,10 +67,13 @@ describe("HTTP MCP server", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.result.tools).toHaveLength(10);
+    expect(response.body.result.tools).toHaveLength(11);
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toContain("fdic_search_demographics");
+    expect(
+      response.body.result.tools.map((tool: { name: string }) => tool.name),
+    ).toContain("fdic_compare_bank_snapshots");
 
     const financialsTool = response.body.result.tools.find(
       (tool: { name: string }) => tool.name === "fdic_search_financials",
@@ -76,6 +81,10 @@ describe("HTTP MCP server", () => {
     expect(financialsTool.inputSchema.properties.sort_order.default).toBe(
       "DESC",
     );
+    const analysisTool = response.body.result.tools.find(
+      (tool: { name: string }) => tool.name === "fdic_compare_bank_snapshots",
+    );
+    expect(analysisTool.title).toBe("Compare Bank Snapshot Trends");
   });
 
   it("handles repeated MCP requests without reusing a connected server", async () => {
@@ -256,5 +265,180 @@ describe("HTTP MCP server", () => {
     expect(response.body.result.content[0].text).toBe(
       "Error: Unexpected error calling FDIC API: Error: backend unavailable",
     );
+  });
+
+  it("batches snapshot comparisons into financial and demographic date queries", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 3510, NAME: "Bank A", CITY: "Charlotte", STALP: "NC" } },
+            { data: { CERT: 9846, NAME: "Bank B", CITY: "Raleigh", STALP: "NC" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 3510, NAME: "Bank A", ASSET: 100, DEP: 50, NETINC: 10, ROA: 1, ROE: 8 } },
+            { data: { CERT: 9846, NAME: "Bank B", ASSET: 200, DEP: 100, NETINC: 20, ROA: 2, ROE: 9 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 3510, NAME: "Bank A", ASSET: 150, DEP: 90, NETINC: 12, ROA: 1.2, ROE: 8.5 } },
+            { data: { CERT: 9846, NAME: "Bank B", ASSET: 260, DEP: 140, NETINC: 30, ROA: 2.5, ROE: 10 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 3510, OFFTOT: 5, CBSANAME: "Charlotte" } },
+            { data: { CERT: 9846, OFFTOT: 7, CBSANAME: "Raleigh" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 3510, OFFTOT: 4, CBSANAME: "Charlotte" } },
+            { data: { CERT: 9846, OFFTOT: 8, CBSANAME: "Raleigh" } },
+          ],
+          meta: { total: 2 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 8,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          limit: 2,
+          sort_by: "asset_growth",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent.analyzed_count).toBe(2);
+    expect(response.body.result.structuredContent.comparisons[0]).toMatchObject({
+      cert: 9846,
+      asset_growth: 60,
+      dep_growth: 40,
+      offices_change: 1,
+    });
+    expect(response.body.result.content[0].text).toContain(
+      "Compared 2 institutions from 20211231 to 20250630",
+    );
+    expect(getMock).toHaveBeenNthCalledWith(1, "/institutions", {
+      params: {
+        fields: "CERT,NAME,CITY,STALP,ACTIVE",
+        filters: 'STNAME:"North Carolina" AND ACTIVE:1',
+        limit: 10000,
+        offset: 0,
+        output: "json",
+        sort_by: "CERT",
+        sort_order: "ASC",
+      },
+    });
+    expect(getMock).toHaveBeenNthCalledWith(2, "/financials", {
+      params: {
+        fields: "CERT,NAME,REPDTE,ASSET,DEP,NETINC,ROA,ROE",
+        filters: "(CERT:3510 OR CERT:9846) AND REPDTE:20211231",
+        limit: 10000,
+        offset: 0,
+        output: "json",
+        sort_by: "CERT",
+        sort_order: "ASC",
+      },
+    });
+  });
+
+  it("returns time-series analysis with derived metrics and insights", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 3510, NAME: "Bank A", CITY: "Charlotte", STALP: "NC" } }],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 3510, NAME: "Bank A", REPDTE: "20211231", ASSET: 100, DEP: 50, NETINC: 10, ROA: 1.0, ROE: 8.0 } },
+            { data: { CERT: 3510, NAME: "Bank A", REPDTE: "20220331", ASSET: 120, DEP: 60, NETINC: 11, ROA: 1.1, ROE: 8.2 } },
+            { data: { CERT: 3510, NAME: "Bank A", REPDTE: "20250630", ASSET: 180, DEP: 90, NETINC: 16, ROA: 1.4, ROE: 9.5 } },
+          ],
+          meta: { total: 3 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 3510, REPDTE: "20211231", OFFTOT: 5, CBSANAME: "Charlotte" } },
+            { data: { CERT: 3510, REPDTE: "20220331", OFFTOT: 5, CBSANAME: "Charlotte" } },
+            { data: { CERT: 3510, REPDTE: "20250630", OFFTOT: 6, CBSANAME: "Charlotte" } },
+          ],
+          meta: { total: 3 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 9,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          analysis_mode: "timeseries",
+          limit: 1,
+          sort_by: "asset_growth_pct",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent.analysis_mode).toBe(
+      "timeseries",
+    );
+    expect(response.body.result.structuredContent.comparisons[0]).toMatchObject({
+      cert: 3510,
+      asset_growth: 80,
+      deposits_per_office_change: 5,
+      deposits_to_assets_change: 0,
+      asset_growth_streak: 2,
+    });
+    expect(
+      response.body.result.structuredContent.comparisons[0].insights,
+    ).toContain("growth_with_branch_expansion");
+    expect(response.body.result.content[0].text).toContain(
+      "using timeseries analysis",
+    );
+    expect(getMock).toHaveBeenNthCalledWith(2, "/financials", {
+      params: {
+        fields: "CERT,NAME,REPDTE,ASSET,DEP,NETINC,ROA,ROE",
+        filters: "(CERT:3510) AND REPDTE:[20211231 TO 20250630]",
+        limit: 10000,
+        offset: 0,
+        output: "json",
+        sort_by: "REPDTE",
+        sort_order: "ASC",
+      },
+    });
   });
 });
