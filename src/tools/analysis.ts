@@ -858,10 +858,12 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             .filter((comparison): comparison is ComparisonRecord => comparison !== null);
         }
 
-        const ranked = sortComparisons(comparisons, sort_by, sort_order).slice(
-          0,
-          limit,
+        const sortedComparisons = sortComparisons(
+          comparisons,
+          sort_by,
+          sort_order,
         );
+        const ranked = sortedComparisons.slice(0, limit);
         const pagination = buildPaginationInfo(comparisons.length, 0, ranked.length);
         const output = {
           total_candidates: candidateCerts.length,
@@ -871,7 +873,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           analysis_mode,
           sort_by,
           sort_order,
-          insights: buildTopLevelInsights(comparisons),
+          insights: buildTopLevelInsights(sortedComparisons),
           ...pagination,
           comparisons: ranked,
         };

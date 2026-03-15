@@ -441,4 +441,74 @@ describe("HTTP MCP server", () => {
       },
     });
   });
+
+  it("orders top-level insight summaries by the ranked comparisons", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Bank Slow", CITY: "Raleigh", STALP: "NC" } },
+            { data: { CERT: 2222, NAME: "Bank Fast", CITY: "Durham", STALP: "NC" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Bank Slow", REPDTE: "20211231", ASSET: 100, DEP: 100, NETINC: 10, ROA: 1.0, ROE: 8.0 } },
+            { data: { CERT: 2222, NAME: "Bank Fast", REPDTE: "20211231", ASSET: 100, DEP: 100, NETINC: 10, ROA: 1.0, ROE: 8.0 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Bank Slow", REPDTE: "20250630", ASSET: 130, DEP: 120, NETINC: 12, ROA: 1.1, ROE: 8.5 } },
+            { data: { CERT: 2222, NAME: "Bank Fast", REPDTE: "20250630", ASSET: 180, DEP: 160, NETINC: 15, ROA: 1.3, ROE: 9.0 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, REPDTE: "20211231", OFFTOT: 4, CBSANAME: "Raleigh" } },
+            { data: { CERT: 2222, REPDTE: "20211231", OFFTOT: 4, CBSANAME: "Durham" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, REPDTE: "20250630", OFFTOT: 5, CBSANAME: "Raleigh" } },
+            { data: { CERT: 2222, REPDTE: "20250630", OFFTOT: 6, CBSANAME: "Durham" } },
+          ],
+          meta: { total: 2 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 10,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          limit: 2,
+          sort_by: "asset_growth",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(
+      response.body.result.structuredContent.insights.growth_with_branch_expansion,
+    ).toEqual(["Bank Fast", "Bank Slow"]);
+  });
 });
