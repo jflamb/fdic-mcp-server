@@ -20,8 +20,13 @@ permissions:
   contents: write
   packages: write
 
+concurrency:
+  group: publish-github-package-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   sync:
+    name: Backfill release artifacts
     runs-on: ubuntu-latest
 
     steps:

@@ -30,7 +30,7 @@ The repository uses a small set of GitHub Actions workflows with distinct respon
 - `Deploy Docs`: builds and publishes the GitHub Pages documentation site from `docs/`
 - `Deploy Cloud Run`: builds the production container image and deploys the public HTTP MCP endpoint to Google Cloud Run
 - `Publish npm and Registry`: publishes tagged releases to npm, updates the official MCP Registry metadata, publishes GitHub Packages, and creates or updates the GitHub release
-- `Publish GitHub Package`: backfills the GitHub release and GitHub Packages artifact from `main` when the primary publish workflow did not produce them
+- `Publish GitHub Package`: backfills the GitHub release and GitHub Packages artifact from `main` when the tagged release workflow did not produce them; it is a recovery path, not a second primary release flow
 
 ## Live Hosting Topology
 
