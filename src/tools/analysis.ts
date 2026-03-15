@@ -323,6 +323,30 @@ function buildTopLevelInsights(comparisons: ComparisonRecord[]): Record<string, 
       )
       .slice(0, 5)
       .map((comparison) => String(comparison.name)),
+    deposit_mix_softening: comparisons
+      .filter((comparison) =>
+        (comparison.insights as string[] | undefined)?.includes(
+          "deposit_mix_softening",
+        ),
+      )
+      .slice(0, 5)
+      .map((comparison) => String(comparison.name)),
+    sustained_asset_growth: comparisons
+      .filter((comparison) =>
+        (comparison.insights as string[] | undefined)?.includes(
+          "sustained_asset_growth",
+        ),
+      )
+      .slice(0, 5)
+      .map((comparison) => String(comparison.name)),
+    multi_quarter_roa_decline: comparisons
+      .filter((comparison) =>
+        (comparison.insights as string[] | undefined)?.includes(
+          "multi_quarter_roa_decline",
+        ),
+      )
+      .slice(0, 5)
+      .map((comparison) => String(comparison.name)),
   };
 }
 
