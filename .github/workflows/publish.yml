@@ -6,6 +6,10 @@ on:
       - "v*.*.*"
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 concurrency:
   group: publish-${{ github.ref }}
   cancel-in-progress: false
@@ -13,9 +17,6 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
 
     steps:
       - name: Check out repository
@@ -35,7 +36,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
           cache: npm
 
       - name: Install dependencies
@@ -45,4 +47,4 @@ jobs:
         run: npm run prepublishOnly
 
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish
