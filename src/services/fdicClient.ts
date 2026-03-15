@@ -19,6 +19,10 @@ interface QueryParams {
   sort_order?: string;
 }
 
+interface QueryOptions {
+  signal?: AbortSignal;
+}
+
 interface FdicResponse {
   data: Array<{ data: Record<string, unknown> }>;
   meta: { total: number };
@@ -59,12 +63,18 @@ export function clearQueryCache(): void {
 export async function queryEndpoint(
   endpoint: string,
   params: QueryParams,
+  options: QueryOptions = {},
 ): Promise<FdicResponse> {
+  if (options.signal?.aborted) {
+    throw new Error("FDIC API request was canceled before it started.");
+  }
+
+  const shouldUseCache = !options.signal;
   const now = Date.now();
   pruneExpiredQueryCache(now);
 
   const cacheKey = getCacheKey(endpoint, params);
-  const cached = queryCache.get(cacheKey);
+  const cached = shouldUseCache ? queryCache.get(cacheKey) : undefined;
 
   if (cached && cached.expiresAt > now) {
     return cached.value;
@@ -84,9 +94,21 @@ export async function queryEndpoint(
 
       const response = await apiClient.get(`/${endpoint}`, {
         params: queryParams,
+        signal: options.signal,
       });
       return response.data;
     } catch (err) {
+      if (
+        options.signal?.aborted ||
+        (typeof err === "object" &&
+          err !== null &&
+          "code" in err &&
+          (err as { code?: string }).code === "ERR_CANCELED") ||
+        (err instanceof DOMException && err.name === "AbortError")
+      ) {
+        throw new Error("FDIC API request was canceled.");
+      }
+
       if (err instanceof AxiosError) {
         const status = err.response?.status;
         const detail =
@@ -111,15 +133,19 @@ export async function queryEndpoint(
     }
   })();
 
-  queryCache.set(cacheKey, {
-    expiresAt: now + QUERY_CACHE_TTL_MS,
-    value: requestPromise,
-  });
+  if (shouldUseCache) {
+    queryCache.set(cacheKey, {
+      expiresAt: now + QUERY_CACHE_TTL_MS,
+      value: requestPromise,
+    });
+  }
 
   try {
     return await requestPromise;
   } catch (error) {
-    queryCache.delete(cacheKey);
+    if (shouldUseCache) {
+      queryCache.delete(cacheKey);
+    }
     throw error;
   }
 }

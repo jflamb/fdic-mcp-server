@@ -14,6 +14,7 @@ type ComparisonRecord = Record<string, unknown>;
 
 const CHUNK_SIZE = 25;
 const MAX_CONCURRENCY = 4;
+const ANALYSIS_TIMEOUT_MS = 90_000;
 
 const SortFieldSchema = z.enum([
   "asset_growth",
@@ -528,6 +529,7 @@ async function fetchInstitutionRoster(
   state: string | undefined,
   institutionFilters: string | undefined,
   activeOnly: boolean,
+  signal?: AbortSignal,
 ): Promise<InstitutionRecord[]> {
   const filterParts: string[] = [];
   if (state) filterParts.push(`STNAME:"${state}"`);
@@ -541,7 +543,7 @@ async function fetchInstitutionRoster(
     offset: 0,
     sort_by: "CERT",
     sort_order: "ASC",
-  });
+  }, { signal });
 
   return extractRecords(response);
 }
@@ -551,6 +553,7 @@ async function fetchBatchedRecordsForDates(
   certs: number[],
   repdteFilters: string[],
   fields: string,
+  signal?: AbortSignal,
 ): Promise<Map<string, Map<number, InstitutionRecord>>> {
   const certFilters = buildCertFilters(certs);
   const tasks = repdteFilters.flatMap((repdteFilter) =>
@@ -568,7 +571,7 @@ async function fetchBatchedRecordsForDates(
       offset: 0,
       sort_by: "CERT",
       sort_order: "ASC",
-    });
+    }, { signal });
 
     return { repdteFilter: task.repdteFilter, response };
   });
@@ -594,6 +597,7 @@ async function fetchSeriesRecords(
   startRepdte: string,
   endRepdte: string,
   fields: string,
+  signal?: AbortSignal,
 ): Promise<Map<number, InstitutionRecord[]>> {
   const certFilters = buildCertFilters(certs);
   const responses = await mapWithConcurrency(
@@ -607,7 +611,7 @@ async function fetchSeriesRecords(
         offset: 0,
         sort_by: "REPDTE",
         sort_order: "ASC",
-      }),
+      }, { signal }),
   );
 
   const grouped = new Map<number, InstitutionRecord[]>();
@@ -752,6 +756,9 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
       sort_by,
       sort_order,
     }) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
+
       try {
         const roster =
           certs && certs.length > 0
@@ -760,6 +767,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
                 state,
                 institution_filters,
                 active_only,
+                controller.signal,
               );
 
         const candidateCerts = roster
@@ -805,6 +813,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
               start_repdte,
               end_repdte,
               "CERT,NAME,REPDTE,ASSET,DEP,NETINC,ROA,ROE",
+              controller.signal,
             ),
             include_demographics
               ? fetchSeriesRecords(
@@ -813,6 +822,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
                   start_repdte,
                   end_repdte,
                   "CERT,REPDTE,OFFTOT,OFFSTATE,CBSANAME",
+                  controller.signal,
                 )
               : Promise.resolve(new Map<number, InstitutionRecord[]>()),
           ]);
@@ -838,6 +848,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
               candidateCerts,
               [`REPDTE:${start_repdte}`, `REPDTE:${end_repdte}`],
               "CERT,NAME,REPDTE,ASSET,DEP,NETINC,ROA,ROE",
+              controller.signal,
             ),
             include_demographics
               ? fetchBatchedRecordsForDates(
@@ -845,6 +856,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
                   candidateCerts,
                   [`REPDTE:${start_repdte}`, `REPDTE:${end_repdte}`],
                   "CERT,REPDTE,OFFTOT,OFFSTATE,CBSANAME",
+                  controller.signal,
                 )
               : Promise.resolve(new Map<string, Map<number, InstitutionRecord>>()),
           ]);
@@ -911,7 +923,16 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           structuredContent: output,
         };
       } catch (err) {
+        if (controller.signal.aborted) {
+          return formatToolError(
+            new Error(
+              `Analysis timed out after ${Math.floor(ANALYSIS_TIMEOUT_MS / 1000)} seconds. Narrow the comparison set with certs or institution_filters and try again.`,
+            ),
+          );
+        }
         return formatToolError(err);
+      } finally {
+        clearTimeout(timeoutId);
       }
     },
   );

@@ -342,28 +342,36 @@ describe("HTTP MCP server", () => {
     expect(response.body.result.content[0].text).toContain(
       "Compared 2 institutions from 20211231 to 20250630",
     );
-    expect(getMock).toHaveBeenNthCalledWith(1, "/institutions", {
-      params: {
-        fields: "CERT,NAME,CITY,STALP,ACTIVE",
-        filters: 'STNAME:"North Carolina" AND ACTIVE:1',
-        limit: 10000,
-        offset: 0,
-        output: "json",
-        sort_by: "CERT",
-        sort_order: "ASC",
-      },
-    });
-    expect(getMock).toHaveBeenNthCalledWith(2, "/financials", {
-      params: {
-        fields: "CERT,NAME,REPDTE,ASSET,DEP,NETINC,ROA,ROE",
-        filters: "(CERT:3510 OR CERT:9846) AND REPDTE:20211231",
-        limit: 10000,
-        offset: 0,
-        output: "json",
-        sort_by: "CERT",
-        sort_order: "ASC",
-      },
-    });
+    expect(getMock).toHaveBeenNthCalledWith(
+      1,
+      "/institutions",
+      expect.objectContaining({
+        params: {
+          fields: "CERT,NAME,CITY,STALP,ACTIVE",
+          filters: 'STNAME:"North Carolina" AND ACTIVE:1',
+          limit: 10000,
+          offset: 0,
+          output: "json",
+          sort_by: "CERT",
+          sort_order: "ASC",
+        },
+      }),
+    );
+    expect(getMock).toHaveBeenNthCalledWith(
+      2,
+      "/financials",
+      expect.objectContaining({
+        params: {
+          fields: "CERT,NAME,REPDTE,ASSET,DEP,NETINC,ROA,ROE",
+          filters: "(CERT:3510 OR CERT:9846) AND REPDTE:20211231",
+          limit: 10000,
+          offset: 0,
+          output: "json",
+          sort_by: "CERT",
+          sort_order: "ASC",
+        },
+      }),
+    );
   });
 
   it("returns time-series analysis with derived metrics and insights", async () => {
@@ -435,17 +443,66 @@ describe("HTTP MCP server", () => {
     expect(response.body.result.content[0].text).toContain(
       "using timeseries analysis",
     );
-    expect(getMock).toHaveBeenNthCalledWith(2, "/financials", {
+    expect(getMock).toHaveBeenNthCalledWith(
+      2,
+      "/financials",
+      expect.objectContaining({
+        params: {
+          fields: "CERT,NAME,REPDTE,ASSET,DEP,NETINC,ROA,ROE",
+          filters: "(CERT:3510) AND REPDTE:[20211231 TO 20250630]",
+          limit: 10000,
+          offset: 0,
+          output: "json",
+          sort_by: "REPDTE",
+          sort_order: "ASC",
+        },
+      }),
+    );
+  });
+
+  it("fails analysis requests that exceed the overall timeout budget", async () => {
+    const setTimeoutSpy = vi
+      .spyOn(global, "setTimeout")
+      .mockImplementation(((callback: TimerHandler) => {
+        queueMicrotask(() => {
+          if (typeof callback === "function") {
+            callback();
+          }
+        });
+        return 0 as ReturnType<typeof setTimeout>;
+      }) as typeof setTimeout);
+
+    getMock.mockImplementation(
+      (_url: string, config?: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          config?.signal?.addEventListener("abort", () => {
+            reject(new Error("canceled"));
+          });
+        }),
+    );
+
+    const responsePromise = mcpPost({
+      jsonrpc: "2.0",
+      id: 10,
+      method: "tools/call",
       params: {
-        fields: "CERT,NAME,REPDTE,ASSET,DEP,NETINC,ROA,ROE",
-        filters: "(CERT:3510) AND REPDTE:[20211231 TO 20250630]",
-        limit: 10000,
-        offset: 0,
-        output: "json",
-        sort_by: "REPDTE",
-        sort_order: "ASC",
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+        },
       },
     });
+
+    const response = await responsePromise;
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.isError).toBe(true);
+    expect(response.body.result.content[0].text).toContain(
+      "Analysis timed out after 90 seconds.",
+    );
+    setTimeoutSpy.mockRestore();
   });
 
   it("orders top-level insight summaries by the ranked comparisons", async () => {
