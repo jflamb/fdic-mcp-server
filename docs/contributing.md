@@ -1,8 +1,14 @@
 ---
 title: Contributing
+nav_group: project
+kicker: Project Info
+summary: The contributor workflow at a glance, with validation expectations and links back to the repository-level guide.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: Project Info
+    url: /project-information/
 ---
-
-# Contributing
 
 The full contributor workflow lives in the repository root at `CONTRIBUTING.md`.
 

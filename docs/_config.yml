@@ -2,5 +2,13 @@ title: FDIC BankFind MCP Server
 description: Documentation for the MCP server that exposes the FDIC BankFind Suite API to LLM clients.
 theme: minima
 markdown: kramdown
+permalink: pretty
+exclude:
+  - plans
 plugins:
   - jekyll-seo-tag
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
