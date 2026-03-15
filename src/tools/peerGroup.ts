@@ -118,7 +118,7 @@ export function computeCompetitionRank(
   }
 
   const rank = ranks.get(subjectValue)!;
-  const of = peerValues.length;
+  const of = all.length;
   const percentile = Math.round((1 - (rank - 1) / of) * 100);
 
   return { rank, of, percentile };
@@ -449,7 +449,7 @@ Metrics ranked (fixed order):
   - Equity Capital Ratio, Efficiency Ratio, Loan-to-Deposit Ratio
   - Deposits-to-Assets Ratio, Non-Interest Income Share
 
-Rankings use competition rank (1, 2, 2, 4) with metric-specific denominators. Subject is excluded from peer set.
+Rankings use competition rank (1, 2, 2, 4). Rank, denominator, and percentile all use the same comparison set: matched peers plus the subject institution.
 
 Output includes:
   - Subject rankings and percentiles (when cert provided)

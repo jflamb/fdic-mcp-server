@@ -93,3 +93,25 @@ Reference: issue #62 and bugs #46, #53, and #59.
 
 - [x] Issue created and linked: #62.
 - [x] Verified `npm test -- tests/analysis.test.ts tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
+
+# Peer Group Ranking Semantics
+
+Reference: issue #64 and bug #45.
+
+## Goals
+
+- [x] Make rank, denominator, and percentile use the same comparison set in peer-group output.
+- [x] Update tests to reflect the chosen ranking contract.
+- [x] Update user-facing wording where it currently implies different denominator semantics.
+- [ ] Open a PR for the resulting fix.
+
+## Acceptance Criteria
+
+- [x] `rank` and `of` describe the same comparison set.
+- [x] Percentile remains in-range and matches the same comparison set.
+- [x] Tests cover best, worst, tie, and small-peer-group scenarios under the updated semantics.
+
+## Review / Results
+
+- [x] Issue created and linked: #64.
+- [x] Verified `npm test -- tests/peerGroup.test.ts tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.

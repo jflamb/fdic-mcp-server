@@ -108,12 +108,12 @@ describe("computeMedian", () => {
 describe("computeCompetitionRank", () => {
   it("ranks a value among peers (higher-is-better, descending sort)", () => {
     const result = computeCompetitionRank(7, [10, 8, 6, 4, 2], true);
-    expect(result).toEqual({ rank: 3, of: 5, percentile: 60 });
+    expect(result).toEqual({ rank: 3, of: 6, percentile: 67 });
   });
 
   it("ranks a value among peers (lower-is-better, ascending sort)", () => {
     const result = computeCompetitionRank(3, [10, 8, 6, 4, 2], false);
-    expect(result).toEqual({ rank: 2, of: 5, percentile: 80 });
+    expect(result).toEqual({ rank: 2, of: 6, percentile: 83 });
   });
 
   it("handles ties — subject gets same rank as equal peers", () => {
@@ -122,24 +122,24 @@ describe("computeCompetitionRank", () => {
     // Competition ranks: 10→1, 8→2, 4→5
     // Subject value 8 → rank 2
     const result = computeCompetitionRank(8, [10, 8, 8, 4], true);
-    expect(result).toEqual({ rank: 2, of: 4, percentile: 75 });
+    expect(result).toEqual({ rank: 2, of: 5, percentile: 80 });
   });
 
   it("gives rank 1 and 100th percentile when subject is best", () => {
     const result = computeCompetitionRank(99, [10, 20, 30], true);
-    expect(result).toEqual({ rank: 1, of: 3, percentile: 100 });
+    expect(result).toEqual({ rank: 1, of: 4, percentile: 100 });
   });
 
-  it("gives last rank when subject is worst (higher-is-better)", () => {
+  it("gives last rank within the full comparison set when subject is worst", () => {
     const result = computeCompetitionRank(1, [10, 20, 30], true);
     // All desc: 30, 20, 10, 1 → subject rank 4
-    expect(result).toEqual({ rank: 4, of: 3, percentile: 0 });
+    expect(result).toEqual({ rank: 4, of: 4, percentile: 25 });
   });
 
   it("handles null-direction metrics (descending sort by default)", () => {
     const result = computeCompetitionRank(5, [10, 8, 3, 1], null);
     // All desc: 10, 8, 5, 3, 1 → subject rank 3
-    expect(result).toEqual({ rank: 3, of: 4, percentile: 50 });
+    expect(result).toEqual({ rank: 3, of: 5, percentile: 60 });
   });
 
   it("returns null when peer list is empty", () => {
