@@ -22,7 +22,8 @@ This server works best when prompts are explicit about the dataset, time basis, 
 
 ## Date Rules
 
-- Financial, summary, and demographics queries use `REPDTE` in `YYYYMMDD` format.
+- You can describe dates naturally in prompts. The model or tool layer may translate them into `REPDTE` values behind the scenes when needed.
+- Financial, summary, and demographics queries use `REPDTE` in `YYYYMMDD` format at the tool/query level.
 - Summary of Deposits data is annual branch data as of June 30.
 - Do not mix quarterly financial questions with annual branch questions unless the prompt acknowledges the different dates.
 
@@ -49,13 +50,13 @@ Show Bank of America quarterly financial data for 2024, sorted newest first.
 Snapshot comparison:
 
 ```text
-Compare North Carolina banks between 20211231 and 20250630 and rank them by deposit growth percentage.
+Compare North Carolina banks between December 31, 2021 and June 30, 2025 and rank them by deposit growth percentage.
 ```
 
 Peer analysis:
 
 ```text
-Build a peer group for CERT 29846 at 20241231 and tell me where it ranks on ROA, ROE, and efficiency ratio.
+Build a peer group for CERT 29846 as of December 31, 2024 and tell me where it ranks on ROA, ROE, and efficiency ratio.
 ```
 
 ## Copy-Paste Analysis Prompts
@@ -65,25 +66,25 @@ These prompts are intentionally narrow enough to return a clear answer in one pa
 Snapshot analysis with profitability follow-through:
 
 ```text
-Compare active North Carolina banks between 20211231 and 20250630. Rank them by deposit growth percentage, return the top 10, and call out which of those top growers also improved ROA and reduced office counts.
+Compare active North Carolina banks between December 31, 2021 and June 30, 2025. Rank them by deposit growth percentage, return the top 10, and call out which of those top growers also improved ROA and reduced office counts.
 ```
 
 Peer analysis with explicit comparison points:
 
 ```text
-Build a peer group for CERT 29846 at 20241231. Report its rank and percentile for total assets, ROA, efficiency ratio, and loan-to-deposit ratio, then compare the bank to peer medians on those same metrics.
+Build a peer group for CERT 29846 as of December 31, 2024. Report its rank and percentile for total assets, ROA, efficiency ratio, and loan-to-deposit ratio, then compare the bank to peer medians on those same metrics.
 ```
 
 Time-series analysis with warning-aware output:
 
 ```text
-Analyze Texas banks from 20221231 through 20241231 using time-series mode. Identify institutions with sustained asset-growth streaks, then among those flag any bank that also had a multi-quarter ROA decline. Limit the answer to the five clearest examples and include any warnings that affect interpretation.
+Analyze Texas banks from December 31, 2022 through December 31, 2024 using time-series mode. Identify institutions with sustained asset-growth streaks, then among those flag any bank that also had a multi-quarter ROA decline. Limit the answer to the five clearest examples and include any warnings that affect interpretation.
 ```
 
 Focused branch-versus-balance-sheet question:
 
 ```text
-Compare South Carolina banks between 20211231 and 20250630. Find banks with positive asset growth and lower office counts, then rank them by deposits-per-office improvement and summarize whether the growth looks branch-supported or mainly balance-sheet driven.
+Compare South Carolina banks between December 31, 2021 and June 30, 2025. Find banks with positive asset growth and lower office counts, then rank them by deposits-per-office improvement and summarize whether the growth looks branch-supported or mainly balance-sheet driven.
 ```
 
 ## Prompting Pitfalls
