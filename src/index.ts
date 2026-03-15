@@ -41,6 +41,17 @@ async function runStdio(): Promise<void> {
   console.error("FDIC BankFind MCP server running on stdio");
 }
 
+export function parseHttpPort(rawPort: string | undefined): number {
+  const port = Number.parseInt(rawPort ?? "3000", 10);
+  if (Number.isNaN(port)) {
+    throw new Error(`Invalid PORT value: ${rawPort ?? ""}`);
+  }
+  if (port < 0 || port > 65535) {
+    throw new Error(`PORT must be between 0 and 65535. Received: ${port}`);
+  }
+  return port;
+}
+
 export function createApp(): Express {
   const app = express();
   app.use(express.json());
@@ -86,7 +97,7 @@ export function createApp(): Express {
 
 async function runHTTP(): Promise<void> {
   const app = createApp();
-  const port = parseInt(process.env.PORT ?? "3000");
+  const port = parseHttpPort(process.env.PORT);
   app.listen(port, () => {
     console.error(
       `FDIC BankFind MCP server running on http://localhost:${port}/mcp`,
