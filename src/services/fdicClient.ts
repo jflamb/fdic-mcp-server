@@ -97,6 +97,69 @@ export function truncateIfNeeded(text: string, charLimit: number): string {
   );
 }
 
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) return "n/a";
+  if (typeof value === "number") return Number.isInteger(value) ? `${value}` : value.toFixed(4);
+  if (typeof value === "string") return value;
+  if (typeof value === "boolean") return value ? "true" : "false";
+  return JSON.stringify(value);
+}
+
+function summarizeRecord(
+  record: Record<string, unknown>,
+  preferredKeys: string[],
+  maxFields = 4,
+): string {
+  const orderedKeys = [
+    ...preferredKeys.filter((key) => key in record),
+    ...Object.keys(record).filter(
+      (key) => key !== "ID" && !preferredKeys.includes(key),
+    ),
+  ];
+
+  return orderedKeys
+    .slice(0, maxFields)
+    .map((key) => `${key}: ${formatValue(record[key])}`)
+    .join(" | ");
+}
+
+export function formatSearchResultText(
+  label: string,
+  records: Array<Record<string, unknown>>,
+  pagination: {
+    total: number;
+    offset: number;
+    count: number;
+    has_more: boolean;
+    next_offset?: number;
+  },
+  preferredKeys: string[],
+): string {
+  const header = `Found ${pagination.total} ${label} (showing ${pagination.count}, offset ${pagination.offset}).`;
+
+  if (records.length === 0) {
+    return header;
+  }
+
+  const rows = records
+    .map((record, index) => `${index + 1}. ${summarizeRecord(record, preferredKeys)}`)
+    .join("\n");
+
+  const footer = pagination.has_more
+    ? `\nMore results available. Use offset ${pagination.next_offset} to continue.`
+    : "";
+
+  return `${header}\n${rows}${footer}`;
+}
+
+export function formatLookupResultText(
+  label: string,
+  record: Record<string, unknown>,
+  preferredKeys: string[],
+): string {
+  return `${label}\n${summarizeRecord(record, preferredKeys, 8)}`;
+}
+
 export function formatToolError(err: unknown): {
   content: Array<{ type: "text"; text: string }>;
   isError: true;

@@ -5,6 +5,7 @@ import {
   queryEndpoint,
   extractRecords,
   buildPaginationInfo,
+  formatSearchResultText,
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
@@ -90,7 +91,14 @@ Prefer concise human-readable summaries or tables when answering users. Structur
         );
         const output = { ...pagination, events: records };
         const text = truncateIfNeeded(
-          JSON.stringify(output, null, 2),
+          formatSearchResultText("events", records, pagination, [
+            "CERT",
+            "INSTNAME",
+            "TYPE",
+            "PROCDATE",
+            "PCITY",
+            "PSTALP",
+          ]),
           CHARACTER_LIMIT,
         );
         return {

@@ -4,6 +4,8 @@ import {
   queryEndpoint,
   extractRecords,
   buildPaginationInfo,
+  formatLookupResultText,
+  formatSearchResultText,
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
@@ -64,7 +66,15 @@ Prefer concise human-readable summaries or tables when answering users. Structur
         );
         const output = { ...pagination, failures: records };
         const text = truncateIfNeeded(
-          JSON.stringify(output, null, 2),
+          formatSearchResultText("failures", records, pagination, [
+            "CERT",
+            "NAME",
+            "CITY",
+            "STALP",
+            "FAILDATE",
+            "COST",
+            "RESTYPE",
+          ]),
           CHARACTER_LIMIT,
         );
         return {
@@ -118,7 +128,16 @@ Returns detailed failure information suitable for concise summaries, with struct
           };
         }
         const output = records[0];
-        const text = JSON.stringify(output, null, 2);
+        const text = formatLookupResultText("Failure details", output, [
+          "CERT",
+          "NAME",
+          "FAILDATE",
+          "RESTYPE",
+          "COST",
+          "QBFASSET",
+          "CITY",
+          "STALP",
+        ]);
         return {
           content: [{ type: "text", text }],
           structuredContent: output,

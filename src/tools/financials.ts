@@ -5,6 +5,7 @@ import {
   queryEndpoint,
   extractRecords,
   buildPaginationInfo,
+  formatSearchResultText,
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
@@ -115,7 +116,14 @@ Prefer concise human-readable summaries or tables when answering users. Structur
         );
         const output = { ...pagination, financials: records };
         const text = truncateIfNeeded(
-          JSON.stringify(output, null, 2),
+          formatSearchResultText("financial records", records, pagination, [
+            "CERT",
+            "NAME",
+            "REPDTE",
+            "ASSET",
+            "DEP",
+            "NETINC",
+          ]),
           CHARACTER_LIMIT,
         );
         return {
@@ -192,7 +200,14 @@ Prefer concise human-readable summaries or tables when answering users. Structur
         );
         const output = { ...pagination, summary: records };
         const text = truncateIfNeeded(
-          JSON.stringify(output, null, 2),
+          formatSearchResultText("annual summary records", records, pagination, [
+            "CERT",
+            "YEAR",
+            "ASSET",
+            "DEP",
+            "NETINC",
+            "ROA",
+          ]),
           CHARACTER_LIMIT,
         );
         return {

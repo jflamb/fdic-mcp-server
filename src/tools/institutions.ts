@@ -4,6 +4,8 @@ import {
   queryEndpoint,
   extractRecords,
   buildPaginationInfo,
+  formatLookupResultText,
+  formatSearchResultText,
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
@@ -69,7 +71,14 @@ Prefer concise human-readable summaries or tables when answering users. Structur
         );
         const output = { ...pagination, institutions: records };
         const text = truncateIfNeeded(
-          JSON.stringify(output, null, 2),
+          formatSearchResultText("institutions", records, pagination, [
+            "CERT",
+            "NAME",
+            "CITY",
+            "STALP",
+            "ASSET",
+            "ACTIVE",
+          ]),
           CHARACTER_LIMIT,
         );
         return {
@@ -123,7 +132,16 @@ Returns a detailed institution profile suitable for concise summaries, with stru
           };
         }
         const output = records[0];
-        const text = JSON.stringify(output, null, 2);
+        const text = formatLookupResultText("Institution details", output, [
+          "CERT",
+          "NAME",
+          "CITY",
+          "STALP",
+          "ASSET",
+          "DEP",
+          "ACTIVE",
+          "REGAGNT",
+        ]);
         return {
           content: [{ type: "text", text }],
           structuredContent: output,
