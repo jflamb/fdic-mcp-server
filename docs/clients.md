@@ -1,8 +1,14 @@
+---
+title: Client Setup
+---
+
 # Client Setup
 
-This page collects minimal setup notes for common MCP clients.
+This page collects setup notes for common MCP clients.
 
-The examples below assume you already installed the published package:
+## Before You Configure A Client
+
+Install the published package:
 
 ```bash
 npm install -g fdic-mcp-server
