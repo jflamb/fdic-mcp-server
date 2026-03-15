@@ -1,0 +1,91 @@
+name: Sync Release And GitHub Package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/publish.yml"
+      - ".github/workflows/sync-release-and-gpr.yml"
+      - ".github/release-notes/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/prepare-gpr-package.mjs"
+      - "dist/**"
+      - "README.md"
+      - "LICENSE"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest semver tag
+        id: tag
+        run: echo "name=$(git describe --tags --abbrev=0 --match 'v*.*.*')" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node.js for npm
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish missing GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          NOTES_FILE=".github/release-notes/${RELEASE_TAG}.md"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists."
+          elif [ -f "$NOTES_FILE" ]; then
+            gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --notes-file "$NOTES_FILE"
+          else
+            gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --generate-notes
+          fi
+
+      - name: Prepare GitHub Packages bundle
+        run: node scripts/prepare-gpr-package.mjs
+
+      - name: Set up Node.js for GitHub Packages
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: https://npm.pkg.github.com
+          scope: "@jflamb"
+
+      - name: Check for existing GitHub Packages version
+        id: gpr
+        working-directory: .tmp/github-package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view @jflamb/fdic-mcp-server@"$VERSION" version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish missing GitHub Packages version
+        if: steps.gpr.outputs.exists == 'false'
+        working-directory: .tmp/github-package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -92,6 +92,15 @@ npm install -g fdic-mcp-server
 fdic-mcp-server
 ```
 
+### From GitHub Packages
+
+The GitHub Packages mirror is published as `@jflamb/fdic-mcp-server`.
+
+```bash
+npm install -g @jflamb/fdic-mcp-server --registry=https://npm.pkg.github.com
+fdic-mcp-server
+```
+
 ### From source
 
 ```bash

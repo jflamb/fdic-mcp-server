@@ -8,7 +8,8 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
+  packages: write
 
 concurrency:
   group: publish-${{ github.ref }}
@@ -48,3 +49,38 @@ jobs:
 
       - name: Publish to npm
         run: npm publish
+
+      - name: Prepare GitHub Packages bundle
+        run: node scripts/prepare-gpr-package.mjs
+
+      - name: Set up Node.js for GitHub Packages
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: https://npm.pkg.github.com
+          scope: "@jflamb"
+
+      - name: Publish to GitHub Packages
+        working-directory: .tmp/github-package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NOTES_FILE=".github/release-notes/${GITHUB_REF_NAME}.md"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            if [ -f "$NOTES_FILE" ]; then
+              gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
+            else
+              gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+            fi
+          else
+            if [ -f "$NOTES_FILE" ]; then
+              gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
+            else
+              gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+            fi
+          fi
