@@ -379,7 +379,7 @@ describe("HTTP MCP server", () => {
           data: [
             { data: { CERT: 3510, NAME: "Bank A", REPDTE: "20211231", ASSET: 100, DEP: 50, NETINC: 10, ROA: 1.0, ROE: 8.0 } },
             { data: { CERT: 3510, NAME: "Bank A", REPDTE: "20220331", ASSET: 120, DEP: 60, NETINC: 11, ROA: 1.1, ROE: 8.2 } },
-            { data: { CERT: 3510, NAME: "Bank A", REPDTE: "20250630", ASSET: 180, DEP: 90, NETINC: 16, ROA: 1.4, ROE: 9.5 } },
+            { data: { CERT: 3510, NAME: "Bank A", REPDTE: "20250630", ASSET: 180, DEP: 100, NETINC: 16, ROA: 1.4, ROE: 9.5 } },
           ],
           meta: { total: 3 },
         },
@@ -419,10 +419,16 @@ describe("HTTP MCP server", () => {
     expect(response.body.result.structuredContent.comparisons[0]).toMatchObject({
       cert: 3510,
       asset_growth: 80,
-      deposits_per_office_change: 5,
-      deposits_to_assets_change: 0,
       asset_growth_streak: 2,
     });
+    expect(
+      response.body.result.structuredContent.comparisons[0]
+        .deposits_per_office_change,
+    ).toBeCloseTo(6.666666666666668);
+    expect(
+      response.body.result.structuredContent.comparisons[0]
+        .deposits_to_assets_change,
+    ).toBeCloseTo(0.05555555555555558);
     expect(
       response.body.result.structuredContent.comparisons[0].insights,
     ).toContain("growth_with_branch_expansion");
