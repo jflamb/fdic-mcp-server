@@ -5,4 +5,4 @@
 #   $EDITOR .envrc
 #   direnv allow
 
-export GITHUB_TOKEN=""
+# export GITHUB_TOKEN=""

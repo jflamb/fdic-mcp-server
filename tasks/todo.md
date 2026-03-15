@@ -47,3 +47,25 @@ Reference: issue #41 and user request to continue with the next-tier workflow hy
 
 - [x] Issue created and linked: #41.
 - [x] Parsed all workflow YAML files successfully with Ruby `YAML.load_file`.
+
+# Docs And Config Bug Batch
+
+Reference: issues #44, #55, #56, and #57 and the follow-up bug triage work.
+
+## Goals
+
+- [x] Fix summary dataset date-basis references that incorrectly describe summary data as quarterly or `REPDTE`-based.
+- [x] Fix the README license text to match the MIT `LICENSE` file.
+- [x] Prevent `.envrc.example` from exporting an empty `GITHUB_TOKEN`.
+- [x] Fix the Gemini CLI compatibility matrix entry to reflect documented remote HTTP support.
+
+## Acceptance Criteria
+
+- [x] Summary data is described as annual and `YEAR`-based across the affected docs and repo guidance.
+- [x] The README license section matches the `LICENSE` file.
+- [x] `.envrc.example` no longer overrides an existing `GITHUB_TOKEN` with an empty value.
+- [x] The compatibility matrix matches the Gemini CLI client setup page.
+
+## Review / Results
+
+- [ ] Final verification and PR creation pending.

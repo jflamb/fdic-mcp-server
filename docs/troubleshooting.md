@@ -47,7 +47,8 @@ Common causes:
 
 The datasets answer different questions and do not all update on the same schedule.
 
-- financials, summary, and demographics are quarterly
+- financials and demographics are quarterly
+- summary data is annual
 - SOD is annual branch-level data as of June 30
 - failures and history use their own event dates
 

@@ -202,7 +202,8 @@ Two tools are server-side analysis helpers:
 
 - Monetary values are generally reported in thousands of dollars.
 - `CERT` is the stable FDIC institution identifier.
-- Financial, summary, and demographics datasets are quarterly and use `REPDTE` in `YYYYMMDD`.
+- Financial and demographics datasets are quarterly and use `REPDTE` in `YYYYMMDD`.
+- Summary data is annual and uses `YEAR`.
 - SOD data is annual branch-level data as of June 30.
 - Do not mix quarterly financial data and annual branch data without stating the date basis.
 
@@ -232,4 +233,4 @@ npm run build
 
 ## License
 
-This project is licensed under the ISC License.
+This project is licensed under the MIT License.

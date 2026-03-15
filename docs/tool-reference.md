@@ -48,5 +48,6 @@ This page summarizes what each MCP tool is for and when to use it.
 
 ## Data Basis Reminder
 
-- Quarterly datasets: financials, summary, demographics
+- Quarterly datasets: financials, demographics
+- Annual summary dataset: summary
 - Annual June 30 dataset: SOD
