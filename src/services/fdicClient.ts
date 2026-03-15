@@ -60,6 +60,48 @@ export function clearQueryCache(): void {
   queryCache.clear();
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+export function validateFdicResponseShape(
+  endpoint: string,
+  payload: unknown,
+): FdicResponse {
+  if (!isRecord(payload)) {
+    throw new Error(
+      `Unexpected FDIC API response shape for endpoint ${endpoint}: expected an object payload.`,
+    );
+  }
+
+  const { data, meta } = payload;
+
+  if (!Array.isArray(data)) {
+    throw new Error(
+      `Unexpected FDIC API response shape for endpoint ${endpoint}: expected 'data' to be an array.`,
+    );
+  }
+
+  if (!isRecord(meta) || typeof meta.total !== "number") {
+    throw new Error(
+      `Unexpected FDIC API response shape for endpoint ${endpoint}: expected 'meta.total' to be a number.`,
+    );
+  }
+
+  return {
+    data: data.map((item, index) => {
+      if (!isRecord(item) || !isRecord(item.data)) {
+        throw new Error(
+          `Unexpected FDIC API response shape for endpoint ${endpoint}: expected data[${index}] to contain an object 'data' property.`,
+        );
+      }
+
+      return { data: item.data };
+    }),
+    meta: { total: meta.total },
+  };
+}
+
 export async function queryEndpoint(
   endpoint: string,
   params: QueryParams,
@@ -96,7 +138,7 @@ export async function queryEndpoint(
         params: queryParams,
         signal: options.signal,
       });
-      return response.data;
+      return validateFdicResponseShape(endpoint, response.data);
     } catch (err) {
       if (
         options.signal?.aborted ||
@@ -153,7 +195,14 @@ export async function queryEndpoint(
 export function extractRecords(
   response: FdicResponse,
 ): Array<Record<string, unknown>> {
-  return response.data.map((item) => item.data);
+  return response.data.map((item, index) => {
+    if (!isRecord(item) || !isRecord(item.data)) {
+      throw new Error(
+        `Unexpected FDIC API response shape: expected data[${index}] to contain an object 'data' property.`,
+      );
+    }
+    return item.data;
+  });
 }
 
 export function buildPaginationInfo(
