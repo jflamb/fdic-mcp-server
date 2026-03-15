@@ -52,8 +52,11 @@ STNAME:"California"
 # Numeric range (assets in $thousands)
 ASSET:[1000000 TO *]
 
-# Date range
+# Date range (hyphenated format for failures/history datasets)
 FAILDATE:[2008-01-01 TO 2010-12-31]
+
+# Date range (compact YYYYMMDD format for financials/demographics/summary datasets)
+REPDTE:[20230101 TO 20231231]
 
 # Combine with AND / OR
 STNAME:"Texas" AND ACTIVE:1 AND ASSET:[500000 TO *]
@@ -71,6 +74,23 @@ Field names vary by dataset. For example:
 Use the tool description or `fields` parameter to tailor queries to the dataset you are calling.
 
 ## Installation
+
+### From npm
+
+Run directly without a global install:
+
+```bash
+npx fdic-mcp-server
+```
+
+Or install globally:
+
+```bash
+npm install -g fdic-mcp-server
+fdic-mcp-server
+```
+
+### From source
 
 ```bash
 npm install
@@ -103,6 +123,8 @@ Publishing from GitHub Actions is intended to use npm trusted publishing via Git
 
 ## Usage
 
+Client-specific setup notes for Claude Desktop, ChatGPT, Gemini CLI, and GitHub Copilot CLI are in [docs/clients.md](./docs/clients.md).
+
 ### CLI bundle
 
 The build produces two outputs:
@@ -116,6 +138,19 @@ node dist/index.js
 ```
 
 **Claude Desktop config** (`~/Library/Application\ Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "fdic": {
+      "command": "npx",
+      "args": ["-y", "fdic-mcp-server"]
+    }
+  }
+}
+```
+
+If running from a local clone instead of the npm package:
 
 ```json
 {
@@ -178,7 +213,7 @@ sort_order: DESC
 (fdic_search_demographics)
 ```
 
-**Rank banks by growth across two dates without orchestrating many separate queries:**
+**Rank banks by growth across two snapshots (default `analysis_mode: snapshot`):**
 ```
 state: North Carolina
 start_repdte: 20211231
@@ -188,7 +223,7 @@ sort_order: DESC
 (fdic_compare_bank_snapshots)
 ```
 
-**Analyze quarterly trends with streaks and derived metrics:**
+**Analyze quarterly trends with streaks and derived metrics (`analysis_mode: timeseries`):**
 ```
 state: North Carolina
 start_repdte: 20211231
@@ -218,8 +253,22 @@ The tool can take either:
 Notable outputs from `fdic_compare_bank_snapshots`:
 - point-to-point changes for assets, deposits, net income, ROA, ROE, and office counts
 - derived metrics such as `assets_per_office_change`, `deposits_per_office_change`, and `deposits_to_assets_change`
-- insight tags such as `growth_with_better_profitability`, `growth_with_branch_expansion`, `balance_sheet_growth_without_profitability`, and `growth_with_branch_consolidation`
-- in `timeseries` mode, quarterly series plus streak metrics like sustained asset growth and multi-quarter ROA decline
+- insight tags (see [Insight Tags](#insight-tags) below)
+- in `timeseries` mode, quarterly series plus streak metrics
+
+### Insight Tags
+
+The analysis tool assigns insight tags to individual comparisons and aggregates them in a top-level `insights` summary. All possible tags:
+
+| Tag | Meaning |
+|-----|---------|
+| `growth_with_better_profitability` | Asset growth >= 25%, deposit growth >= 15%, and ROA improved |
+| `growth_with_branch_expansion` | Asset growth >= 25%, deposit growth >= 15%, and office count increased |
+| `balance_sheet_growth_without_profitability` | Asset growth >= 20% but ROA and ROE both flat or declining |
+| `growth_with_branch_consolidation` | Positive asset growth while office count decreased |
+| `deposit_mix_softening` | Deposits declined both in absolute terms and as a share of total assets |
+| `sustained_asset_growth` | (timeseries only) Three or more consecutive quarters of rising assets |
+| `multi_quarter_roa_decline` | (timeseries only) Two or more consecutive quarters of falling ROA |
 
 ## Response Shape
 
@@ -253,6 +302,50 @@ Typical lookup miss response shape:
   "message": "No institution found with CERT number 999999999."
 }
 ```
+
+Typical analysis response shape (`fdic_compare_bank_snapshots`):
+
+```json
+{
+  "total_candidates": 150,
+  "analyzed_count": 142,
+  "start_repdte": "20211231",
+  "end_repdte": "20250630",
+  "analysis_mode": "snapshot",
+  "sort_by": "asset_growth",
+  "sort_order": "DESC",
+  "warnings": [],
+  "insights": {
+    "growth_with_better_profitability": ["Bank A", "Bank B"],
+    "growth_with_branch_expansion": ["Bank A"],
+    "balance_sheet_growth_without_profitability": [],
+    "growth_with_branch_consolidation": ["Bank C"],
+    "deposit_mix_softening": [],
+    "sustained_asset_growth": [],
+    "multi_quarter_roa_decline": []
+  },
+  "total": 142,
+  "offset": 0,
+  "count": 10,
+  "has_more": true,
+  "next_offset": 10,
+  "comparisons": [
+    {
+      "cert": 12345,
+      "name": "Bank A",
+      "asset_growth": 50000,
+      "asset_growth_pct": 45.2,
+      "insights": ["growth_with_better_profitability", "growth_with_branch_expansion"]
+    }
+  ]
+}
+```
+
+The `warnings` array is populated when the server detects a data issue, such as the institution roster being truncated because it exceeded the FDIC API's per-request limit.
+
+In most successful analyses, `warnings` will be empty.
+
+The `sustained_asset_growth` and `multi_quarter_roa_decline` insight summaries are only populated for `analysis_mode: "timeseries"`.
 
 ## Data Notes
 
