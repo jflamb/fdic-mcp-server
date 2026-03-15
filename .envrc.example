@@ -1,0 +1,8 @@
+# Copy this file to .envrc and run: direnv allow
+#
+# Example:
+#   cp .envrc.example .envrc
+#   $EDITOR .envrc
+#   direnv allow
+
+export GITHUB_TOKEN=""
