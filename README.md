@@ -77,6 +77,22 @@ npm test
 npm run build
 ```
 
+## CI And Releases
+
+- Pull requests should target `main`
+- Continuous integration runs on pushes to `main` and on pull requests targeting `main`
+- Package publish is reserved for semantic version tags like `v1.2.3`
+- Release tags must point at a commit already on `main`
+
+To prepare a release:
+
+```bash
+npm version patch
+git push origin main --follow-tags
+```
+
+Publishing from GitHub Actions requires an `NPM_TOKEN` repository secret.
+
 ### Local Secrets With direnv
 
 To keep tokens local to this repo without committing them:
