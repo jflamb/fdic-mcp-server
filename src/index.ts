@@ -13,6 +13,7 @@ import { registerFinancialTools } from "./tools/financials.js";
 import { registerSodTools } from "./tools/sod.js";
 import { registerDemographicsTools } from "./tools/demographics.js";
 import { registerAnalysisTools } from "./tools/analysis.js";
+import { registerPeerGroupTools } from "./tools/peerGroup.js";
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -28,6 +29,7 @@ export function createServer(): McpServer {
   registerSodTools(server);
   registerDemographicsTools(server);
   registerAnalysisTools(server);
+  registerPeerGroupTools(server);
 
   return server;
 }

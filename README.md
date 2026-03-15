@@ -5,7 +5,7 @@ An MCP (Model Context Protocol) server that provides access to the [FDIC BankFin
 ## Features
 
 - **No API key required** — The FDIC BankFind API is publicly available
-- **11 tools** covering BankFind datasets plus a built-in comparative analysis tool
+- **12 tools** covering BankFind datasets plus built-in analytical tools
 - **Flexible ElasticSearch-style filtering** on all endpoints
 - **Pagination support** for large result sets
 - **Dual transport**: stdio (local) or HTTP (remote)
@@ -28,15 +28,17 @@ An MCP (Model Context Protocol) server that provides access to the [FDIC BankFin
 | `fdic_search_sod` | Search Summary of Deposits (branch-level deposit data) |
 | `fdic_search_demographics` | Search quarterly demographics and market-structure data |
 | `fdic_compare_bank_snapshots` | Compare two reporting snapshots across banks and rank growth/profitability changes |
+| `fdic_peer_group_analysis` | Build a peer group and rank an institution against peers on financial metrics |
+
+Two tools are server-side analysis helpers:
+- `fdic_compare_bank_snapshots` batches roster lookup, financial snapshots, and optional demographics snapshots inside the MCP server so complex trend prompts do not require many separate tool calls
+- `fdic_peer_group_analysis` builds a peer group from asset size, charter class, and geography criteria, then ranks an institution against peers on financial and efficiency metrics
 
 Two tools are convenience lookups rather than separate BankFind datasets:
 - `fdic_get_institution` wraps the `institutions` dataset
 - `fdic_get_institution_failure` wraps the `failures` dataset
 
-One tool is a server-side analysis helper:
-- `fdic_compare_bank_snapshots` batches roster lookup, financial snapshots, and optional demographics snapshots inside the MCP server so complex trend prompts do not require many separate tool calls
-- It supports both `snapshot` comparisons and `timeseries` analysis across a quarterly range
-- It computes derived efficiency and balance-sheet metrics and assigns insight tags for notable growth patterns
+`fdic_compare_bank_snapshots` supports both `snapshot` comparisons and `timeseries` analysis across a quarterly range. It computes derived efficiency and balance-sheet metrics and assigns insight tags for notable growth patterns
 
 ## Filter Syntax
 
@@ -233,6 +235,45 @@ sort_by: asset_growth_pct
 sort_order: DESC
 (fdic_compare_bank_snapshots)
 ```
+
+**Find peers for a specific bank (auto-derived criteria):**
+```
+cert: 29846
+repdte: 20241231
+(fdic_peer_group_analysis)
+```
+
+**Define a peer group with explicit criteria:**
+```
+repdte: 20241231
+asset_min: 5000000
+asset_max: 20000000
+charter_classes: ["N"]
+state: NC
+(fdic_peer_group_analysis)
+```
+
+**Override auto-derived defaults:**
+```
+cert: 29846
+repdte: 20241231
+asset_min: 3000000
+state: NC
+(fdic_peer_group_analysis)
+```
+
+## Peer Group Analysis
+
+The `fdic_peer_group_analysis` tool builds a peer group for a bank and ranks it against peers on financial and efficiency metrics at a single report date.
+
+The tool returns rankings (competition rank + percentile) and peer group medians for:
+- Total Assets, Total Deposits, ROA, ROE, Net Interest Margin
+- Equity Capital Ratio, Efficiency Ratio, Loan-to-Deposit Ratio
+- Deposits-to-Assets Ratio, Non-Interest Income Share
+
+The subject bank is excluded from the peer set and ranking denominators. Ranking denominators are metric-specific — if some peers lack data for a metric, the denominator reflects only peers with valid values.
+
+Peer CERTs from the response can be passed to `fdic_compare_bank_snapshots` for trend analysis across the peer group.
 
 ## Complex Prompts
 
