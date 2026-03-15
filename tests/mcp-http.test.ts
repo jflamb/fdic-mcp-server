@@ -575,6 +575,49 @@ describe("HTTP MCP server", () => {
     ).toEqual(["Bank Fast", "Bank Slow"]);
   });
 
+  it("includes all generated insight categories in the top-level summary", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          { data: { CERT: 1111, NAME: "Trend Bank", REPDTE: "20210331", ASSET: 100, DEP: 90, NETINC: 10, ROA: 1.4, ROE: 9.0 } },
+          { data: { CERT: 1111, NAME: "Trend Bank", REPDTE: "20210630", ASSET: 110, DEP: 85, NETINC: 9, ROA: 1.2, ROE: 8.8 } },
+          { data: { CERT: 1111, NAME: "Trend Bank", REPDTE: "20210930", ASSET: 120, DEP: 80, NETINC: 8, ROA: 1.0, ROE: 8.5 } },
+          { data: { CERT: 1111, NAME: "Trend Bank", REPDTE: "20211231", ASSET: 130, DEP: 75, NETINC: 7, ROA: 0.8, ROE: 8.2 } },
+          { data: { CERT: 2222, NAME: "Funding Bank", REPDTE: "20210331", ASSET: 200, DEP: 190, NETINC: 12, ROA: 0.9, ROE: 7.5 } },
+          { data: { CERT: 2222, NAME: "Funding Bank", REPDTE: "20210630", ASSET: 205, DEP: 170, NETINC: 11, ROA: 0.9, ROE: 7.4 } },
+          { data: { CERT: 2222, NAME: "Funding Bank", REPDTE: "20210930", ASSET: 210, DEP: 160, NETINC: 10, ROA: 0.8, ROE: 7.2 } },
+          { data: { CERT: 2222, NAME: "Funding Bank", REPDTE: "20211231", ASSET: 220, DEP: 150, NETINC: 9, ROA: 0.8, ROE: 7.0 } },
+        ],
+        meta: { total: 8 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 12,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          certs: [1111, 2222],
+          start_repdte: "20210331",
+          end_repdte: "20211231",
+          analysis_mode: "timeseries",
+          include_demographics: false,
+          limit: 2,
+          sort_by: "asset_growth",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent.insights).toMatchObject({
+      deposit_mix_softening: ["Trend Bank", "Funding Bank"],
+      sustained_asset_growth: ["Trend Bank", "Funding Bank"],
+      multi_quarter_roa_decline: ["Trend Bank"],
+    });
+  });
+
   it("warns when the analysis roster is truncated by the FDIC API limit", async () => {
     getMock.mockImplementation(async (url: string) => {
       if (url === "/institutions") {
