@@ -104,12 +104,20 @@ This is why the workflow only needs repository variables such as `GCP_WORKLOAD_I
 
 ## Deployment Behavior
 
-On every push to `main`, the workflow:
+The production deploy workflow runs in two cases:
 
-1. Authenticates to Google Cloud using GitHub OIDC
-2. Builds the container image
-3. Pushes the image to Artifact Registry
-4. Deploys the new revision to Cloud Run
+1. automatically after the `CI` workflow completes successfully for `main`
+2. manually through `workflow_dispatch` when an operator explicitly triggers it
+
+On an automatic production deploy, the workflow:
+
+1. checks out the exact commit SHA that passed CI
+2. authenticates to Google Cloud using GitHub OIDC
+3. builds the container image
+4. pushes the image to Artifact Registry
+5. deploys the new revision to Cloud Run
+
+Production deploy concurrency is serialized. Newer deploy requests wait rather than canceling an in-flight production rollout.
 
 ## Registry Publication
 
