@@ -26,4 +26,9 @@ The technical docs are aimed at maintainers and advanced contributors who need t
     <h3>Key Decisions</h3>
     <p>The design choices that shape tool contracts, server-side analysis, and data time-basis handling.</p>
   </a>
+  <a class="card" href="{{ '/tool-reference/' | relative_url }}">
+    <span class="card__eyebrow">Surface Area</span>
+    <h3>Tool Reference</h3>
+    <p>Pick the right MCP tool based on whether you need raw records, lookups, time-series analysis, or peer ranking.</p>
+  </a>
 </div>
