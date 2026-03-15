@@ -71,44 +71,44 @@ export async function queryEndpoint(
   }
 
   const requestPromise = (async () => {
-  try {
-    const queryParams: Record<string, unknown> = {
-      limit: params.limit ?? 20,
-      offset: params.offset ?? 0,
-      output: "json",
-    };
-    if (params.filters) queryParams.filters = params.filters;
-    if (params.fields) queryParams.fields = params.fields;
-    if (params.sort_by) queryParams.sort_by = params.sort_by;
-    if (params.sort_order) queryParams.sort_order = params.sort_order;
+    try {
+      const queryParams: Record<string, unknown> = {
+        limit: params.limit ?? 20,
+        offset: params.offset ?? 0,
+        output: "json",
+      };
+      if (params.filters) queryParams.filters = params.filters;
+      if (params.fields) queryParams.fields = params.fields;
+      if (params.sort_by) queryParams.sort_by = params.sort_by;
+      if (params.sort_order) queryParams.sort_order = params.sort_order;
 
-    const response = await apiClient.get(`/${endpoint}`, {
-      params: queryParams,
-    });
-    return response.data;
-  } catch (err) {
-    if (err instanceof AxiosError) {
-      const status = err.response?.status;
-      const detail =
-        (err.response?.data as { message?: string })?.message ?? err.message;
-      if (status === 400) {
-        throw new Error(
-          `Bad request to FDIC API: ${detail}. Check your filter syntax (use ElasticSearch query string syntax, e.g. STNAME:"California" AND ACTIVE:1).`,
-        );
-      } else if (status === 429) {
-        throw new Error(
-          "FDIC API rate limit exceeded. Please wait a moment and try again.",
-        );
-      } else if (status === 500) {
-        throw new Error(
-          "FDIC API server error. The service may be temporarily unavailable. Try again later.",
-        );
-      } else {
-        throw new Error(`FDIC API error (HTTP ${status}): ${detail}`);
+      const response = await apiClient.get(`/${endpoint}`, {
+        params: queryParams,
+      });
+      return response.data;
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        const status = err.response?.status;
+        const detail =
+          (err.response?.data as { message?: string })?.message ?? err.message;
+        if (status === 400) {
+          throw new Error(
+            `Bad request to FDIC API: ${detail}. Check your filter syntax (use ElasticSearch query string syntax, e.g. STNAME:"California" AND ACTIVE:1).`,
+          );
+        } else if (status === 429) {
+          throw new Error(
+            "FDIC API rate limit exceeded. Please wait a moment and try again.",
+          );
+        } else if (status === 500) {
+          throw new Error(
+            "FDIC API server error. The service may be temporarily unavailable. Try again later.",
+          );
+        } else {
+          throw new Error(`FDIC API error (HTTP ${status}): ${detail}`);
+        }
       }
+      throw new Error(`Unexpected error calling FDIC API: ${String(err)}`);
     }
-    throw new Error(`Unexpected error calling FDIC API: ${String(err)}`);
-  }
   })();
 
   queryCache.set(cacheKey, {
