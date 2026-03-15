@@ -34,6 +34,9 @@ import {
   queryEndpoint,
   truncateIfNeeded,
 } from "../src/services/fdicClient.js";
+import packageJson from "../package.json";
+
+const expectedVersion = packageJson.version;
 
 describe("fdicClient", () => {
   beforeEach(() => {
@@ -47,7 +50,7 @@ describe("fdicClient", () => {
         timeout: 30_000,
         headers: expect.objectContaining({
           Accept: "application/json",
-          "User-Agent": "fdic-mcp-server/1.0.0",
+          "User-Agent": `fdic-mcp-server/${expectedVersion}`,
         }),
       }),
     );

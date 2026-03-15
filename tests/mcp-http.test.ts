@@ -28,6 +28,9 @@ vi.mock("axios", () => {
 });
 
 import { createApp } from "../src/index.js";
+import packageJson from "../package.json";
+
+const expectedVersion = packageJson.version;
 
 function mcpPost(body: Record<string, unknown>) {
   return request(createApp())
@@ -49,7 +52,7 @@ describe("HTTP MCP server", () => {
     expect(response.body).toEqual({
       status: "ok",
       server: "fdic-mcp-server",
-      version: "1.0.0",
+      version: expectedVersion,
     });
   });
 

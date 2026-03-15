@@ -1,6 +1,9 @@
 declare const __APP_VERSION__: string;
 
-export const VERSION = __APP_VERSION__;
+export const VERSION =
+  typeof __APP_VERSION__ !== "undefined"
+    ? __APP_VERSION__
+    : (process.env.npm_package_version ?? "0.0.0-dev");
 
 export const FDIC_API_BASE_URL = "https://banks.data.fdic.gov/api";
 
