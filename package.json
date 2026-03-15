@@ -14,7 +14,7 @@
     ".": "./dist/server.js"
   },
   "scripts": {
-    "build": "node -e \"Promise.all([require('esbuild').build({entryPoints:['src/cli.ts'],bundle:true,platform:'node',target:'node18',outfile:'dist/index.js',external:['@modelcontextprotocol/sdk','express','axios','zod'],format:'cjs'}),require('esbuild').build({entryPoints:['src/index.ts'],bundle:true,platform:'node',target:'node18',outfile:'dist/server.js',external:['@modelcontextprotocol/sdk','express','axios','zod'],format:'cjs'})]).then(()=>console.log('Build success')).catch(e=>{console.error(e);process.exit(1)})\"",
+    "build": "node scripts/build.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "prepack": "npm run build",
