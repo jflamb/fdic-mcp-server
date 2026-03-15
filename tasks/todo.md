@@ -32,3 +32,5 @@ Reference: user request on 2026-03-15 to refactor repository and published docum
 - [x] Added an MCP host compatibility and support matrix.
 - [x] Added a documentation overview page organized by audience.
 - [x] Added custom docs-site styling and breadcrumb navigation for sub-pages.
+- [x] Refined the docs home to surface latest version and clear starting points earlier.
+- [x] Expanded the prompting guide with narrower deep-analysis prompts that are ready to copy and paste.

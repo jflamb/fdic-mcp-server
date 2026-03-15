@@ -25,6 +25,26 @@ body_class: overview-page
   </section>
 </div>
 
+## Start here
+
+<div class="card-grid">
+  <a class="card" href="{{ '/getting-started/' | relative_url }}">
+    <span class="card__eyebrow">First Step</span>
+    <h3>Get running locally</h3>
+    <p>Install the package, start the server, and confirm an MCP client can query FDIC institution data.</p>
+  </a>
+  <a class="card" href="{{ '/release-notes/v1.1.0/' | relative_url }}">
+    <span class="card__eyebrow">Latest Release</span>
+    <h3>Version 1.1.0</h3>
+    <p>Includes peer group analysis, stronger client setup guidance, and the current published documentation structure.</p>
+  </a>
+  <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
+    <span class="card__eyebrow">Best Next Read</span>
+    <h3>Prompting Guide</h3>
+    <p>Use copy-pasteable prompt patterns that are explicit about dates, metrics, and dataset boundaries.</p>
+  </a>
+</div>
+
 ## Choose your path
 
 <p class="section-intro">
@@ -49,27 +69,18 @@ body_class: overview-page
   </a>
 </div>
 
-## At a glance
-
-<ul class="meta-list">
-  <li><strong>Data source:</strong> FDIC BankFind Suite API</li>
-  <li><strong>Protocol:</strong> MCP over stdio or streamable HTTP</li>
-  <li><strong>Best for:</strong> LLM-hosted banking research and comparative analysis</li>
-  <li><strong>Key caution:</strong> keep quarterly financial data and annual SOD data separate unless you state the date basis clearly</li>
-</ul>
-
 ## Recommended starting points
 
 <div class="card-grid">
-  <a class="card" href="{{ '/getting-started/' | relative_url }}">
-    <span class="card__eyebrow">Setup</span>
-    <h3>Getting Started</h3>
-    <p>Install the package, run the server, and verify a client can call it.</p>
+  <a class="card" href="{{ '/clients/' | relative_url }}">
+    <span class="card__eyebrow">Connect</span>
+    <h3>Client Setup</h3>
+    <p>Find the right MCP host setup for Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI.</p>
   </a>
-  <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
-    <span class="card__eyebrow">Prompting</span>
-    <h3>Prompting Guide</h3>
-    <p>Use clearer prompts for dates, datasets, peer groups, and rankings.</p>
+  <a class="card" href="{{ '/usage-examples/' | relative_url }}">
+    <span class="card__eyebrow">Examples</span>
+    <h3>Usage Examples</h3>
+    <p>Use narrower prompts and expected tool shapes for search, comparisons, and peer benchmarking.</p>
   </a>
   <a class="card" href="{{ '/technical/specification/' | relative_url }}">
     <span class="card__eyebrow">Contract</span>
@@ -81,8 +92,4 @@ body_class: overview-page
     <h3>Compatibility Matrix</h3>
     <p>See which MCP hosts are directly documented and what support level to expect.</p>
   </a>
-</div>
-
-<div class="callout">
-  <strong>Note:</strong> the internal design notes under <code>docs/plans/</code> are intentionally excluded from the published site. The published docs are meant to be user-facing and maintainable, not a dump of every working note in the repository.
 </div>
