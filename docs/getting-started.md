@@ -2,7 +2,7 @@
 title: Getting Started
 nav_group: user
 kicker: User Docs
-summary: Install the package, run the server locally, connect it to an MCP host, and verify that basic institution queries work.
+summary: Start with a hosted MCP URL when your host supports it, or use the local install path when you need a stdio server on your own machine.
 breadcrumbs:
   - title: Overview
     url: /
@@ -12,13 +12,31 @@ breadcrumbs:
 
 This server gives MCP-compatible clients access to public FDIC BankFind datasets and a set of server-side analysis tools for comparing institutions and peer groups.
 
-## Prerequisites
+## Easiest Option: Use A Hosted MCP URL
+
+If your MCP host supports connecting to a remote MCP server by URL, that is the lowest-friction way to get started because it avoids local installation entirely.
+
+Use this path when:
+
+- your host supports remote MCP URLs or hosted apps
+- you already have a deployed HTTPS copy of this server
+- you want to skip local `npm` and terminal setup
+
+Current example:
+
+- ChatGPT Developer Mode can connect to a remote MCP server URL, as covered in the client setup guidance
+
+If you do not have a deployed URL, or your host only supports local stdio servers, use the local install path below.
+
+## Local Install Path
+
+### Prerequisites
 
 - Node.js 18 or later
 - npm
 - An MCP-compatible host such as Claude Desktop, ChatGPT Developer Mode, Gemini CLI, or GitHub Copilot CLI
 
-## Install
+### Install
 
 Run directly without a global install:
 
@@ -42,7 +60,7 @@ npm install
 npm run build
 ```
 
-## Run The Server
+### Run The Server
 
 Stdio transport:
 
@@ -58,7 +76,7 @@ TRANSPORT=http PORT=3000 node dist/index.js
 
 The HTTP MCP endpoint is available at `http://localhost:3000/mcp`.
 
-## Connect A Client
+### Connect A Client
 
 Use the client-specific instructions in [Client Setup]({{ '/clients/' | relative_url }}).
 
@@ -75,7 +93,7 @@ For most local MCP hosts, the minimal stdio configuration looks like this:
 }
 ```
 
-## Verify It Works
+### Verify It Works
 
 Try a simple prompt in your MCP host:
 

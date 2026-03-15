@@ -14,7 +14,7 @@ The user docs are for people who want to get the server running quickly, choose 
   <a class="card" href="{{ '/getting-started/' | relative_url }}">
     <span class="card__eyebrow">Start Here</span>
     <h3>Getting Started</h3>
-    <p>Install the package, run the server, and confirm that a client can call it successfully.</p>
+    <p>Start with a hosted MCP URL when your host supports it, or use the local install path when it does not.</p>
   </a>
   <a class="card" href="{{ '/clients/' | relative_url }}">
     <span class="card__eyebrow">Connect</span>
@@ -30,11 +30,6 @@ The user docs are for people who want to get the server running quickly, choose 
     <span class="card__eyebrow">Examples</span>
     <h3>Usage Examples</h3>
     <p>Copyable prompts and parameter shapes for institution search, comparisons, and peer analysis.</p>
-  </a>
-  <a class="card" href="{{ '/tool-reference/' | relative_url }}">
-    <span class="card__eyebrow">Tooling</span>
-    <h3>Tool Reference</h3>
-    <p>Pick the right MCP tool based on whether you need raw records, lookups, time-series analysis, or peer ranking.</p>
   </a>
   <a class="card" href="{{ '/troubleshooting/' | relative_url }}">
     <span class="card__eyebrow">Support</span>
