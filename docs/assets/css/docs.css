@@ -67,16 +67,8 @@ a:hover {
 .brand {
   display: inline-flex;
   flex-direction: column;
-  gap: 0.1rem;
   text-decoration: none;
   color: var(--ink);
-}
-
-.brand__eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent);
 }
 
 .brand__title {
