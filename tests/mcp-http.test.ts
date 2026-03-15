@@ -574,4 +574,49 @@ describe("HTTP MCP server", () => {
       response.body.result.structuredContent.insights.growth_with_branch_expansion,
     ).toEqual(["Bank Fast", "Bank Slow"]);
   });
+
+  it("warns when the analysis roster is truncated by the FDIC API limit", async () => {
+    getMock.mockImplementation(async (url: string) => {
+      if (url === "/institutions") {
+        return {
+          data: {
+            data: Array.from({ length: 10_000 }, (_, index) => ({
+              data: { CERT: index + 1, NAME: `Bank ${index + 1}` },
+            })),
+            meta: { total: 10_500 },
+          },
+        };
+      }
+
+      return {
+        data: {
+          data: [],
+          meta: { total: 0 },
+        },
+      };
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 11,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          limit: 1,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent.warnings).toEqual([
+      "Institution roster truncated to 10,000 records out of 10,500 matched institutions. Narrow the comparison set with institution_filters or certs for complete analysis.",
+    ]);
+    expect(response.body.result.content[0].text).toContain(
+      "Warning: Institution roster truncated to 10,000 records out of 10,500 matched institutions.",
+    );
+  });
 });

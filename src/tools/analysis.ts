@@ -530,7 +530,10 @@ async function fetchInstitutionRoster(
   institutionFilters: string | undefined,
   activeOnly: boolean,
   signal?: AbortSignal,
-): Promise<InstitutionRecord[]> {
+): Promise<{
+  records: InstitutionRecord[];
+  warning?: string;
+}> {
   const filterParts: string[] = [];
   if (state) filterParts.push(`STNAME:"${state}"`);
   if (activeOnly) filterParts.push("ACTIVE:1");
@@ -545,7 +548,13 @@ async function fetchInstitutionRoster(
     sort_order: "ASC",
   }, { signal });
 
-  return extractRecords(response);
+  const records = extractRecords(response);
+  const warning =
+    response.meta.total > records.length
+      ? `Institution roster truncated to ${records.length.toLocaleString()} records out of ${response.meta.total.toLocaleString()} matched institutions. Narrow the comparison set with institution_filters or certs for complete analysis.`
+      : undefined;
+
+  return { records, warning };
 }
 
 async function fetchBatchedRecordsForDates(
@@ -760,15 +769,19 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
 
       try {
-        const roster =
+        const rosterResult =
           certs && certs.length > 0
-            ? certs.map((cert) => ({ CERT: cert }))
+            ? {
+                records: certs.map((cert) => ({ CERT: cert })),
+                warning: undefined,
+              }
             : await fetchInstitutionRoster(
                 state,
                 institution_filters,
                 active_only,
                 controller.signal,
               );
+        const roster = rosterResult.records;
 
         const candidateCerts = roster
           .map((record) => asNumber(record.CERT))
@@ -908,13 +921,19 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           analysis_mode,
           sort_by,
           sort_order,
+          warnings: rosterResult.warning ? [rosterResult.warning] : [],
           insights: buildTopLevelInsights(sortedComparisons),
           ...pagination,
           comparisons: ranked,
         };
 
         const text = truncateIfNeeded(
-          formatComparisonText(output),
+          [
+            rosterResult.warning ? `Warning: ${rosterResult.warning}` : null,
+            formatComparisonText(output),
+          ]
+            .filter((value): value is string => value !== null)
+            .join("\n\n"),
           CHARACTER_LIMIT,
         );
 
