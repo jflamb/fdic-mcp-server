@@ -67,7 +67,7 @@ describe("HTTP MCP server", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.result.tools).toHaveLength(11);
+    expect(response.body.result.tools).toHaveLength(12);
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toContain("fdic_search_demographics");
@@ -661,5 +661,176 @@ describe("HTTP MCP server", () => {
     expect(response.body.result.content[0].text).toContain(
       "Warning: Institution roster truncated to 10,000 records out of 10,500 matched institutions.",
     );
+  });
+
+  it("includes fdic_peer_group_analysis in the tool list", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 100,
+      method: "tools/list",
+      params: {},
+    });
+
+    expect(response.status).toBe(200);
+    expect(
+      response.body.result.tools.map((tool: { name: string }) => tool.name),
+    ).toContain("fdic_peer_group_analysis");
+  });
+
+  it("performs subject-driven peer group analysis", async () => {
+    getMock
+      // Phase 1: institutions lookup
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 100, NAME: "Subject Bank", CITY: "Wilmington", STALP: "NC", BKCLASS: "NM" } }],
+          meta: { total: 1 },
+        },
+      })
+      // Phase 1: subject financials
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 100, ASSET: 1000, DEP: 800, NETINC: 20, ROA: 1.5, ROE: 12.0, NETNIM: 3.5, EQTOT: 100, LNLSNET: 600, INTINC: 50, EINTEXP: 15, NONII: 10, NONIX: 25 } }],
+          meta: { total: 1 },
+        },
+      })
+      // Phase 2: peer roster
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 100, NAME: "Subject Bank", CITY: "Wilmington", STALP: "NC", BKCLASS: "NM" } },
+            { data: { CERT: 200, NAME: "Peer A", CITY: "Raleigh", STALP: "NC", BKCLASS: "NM" } },
+            { data: { CERT: 300, NAME: "Peer B", CITY: "Charlotte", STALP: "NC", BKCLASS: "NM" } },
+          ],
+          meta: { total: 3 },
+        },
+      })
+      // Phase 3: peer financials
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 200, ASSET: 900, DEP: 700, NETINC: 15, ROA: 1.2, ROE: 10.0, NETNIM: 3.0, EQTOT: 90, LNLSNET: 500, INTINC: 40, EINTEXP: 12, NONII: 8, NONIX: 22 } },
+            { data: { CERT: 300, ASSET: 1100, DEP: 850, NETINC: 25, ROA: 1.8, ROE: 14.0, NETNIM: 4.0, EQTOT: 120, LNLSNET: 700, INTINC: 60, EINTEXP: 18, NONII: 12, NONIX: 28 } },
+          ],
+          meta: { total: 2 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 101,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: { cert: 100, repdte: "20241231" },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const sc = response.body.result.structuredContent;
+    expect(sc.peer_count).toBe(2);
+    expect(sc.returned_count).toBe(2);
+    expect(sc.subject.cert).toBe(100);
+    expect(sc.subject.rankings.roa).toMatchObject({ of: 2 });
+    // Subject ROA 1.5 vs peers [1.2, 1.8] → sorted desc: 1.8, 1.5, 1.2 → subject rank 2
+    expect(sc.subject.rankings.roa.rank).toBe(2);
+    expect(sc.peers).toHaveLength(2);
+    // Peer B (CERT 300, ASSET 1100) should be first (highest asset)
+    expect(sc.peers[0].cert).toBe(300);
+    expect(sc.metric_definitions.roa.higher_is_better).toBe(true);
+    expect(sc.metric_definitions.efficiency_ratio.higher_is_better).toBe(false);
+    expect(sc.warnings).toEqual([]);
+    expect(sc.message).toBeNull();
+    expect(response.body.result.content[0].text).toContain("Subject Bank");
+    expect(response.body.result.content[0].text).toContain("December 31, 2024");
+  });
+
+  it("performs explicit-criteria peer group analysis without subject", async () => {
+    getMock
+      // Phase 2: peer roster (no Phase 1 since no cert)
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 200, NAME: "Peer A", CITY: "Raleigh", STALP: "NC", BKCLASS: "N" } },
+            { data: { CERT: 300, NAME: "Peer B", CITY: "Charlotte", STALP: "NC", BKCLASS: "N" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      // Phase 3: peer financials
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 200, ASSET: 5000000, DEP: 4000000, NETINC: 100000, ROA: 1.0, ROE: 9.0, NETNIM: 3.0, EQTOT: 500000, LNLSNET: 3000000, INTINC: 200000, EINTEXP: 80000, NONII: 30000, NONIX: 100000 } },
+            { data: { CERT: 300, ASSET: 8000000, DEP: 6000000, NETINC: 200000, ROA: 1.5, ROE: 11.0, NETNIM: 3.5, EQTOT: 900000, LNLSNET: 4500000, INTINC: 350000, EINTEXP: 120000, NONII: 50000, NONIX: 150000 } },
+          ],
+          meta: { total: 2 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 102,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: {
+          repdte: "20241231",
+          asset_min: 5000000,
+          asset_max: 20000000,
+          charter_classes: ["N"],
+          state: "NC",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const sc = response.body.result.structuredContent;
+    expect(sc.subject).toBeUndefined();
+    expect(sc.peer_count).toBe(2);
+    expect(sc.peer_group.criteria_used.state).toBe("NC");
+    expect(sc.peer_group.medians.roa).toBe(1.25);
+    expect(response.body.result.content[0].text).toContain("Peer group medians");
+  });
+
+  it("returns empty result when no peers match", async () => {
+    getMock
+      // Phase 1: institutions
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 100, NAME: "Lonely Bank", CITY: "Nowhere", STALP: "NC", BKCLASS: "NM" } }],
+          meta: { total: 1 },
+        },
+      })
+      // Phase 1: financials
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 100, ASSET: 1000, DEP: 800, ROA: 1.0, ROE: 8.0, NETNIM: 3.0, EQTOT: 100, LNLSNET: 600, INTINC: 50, EINTEXP: 15, NONII: 10, NONIX: 25 } }],
+          meta: { total: 1 },
+        },
+      })
+      // Phase 2: roster returns only the subject
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 100, NAME: "Lonely Bank", CITY: "Nowhere", STALP: "NC", BKCLASS: "NM" } }],
+          meta: { total: 1 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 103,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: { cert: 100, repdte: "20241231" },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const sc = response.body.result.structuredContent;
+    expect(sc.peer_count).toBe(0);
+    expect(sc.message).toBe("No peers matched the specified criteria.");
+    expect(sc.peers).toEqual([]);
+    expect(sc.subject.rankings).toBeNull();
   });
 });
