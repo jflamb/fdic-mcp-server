@@ -32,6 +32,14 @@ interface CacheEntry {
 const QUERY_CACHE_TTL_MS = 60_000;
 const queryCache = new Map<string, CacheEntry>();
 
+function pruneExpiredQueryCache(now: number): void {
+  for (const [key, entry] of queryCache.entries()) {
+    if (entry.expiresAt <= now) {
+      queryCache.delete(key);
+    }
+  }
+}
+
 function getCacheKey(endpoint: string, params: QueryParams): string {
   return JSON.stringify([
     endpoint,
@@ -52,8 +60,10 @@ export async function queryEndpoint(
   endpoint: string,
   params: QueryParams,
 ): Promise<FdicResponse> {
-  const cacheKey = getCacheKey(endpoint, params);
   const now = Date.now();
+  pruneExpiredQueryCache(now);
+
+  const cacheKey = getCacheKey(endpoint, params);
   const cached = queryCache.get(cacheKey);
 
   if (cached && cached.expiresAt > now) {

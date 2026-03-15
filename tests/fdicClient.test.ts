@@ -115,6 +115,23 @@ describe("fdicClient", () => {
     expect(getMock).toHaveBeenCalledTimes(1);
   });
 
+  it("evicts expired cache entries before issuing a fresh request", async () => {
+    const nowSpy = vi.spyOn(Date, "now");
+    getMock.mockResolvedValue({
+      data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
+    });
+
+    nowSpy.mockReturnValue(1_000);
+    await queryEndpoint("institutions", { filters: "CERT:3511" });
+
+    nowSpy.mockReturnValue(62_000);
+    await queryEndpoint("institutions", { filters: "CERT:9999" });
+    await queryEndpoint("institutions", { filters: "CERT:3511" });
+
+    expect(getMock).toHaveBeenCalledTimes(3);
+    nowSpy.mockRestore();
+  });
+
   it("maps 400 responses to a filter syntax error", async () => {
     getMock.mockRejectedValueOnce(
       new AxiosError("bad request", {
