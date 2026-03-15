@@ -1,8 +1,13 @@
 const { build } = require("esbuild");
 const fs = require("fs");
 const path = require("path");
+const pkg = require("../package.json");
 
 async function main() {
+  const define = {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  };
+
   await Promise.all([
     build({
       entryPoints: ["src/cli.ts"],
@@ -12,6 +17,7 @@ async function main() {
       outfile: "dist/index.js",
       external: ["@modelcontextprotocol/sdk", "express", "axios", "zod"],
       format: "cjs",
+      define,
     }),
     build({
       entryPoints: ["src/index.ts"],
@@ -21,6 +27,7 @@ async function main() {
       outfile: "dist/server.js",
       external: ["@modelcontextprotocol/sdk", "express", "axios", "zod"],
       format: "cjs",
+      define,
     }),
   ]);
 

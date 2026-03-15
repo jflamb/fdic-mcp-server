@@ -1,4 +1,6 @@
-export const VERSION = "1.0.0";
+declare const __APP_VERSION__: string;
+
+export const VERSION = __APP_VERSION__;
 
 export const FDIC_API_BASE_URL = "https://banks.data.fdic.gov/api";
 
