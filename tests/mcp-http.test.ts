@@ -746,7 +746,7 @@ describe("HTTP MCP server", () => {
     expect(sc.peer_count).toBe(2);
     expect(sc.returned_count).toBe(2);
     expect(sc.subject.cert).toBe(100);
-    expect(sc.subject.rankings.roa).toMatchObject({ of: 2 });
+    expect(sc.subject.rankings.roa).toMatchObject({ of: 3 });
     // Subject ROA 1.5 vs peers [1.2, 1.8] → sorted desc: 1.8, 1.5, 1.2 → subject rank 2
     expect(sc.subject.rankings.roa.rank).toBe(2);
     expect(sc.peers).toHaveLength(2);
