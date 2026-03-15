@@ -1,8 +1,14 @@
 ---
 title: Security
+nav_group: project
+kicker: Project Info
+summary: Supported-version expectations and the route for reporting security issues without exposing them publicly.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: Project Info
+    url: /project-information/
 ---
-
-# Security
 
 For repository security reporting, see the root-level `SECURITY.md`.
 

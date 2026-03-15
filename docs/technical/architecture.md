@@ -1,8 +1,14 @@
 ---
 title: Architecture
+nav_group: technical
+kicker: Technical Docs
+summary: The end-to-end request flow and the code boundaries between transports, tools, and FDIC API access.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: Technical Docs
+    url: /technical/
 ---
-
-# Architecture
 
 ## High-Level Flow
 

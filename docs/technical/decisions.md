@@ -1,8 +1,14 @@
 ---
 title: Key Decisions
+nav_group: technical
+kicker: Technical Docs
+summary: The main design decisions that shape tool contracts, centralized FDIC access, and the published documentation strategy.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: Technical Docs
+    url: /technical/
 ---
-
-# Key Decisions
 
 ## Decision 1: Use MCP Tool Contracts With Dual Output Shapes
 

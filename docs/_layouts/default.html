@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
+    <link rel="stylesheet" href="{{ '/assets/css/docs.css' | relative_url }}">
+    {% seo %}
+  </head>
+  <body class="{% if page.body_class %}{{ page.body_class }}{% endif %}">
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="site-header__inner">
+          <a class="brand" href="{{ '/' | relative_url }}">
+            <span class="brand__eyebrow">FDIC Bank Data Docs</span>
+            <span class="brand__title">FDIC BankFind MCP Server</span>
+          </a>
+          <nav class="top-nav" aria-label="Primary">
+            <a href="{{ '/' | relative_url }}"{% if page.nav_group == 'overview' %} class="is-active"{% endif %}>Overview</a>
+            <a href="{{ '/user-guide/' | relative_url }}"{% if page.nav_group == 'user' %} class="is-active"{% endif %}>User Docs</a>
+            <a href="{{ '/technical/' | relative_url }}"{% if page.nav_group == 'technical' %} class="is-active"{% endif %}>Technical Docs</a>
+            <a href="{{ '/project-information/' | relative_url }}"{% if page.nav_group == 'project' %} class="is-active"{% endif %}>Project Info</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="page-shell">
+        <div class="page-frame">
+          {% include breadcrumbs.html %}
+
+          {% if page.title %}
+          <header class="page-header">
+            {% if page.kicker %}
+            <p class="page-kicker">{{ page.kicker }}</p>
+            {% endif %}
+            <h1>{{ page.title }}</h1>
+            {% if page.summary %}
+            <p class="page-summary">{{ page.summary }}</p>
+            {% endif %}
+          </header>
+          {% endif %}
+
+          <article class="doc-content">
+            {{ content }}
+          </article>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,8 +1,14 @@
 ---
 title: Getting Started
+nav_group: user
+kicker: User Docs
+summary: Install the package, run the server locally, connect it to an MCP host, and verify that basic institution queries work.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: User Docs
+    url: /user-guide/
 ---
-
-# Getting Started
 
 This server gives MCP-compatible clients access to public FDIC BankFind datasets and a set of server-side analysis tools for comparing institutions and peer groups.
 
@@ -54,7 +60,7 @@ The HTTP MCP endpoint is available at `http://localhost:3000/mcp`.
 
 ## Connect A Client
 
-Use the client-specific instructions in [Client Setup](./clients.md).
+Use the client-specific instructions in [Client Setup]({{ '/clients/' | relative_url }}).
 
 For most local MCP hosts, the minimal stdio configuration looks like this:
 
@@ -85,6 +91,6 @@ Expected behavior:
 
 ## What To Read Next
 
-- [Prompting Guide](./prompting-guide.md)
-- [Usage Examples](./usage-examples.md)
-- [Technical Specification](./technical/specification.md)
+- [Prompting Guide]({{ '/prompting-guide/' | relative_url }})
+- [Usage Examples]({{ '/usage-examples/' | relative_url }})
+- [Technical Specification]({{ '/technical/specification/' | relative_url }})

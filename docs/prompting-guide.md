@@ -1,8 +1,14 @@
 ---
 title: Prompting Guide
+nav_group: user
+kicker: User Docs
+summary: Write prompts that state the right dataset, date basis, geography, and comparison logic so the server can choose the right tool reliably.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: User Docs
+    url: /user-guide/
 ---
-
-# Prompting Guide
 
 This server works best when prompts are explicit about the dataset, time basis, geography, and ranking criteria.
 

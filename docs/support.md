@@ -1,14 +1,20 @@
 ---
 title: Support
+nav_group: project
+kicker: Project Info
+summary: Where to get help, what to include in an issue, and which checks to perform before filing a bug or prompt-quality report.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: Project Info
+    url: /project-information/
 ---
-
-# Support
 
 ## Get Help
 
 - Open a GitHub issue for bugs, documentation problems, or feature requests: <https://github.com/jflamb/fdic-mcp-server/issues>
-- Review the documentation entry point at [Home](./index.md)
-- Check [Usage Examples](./usage-examples.md) and [Prompting Guide](./prompting-guide.md) before filing prompt-quality issues
+- Review the documentation entry point at [Overview]({{ '/' | relative_url }})
+- Check [Usage Examples]({{ '/usage-examples/' | relative_url }}) and [Prompting Guide]({{ '/prompting-guide/' | relative_url }}) before filing prompt-quality issues
 
 ## What To Include In An Issue
 

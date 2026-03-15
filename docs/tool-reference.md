@@ -1,8 +1,14 @@
 ---
 title: Tool Reference
+nav_group: user
+kicker: User Docs
+summary: Decide which MCP tool to use based on whether you need raw records, direct lookups, cross-period comparisons, or peer benchmarking.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: User Docs
+    url: /user-guide/
 ---
-
-# Tool Reference
 
 This page summarizes what each MCP tool is for and when to use it.
 

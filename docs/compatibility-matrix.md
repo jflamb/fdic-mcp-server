@@ -1,8 +1,14 @@
 ---
 title: MCP Host Compatibility Matrix
+nav_group: project
+kicker: Project Info
+summary: A concise support snapshot showing which MCP hosts are directly documented here, which transports they use, and what level of support to expect.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: Project Info
+    url: /project-information/
 ---
-
-# MCP Host Compatibility Matrix
 
 This matrix summarizes the level of setup guidance and expected support for common MCP hosts documented in this repository.
 

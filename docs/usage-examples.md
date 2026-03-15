@@ -1,8 +1,14 @@
 ---
 title: Usage Examples
+nav_group: user
+kicker: User Docs
+summary: Copyable prompts and expected tool behavior for institution search, financial retrieval, snapshot comparison, and peer analysis.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: User Docs
+    url: /user-guide/
 ---
-
-# Usage Examples
 
 The examples below are phrased as natural-language prompts, followed by the expected MCP tool direction.
 

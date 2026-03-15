@@ -1,8 +1,14 @@
 ---
 title: Troubleshooting And FAQ
+nav_group: user
+kicker: User Docs
+summary: Common setup failures, transport mismatches, dataset confusion, and prompt issues, with fast checks before escalation.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: User Docs
+    url: /user-guide/
 ---
-
-# Troubleshooting And FAQ
 
 ## Quick Checks
 
@@ -92,7 +98,7 @@ Improve the prompt by stating:
 - the date basis
 - the ranking metric or geography
 
-See [Prompting Guide](./prompting-guide.md) and [Tool Reference](./tool-reference.md).
+See [Prompting Guide]({{ '/prompting-guide/' | relative_url }}) and [Tool Reference]({{ '/tool-reference/' | relative_url }}).
 
 ### I asked about branches and got quarterly figures instead
 
@@ -115,6 +121,6 @@ Then update the client configuration with the actual binary path.
 
 ## Still Stuck
 
-- Review [Client Setup](./clients.md)
-- Review [Support](./support.md)
+- Review [Client Setup]({{ '/clients/' | relative_url }})
+- Review [Support]({{ '/support/' | relative_url }})
 - Open an issue with the exact MCP host, transport, prompt, and observed error

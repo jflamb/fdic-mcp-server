@@ -1,8 +1,14 @@
 ---
 title: Technical Specification
+nav_group: technical
+kicker: Technical Docs
+summary: The contract-level view of the server: supported transports, exposed tools, output shape, data constraints, and explicit non-goals.
+breadcrumbs:
+  - title: Overview
+    url: /
+  - title: Technical Docs
+    url: /technical/
 ---
-
-# Technical Specification
 
 ## Purpose
 

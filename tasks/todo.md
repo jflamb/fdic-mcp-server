@@ -30,3 +30,5 @@ Reference: user request on 2026-03-15 to refactor repository and published docum
 - [x] Added `SECURITY.md`.
 - [x] Added troubleshooting and FAQ documentation.
 - [x] Added an MCP host compatibility and support matrix.
+- [x] Added a documentation overview page organized by audience.
+- [x] Added custom docs-site styling and breadcrumb navigation for sub-pages.
