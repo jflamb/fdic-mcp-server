@@ -67,16 +67,8 @@ a:hover {
 .brand {
   display: inline-flex;
   flex-direction: column;
-  gap: 0.1rem;
   text-decoration: none;
   color: var(--ink);
-}
-
-.brand__eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent);
 }
 
 .brand__title {
@@ -218,6 +210,43 @@ a:hover {
   background: transparent;
   padding: 0;
   color: inherit;
+}
+
+.code-block {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.code-block .copy-button {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(225, 243, 238, 0.96);
+  color: var(--accent-deep);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.38rem 0.72rem;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  transition: transform 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.code-block .copy-button:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+}
+
+.code-block .copy-button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.code-block pre {
+  margin-bottom: 0;
+  padding-top: 3rem;
 }
 
 .doc-content table {

@@ -58,6 +58,34 @@ Peer analysis:
 Build a peer group for CERT 29846 at 20241231 and tell me where it ranks on ROA, ROE, and efficiency ratio.
 ```
 
+## Copy-Paste Analysis Prompts
+
+These prompts are intentionally narrow enough to return a clear answer in one pass, while still requiring deeper server-side analysis.
+
+Snapshot analysis with profitability follow-through:
+
+```text
+Compare active North Carolina banks between 20211231 and 20250630. Rank them by deposit growth percentage, return the top 10, and call out which of those top growers also improved ROA and reduced office counts.
+```
+
+Peer analysis with explicit comparison points:
+
+```text
+Build a peer group for CERT 29846 at 20241231. Report its rank and percentile for total assets, ROA, efficiency ratio, and loan-to-deposit ratio, then compare the bank to peer medians on those same metrics.
+```
+
+Time-series analysis with warning-aware output:
+
+```text
+Analyze Texas banks from 20221231 through 20241231 using time-series mode. Identify institutions with sustained asset-growth streaks, then among those flag any bank that also had a multi-quarter ROA decline. Limit the answer to the five clearest examples and include any warnings that affect interpretation.
+```
+
+Focused branch-versus-balance-sheet question:
+
+```text
+Compare South Carolina banks between 20211231 and 20250630. Find banks with positive asset growth and lower office counts, then rank them by deposits-per-office improvement and summarize whether the growth looks branch-supported or mainly balance-sheet driven.
+```
+
 ## Prompting Pitfalls
 
 - "Find the best banks" is too vague. Say what "best" means.
