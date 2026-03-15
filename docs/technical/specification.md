@@ -50,7 +50,8 @@ Contract stability matters because MCP clients may automate against either or bo
 
 ## FDIC Data Constraints
 
-- Financial, summary, and demographics datasets are quarterly and use `REPDTE` in `YYYYMMDD`.
+- Financial and demographics datasets are quarterly and use `REPDTE` in `YYYYMMDD`.
+- Summary data is annual and uses `YEAR`.
 - Summary of Deposits data is annual branch-level data as of June 30.
 - Monetary values are generally reported in thousands of dollars.
 - `CERT` is the stable institution identifier used across datasets.

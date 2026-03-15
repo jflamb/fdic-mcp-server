@@ -18,7 +18,7 @@ Last reviewed: March 15, 2026.
 |------|-------------|-------------|-----------------|---------------|-------|
 | Claude Desktop | Yes | Yes | Yes | Good | Hosted connector path is preferred when available |
 | ChatGPT Developer Mode | No direct local stdio | Yes | Yes | Good | Requires reachable HTTPS MCP endpoint |
-| Gemini CLI | Yes | Not documented here | Yes | Good | Local trust settings can block startup |
+| Gemini CLI | Yes | Yes | Yes | Good | Local trust settings can block startup |
 | GitHub Copilot CLI | Yes | Not documented here | Yes | Good | Local config is straightforward |
 | Other MCP hosts | Varies | Varies | Generic only | Best effort | Validate transport support before relying on the server |
 

@@ -100,7 +100,8 @@ TRANSPORT=http PORT=3000 node dist/index.js
 
 ## FDIC Data Notes
 
-- FDIC financial data is quarterly. Use `REPDTE` in `YYYYMMDD` format for financial, summary, and demographics queries.
+- FDIC financial and demographics data are quarterly and use `REPDTE` in `YYYYMMDD` format.
+- FDIC summary data are annual and use `YEAR` rather than `REPDTE`.
 - SOD data is annual branch-level data as of June 30. Use SOD for branch counts and branch deposit totals rather than quarterly financial fields.
 - Do not casually mix quarterly financial snapshots with annual branch data without saying so. If both are used in an analysis, state the date basis clearly.
 - FDIC amounts are generally reported in thousands of dollars. Preserve that convention unless a change explicitly converts units for presentation.

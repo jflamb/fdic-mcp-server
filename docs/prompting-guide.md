@@ -23,7 +23,8 @@ This server works best when prompts are explicit about the dataset, time basis, 
 ## Date Rules
 
 - You can describe dates naturally in prompts. The model or tool layer may translate them into `REPDTE` values behind the scenes when needed.
-- Financial, summary, and demographics queries use `REPDTE` in `YYYYMMDD` format at the tool/query level.
+- Financial and demographics queries use `REPDTE` in `YYYYMMDD` format at the tool/query level.
+- Summary queries use `YEAR` rather than `REPDTE`.
 - Summary of Deposits data is annual branch data as of June 30.
 - Do not mix quarterly financial questions with annual branch questions unless the prompt acknowledges the different dates.
 
