@@ -1,0 +1,13 @@
+.git
+.github
+docs
+node_modules
+dist
+coverage
+.DS_Store
+bankfind-mcp.code-workspace
+tasks
+tests
+README.md
+AGENTS.md
+CLAUDE.md
