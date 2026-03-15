@@ -1,36 +1,28 @@
-# Documentation Refactor
+# Cloud Run Deployment Setup
 
-Reference: user request on 2026-03-15 to refactor repository and published documentation for GitHub best practices and GitHub Pages.
+Reference: issue #33 and user request to investigate and implement Cloud Run deployment for the HTTP MCP server.
 
 ## Goals
 
-- [x] Review the existing README and `docs/` content to identify gaps.
-- [x] Rewrite `README.md` with stronger repository onboarding, navigation, and contributor guidance.
-- [x] Build a GitHub Pages-ready documentation set under `docs/`.
-- [x] Publish release notes through `docs/` instead of keeping them only under `.github/`.
-- [x] Add technical architecture and decision records in a stable docs location.
-- [x] Add plain-language end-user guides, prompting guidance, usage examples, and a tool reference.
-- [x] Add support and contributing entry points.
-- [x] Add repository support for publishing `docs/` with GitHub Pages.
-- [x] Validate the repo with `npm run typecheck`, `npm test`, and `npm run build`.
+- [x] Verify the active Google Cloud project and billing status.
+- [x] Enable the Google Cloud services required for Cloud Run deployment.
+- [x] Add containerization assets for this repository.
+- [x] Add GitHub Actions deployment automation using Workload Identity Federation.
+- [x] Document the one-time Google Cloud and DNS setup still required outside the repo.
+- [ ] Validate with `npm run typecheck`, `npm test`, and `npm run build`.
 
 ## Acceptance Criteria
 
-- [x] `README.md` follows common GitHub repository documentation conventions and links to the docs site entry point.
-- [x] `docs/index.md` acts as a clear documentation home page for GitHub Pages.
-- [x] Release notes, technical specifications, and end-user docs are easy to scan and cross-linked.
-- [x] Contributors have a dedicated guide instead of relying on the README alone.
-- [x] The documentation reflects current MCP client setup and current tool capabilities.
-- [x] Validation commands complete successfully after the refactor.
+- [x] The project can be containerized and deployed to Cloud Run in HTTP mode.
+- [x] The repo contains the deployment automation needed for GitHub Actions.
+- [x] The deployment approach avoids long-lived Google service account keys.
+- [x] The remaining manual GCP or DNS steps are explicit and minimal.
+- [ ] Validation commands pass after the repo changes.
 
 ## Review / Results
 
-- [x] Completed on branch `docs/github-pages-refactor`.
-- [x] Validation passed: `npm run typecheck`, `npm test`, `npm run build`.
-- [x] Added `SECURITY.md`.
-- [x] Added troubleshooting and FAQ documentation.
-- [x] Added an MCP host compatibility and support matrix.
-- [x] Added a documentation overview page organized by audience.
-- [x] Added custom docs-site styling and breadcrumb navigation for sub-pages.
-- [x] Refined the docs home to surface latest version and clear starting points earlier.
-- [x] Expanded the prompting guide with narrower deep-analysis prompts that are ready to copy and paste.
+- [x] Enabled `run.googleapis.com`, `artifactregistry.googleapis.com`, `cloudbuild.googleapis.com`, `iamcredentials.googleapis.com`, and `secretmanager.googleapis.com`.
+- [x] Created Artifact Registry repository `fdic-mcp` in `us-central1`.
+- [x] Created deployer and runtime service accounts plus GitHub Workload Identity Federation binding for `jflamb/fdic-mcp-server`.
+- [x] Configured GitHub repository variables for Cloud Run deployment.
+- [x] Manually deployed `fdic-mcp-server` to Cloud Run and verified `https://fdic-mcp-server-72624156793.us-central1.run.app/health`.
