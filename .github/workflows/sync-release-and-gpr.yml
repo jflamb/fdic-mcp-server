@@ -1,4 +1,4 @@
-name: Sync Release And GitHub Package
+name: Publish GitHub Package
 
 on:
   push:
