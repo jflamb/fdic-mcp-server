@@ -21,7 +21,8 @@
     "prepublishOnly": "npm run typecheck && npm test && npm run build",
     "pack:check": "npm pack --dry-run",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "deploy:local": "bash scripts/deploy-local.sh"
   },
   "repository": {
     "type": "git",
