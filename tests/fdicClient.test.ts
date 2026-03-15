@@ -34,6 +34,7 @@ import {
   formatToolError,
   queryEndpoint,
   truncateIfNeeded,
+  validateFdicResponseShape,
 } from "../src/services/fdicClient.js";
 import packageJson from "../package.json";
 
@@ -73,6 +74,26 @@ describe("fdicClient", () => {
       },
     });
     expect(response.meta.total).toBe(1);
+  });
+
+  it("rejects malformed top-level FDIC response payloads", async () => {
+    getMock.mockResolvedValueOnce({
+      data: { records: [], meta: { total: 0 } },
+    });
+
+    await expect(queryEndpoint("institutions", {})).rejects.toThrow(
+      "Unexpected FDIC API response shape for endpoint institutions: expected 'data' to be an array.",
+    );
+  });
+
+  it("rejects malformed FDIC record wrappers", async () => {
+    getMock.mockResolvedValueOnce({
+      data: { data: [{ CERT: 3511 }], meta: { total: 1 } },
+    });
+
+    await expect(queryEndpoint("institutions", {})).rejects.toThrow(
+      "Unexpected FDIC API response shape for endpoint institutions: expected data[0] to contain an object 'data' property.",
+    );
   });
 
   it("includes optional query parameters when provided", async () => {
@@ -190,6 +211,29 @@ describe("fdicClient", () => {
         meta: { total: 2 },
       }),
     ).toEqual([{ CERT: 1 }, { CERT: 2 }]);
+  });
+
+  it("throws a clear error when extractRecords receives malformed entries", () => {
+    expect(() =>
+      extractRecords({
+        data: [{ CERT: 1 } as unknown as { data: Record<string, unknown> }],
+        meta: { total: 1 },
+      }),
+    ).toThrow(
+      "Unexpected FDIC API response shape: expected data[0] to contain an object 'data' property.",
+    );
+  });
+
+  it("validates a well-formed FDIC response payload", () => {
+    expect(
+      validateFdicResponseShape("institutions", {
+        data: [{ data: { CERT: 1 } }],
+        meta: { total: 1 },
+      }),
+    ).toEqual({
+      data: [{ data: { CERT: 1 } }],
+      meta: { total: 1 },
+    });
   });
 
   it("builds pagination metadata with next_offset when more results exist", () => {

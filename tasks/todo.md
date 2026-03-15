@@ -115,3 +115,24 @@ Reference: issue #64 and bug #45.
 
 - [x] Issue created and linked: #64.
 - [x] Verified `npm test -- tests/peerGroup.test.ts tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
+
+# FDIC Response Shape Hardening
+
+Reference: issue #47.
+
+## Goals
+
+- [x] Validate the FDIC API response shape centrally in the client layer.
+- [x] Replace low-level shape errors with explicit, actionable error messages.
+- [x] Add tests for malformed FDIC response payloads.
+- [ ] Open a PR for the hardening change.
+
+## Acceptance Criteria
+
+- [x] Unexpected FDIC response shapes fail with clear errors.
+- [x] Cached requests do not retain malformed-response failures.
+- [x] Tests cover malformed top-level and malformed record-level response shapes.
+
+## Review / Results
+
+- [x] Verified `npm test -- tests/fdicClient.test.ts`, `npm run typecheck`, and `npm run build`.
