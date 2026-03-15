@@ -34,6 +34,6 @@ The technical docs are aimed at maintainers and advanced contributors who need t
   <a class="card" href="{{ '/technical/cloud-run-deployment/' | relative_url }}">
     <span class="card__eyebrow">Ops</span>
     <h3>Cloud Run Deployment</h3>
-    <p>Deploy the HTTP transport to Google Cloud Run with GitHub Actions and Workload Identity Federation.</p>
+    <p>Google Cloud hosting, custom-domain endpoint delivery, and MCP Registry publication workflow.</p>
   </a>
 </div>

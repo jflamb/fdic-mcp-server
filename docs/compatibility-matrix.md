@@ -16,7 +16,7 @@ Last reviewed: March 15, 2026.
 
 | Host | Local Stdio | Remote HTTP | Documented Here | Support Level | Notes |
 |------|-------------|-------------|-----------------|---------------|-------|
-| Claude Desktop | Yes | No documented path here | Yes | Good | Best fit for local stdio setups |
+| Claude Desktop | Yes | Yes | Yes | Good | Hosted connector path is preferred when available |
 | ChatGPT Developer Mode | No direct local stdio | Yes | Yes | Good | Requires reachable HTTPS MCP endpoint |
 | Gemini CLI | Yes | Not documented here | Yes | Good | Local trust settings can block startup |
 | GitHub Copilot CLI | Yes | Not documented here | Yes | Good | Local config is straightforward |
@@ -31,8 +31,9 @@ Last reviewed: March 15, 2026.
 
 ### Claude Desktop
 
-- Uses local stdio configuration
-- Restart required after config changes
+- Remote connector setup is supported and preferred when available
+- Local stdio still works as a fallback path
+- Remote connectors are added from `Settings -> Connectors`
 
 ### ChatGPT Developer Mode
 
@@ -52,5 +53,5 @@ Last reviewed: March 15, 2026.
 
 ## Recommendation
 
-- Use Claude Desktop, Gemini CLI, or GitHub Copilot CLI for the simplest local setup
-- Use ChatGPT when you want a remotely hosted MCP app and are prepared to run HTTP transport
+- Use Claude Desktop or ChatGPT when you want the simplest hosted-URL setup
+- Use Gemini CLI or GitHub Copilot CLI when you specifically want local stdio
