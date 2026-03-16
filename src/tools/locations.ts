@@ -10,6 +10,7 @@ import {
   formatToolError,
 } from "../services/fdicClient.js";
 import { CommonQuerySchema } from "../schemas/common.js";
+import { buildFilterString } from "./shared/queryUtils.js";
 
 const LocationQuerySchema = CommonQuerySchema.extend({
   cert: z
@@ -72,15 +73,13 @@ Prefer concise human-readable summaries or tables when answering users. Structur
     },
     async ({ cert, ...params }) => {
       try {
-        let filters = params.filters ?? "";
-        if (cert !== undefined) {
-          filters = filters
-            ? `CERT:${cert} AND (${filters})`
-            : `CERT:${cert}`;
-        }
         const response = await queryEndpoint(ENDPOINTS.LOCATIONS, {
           ...params,
-          filters: filters || undefined,
+          filters: buildFilterString({
+            cert,
+            rawFilters: params.filters,
+            rawFiltersPosition: "last",
+          }),
         });
         const records = extractRecords(response);
         const pagination = buildPaginationInfo(
@@ -99,6 +98,7 @@ Prefer concise human-readable summaries or tables when answering users. Structur
             "BRNUM",
           ]),
           CHARACTER_LIMIT,
+          "Request fewer fields, narrow your filters, or paginate with limit/offset.",
         );
         return {
           content: [{ type: "text", text }],

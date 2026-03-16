@@ -718,6 +718,7 @@ Override precedence: cert derives defaults, then explicit params override them.`
             warnings,
           ),
           CHARACTER_LIMIT,
+          "Reduce the number of peers, narrow the peer-group criteria, request fewer fields, or shorten the analysis scope.",
         );
 
         return {

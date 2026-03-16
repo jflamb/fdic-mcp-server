@@ -80,6 +80,7 @@ Prefer concise human-readable summaries or tables when answering users. Structur
             "ACTIVE",
           ]),
           CHARACTER_LIMIT,
+          "Request fewer fields, narrow your filters, or paginate with limit/offset.",
         );
         return {
           content: [{ type: "text", text }],
