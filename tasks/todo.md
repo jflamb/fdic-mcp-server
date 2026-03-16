@@ -494,6 +494,28 @@ Reference: issue #122.
 - [x] Validated `.github/workflows/publish.yml` parses cleanly with `ruby -e 'require "yaml"; YAML.load_file(".github/workflows/publish.yml"); puts "YAML OK"'`.
 - [x] Verified `npm run typecheck`, `npm test`, and `npm run build`.
 
+# Trusted Publishing Plugin Upgrade
+
+Reference: issue #124.
+
+## Goals
+
+- [x] Confirm whether the currently pinned `@semantic-release/npm` version supports npm trusted publishing.
+- [x] Upgrade to a trusted-publishing-capable `@semantic-release/npm` version.
+- [x] Keep the existing `Release` workflow compatible with the upgraded plugin.
+- [x] Validate the dependency update before merge.
+
+## Acceptance Criteria
+
+- [x] The repo no longer pins `@semantic-release/npm` to `12.0.2`.
+- [x] The upgraded plugin line is compatible with the current Node `22` release workflow runtime.
+- [x] Repo validation passes after the dependency update.
+
+## Review / Results
+
+- [x] Verified the repo now resolves `@semantic-release/npm` `13.1.5`.
+- [x] Verified `npm run typecheck`, `npm test`, and `npm run build` after the dependency update.
+
 # Semantic Release Automation
 
 Reference: issue #105.
