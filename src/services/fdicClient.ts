@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { FDIC_API_BASE_URL, VERSION } from "../constants.js";
+import { validateEndpointQueryParams } from "./fdicSchema.js";
 
 const apiClient = axios.create({
   baseURL: FDIC_API_BASE_URL,
@@ -123,6 +124,8 @@ export async function queryEndpoint(
   params: QueryParams,
   options: QueryOptions = {},
 ): Promise<FdicResponse> {
+  validateEndpointQueryParams(endpoint, params);
+
   if (options.signal?.aborted) {
     throw new Error("FDIC API request was canceled before it started.");
   }

@@ -124,6 +124,49 @@ describe("fdicClient", () => {
     });
   });
 
+  it("rejects invalid fields locally before calling the FDIC API", async () => {
+    await expect(
+      queryEndpoint("institutions", {
+        fields: "CERT,FAILDATE",
+      }),
+    ).rejects.toThrow(
+      "Invalid field 'FAILDATE' for endpoint institutions. Use the endpoint-specific field catalog for institutions.",
+    );
+    expect(getMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid sort_by values locally before calling the FDIC API", async () => {
+    await expect(
+      queryEndpoint("financials", {
+        sort_by: "FAILDATE",
+      }),
+    ).rejects.toThrow(
+      "Invalid sort_by field 'FAILDATE' for endpoint financials. Use a sortable field defined for financials.",
+    );
+    expect(getMock).not.toHaveBeenCalled();
+  });
+
+  it("allows a field on the endpoint where it is defined and rejects it elsewhere", async () => {
+    getMock.mockResolvedValueOnce({
+      data: { data: [], meta: { total: 0 } },
+    });
+
+    await queryEndpoint("failures", {
+      fields: "CERT,FAILDATE",
+      sort_by: "FAILDATE",
+    });
+
+    expect(getMock).toHaveBeenCalledTimes(1);
+
+    await expect(
+      queryEndpoint("institutions", {
+        fields: "CERT,FAILDATE",
+      }),
+    ).rejects.toThrow(
+      "Invalid field 'FAILDATE' for endpoint institutions. Use the endpoint-specific field catalog for institutions.",
+    );
+  });
+
   it("reuses cached results for identical queries within the cache window", async () => {
     getMock.mockResolvedValue({
       data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },

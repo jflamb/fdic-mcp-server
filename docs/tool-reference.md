@@ -12,6 +12,8 @@ breadcrumbs:
 
 This page summarizes what each MCP tool is for and when to use it.
 
+The server validates `fields` and `sort_by` against the selected FDIC endpoint before sending the request upstream. If a field works on one endpoint but not another, switch tools or use the endpoint-specific field catalog.
+
 ## Search And Lookup Tools
 
 | Tool | Use It When | Notes |
