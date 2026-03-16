@@ -20,6 +20,7 @@ import {
   buildCertFilters,
   mapWithConcurrency,
 } from "./shared/queryUtils.js";
+import { sendProgressNotification } from "./shared/progress.js";
 
 export interface RankResult {
   rank: number;
@@ -375,15 +376,23 @@ Override precedence: cert derives defaults, then explicit params override them.`
         openWorldHint: true,
       },
     },
-    async (params) => {
+    async (params, extra) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
+      const progressToken = extra._meta?.progressToken;
 
       try {
         const validationError = validatePeerGroupParams(params);
         if (validationError) {
           return formatToolError(new Error(validationError));
         }
+
+        await sendProgressNotification(
+          server.server,
+          progressToken,
+          0.1,
+          "Resolving subject and peer criteria",
+        );
 
         const warnings: string[] = [];
         let subjectProfile: Record<string, unknown> | null = null;
@@ -454,6 +463,13 @@ Override precedence: cert derives defaults, then explicit params override them.`
         const { state, active_only, raw_filter } = params;
 
         // --- Phase 2: Build peer roster ---
+        await sendProgressNotification(
+          server.server,
+          progressToken,
+          0.4,
+          "Fetching peer roster",
+        );
+
         const filterParts: string[] = [];
         if (assetMin !== undefined || assetMax !== undefined) {
           const min = assetMin ?? 0;
@@ -563,6 +579,13 @@ Override precedence: cert derives defaults, then explicit params override them.`
           .map((r) => asNumber(r.CERT))
           .filter((c): c is number => c !== null);
 
+        await sendProgressNotification(
+          server.server,
+          progressToken,
+          0.7,
+          "Fetching peer financials",
+        );
+
         const certFilters = buildCertFilters(peerCerts);
         const extraFieldsCsv =
           params.extra_fields && params.extra_fields.length > 0
@@ -640,6 +663,13 @@ Override precedence: cert derives defaults, then explicit params override them.`
         const peerCount = peers.length;
 
         // --- Phase 4: Rank and assemble ---
+        await sendProgressNotification(
+          server.server,
+          progressToken,
+          0.9,
+          "Computing peer rankings",
+        );
+
         const subjectMetrics = subjectFinancials
           ? deriveMetrics(subjectFinancials)
           : null;
@@ -719,6 +749,13 @@ Override precedence: cert derives defaults, then explicit params override them.`
           ),
           CHARACTER_LIMIT,
           "Reduce the number of peers, narrow the peer-group criteria, request fewer fields, or shorten the analysis scope.",
+        );
+
+        await sendProgressNotification(
+          server.server,
+          progressToken,
+          1,
+          "Analysis complete",
         );
 
         return {

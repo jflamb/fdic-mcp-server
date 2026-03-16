@@ -531,6 +531,7 @@ Reference: umbrella issue #115 and issues #109, #110, #111, #112, #113, and #114
 - [x] Make the HTTP transport session-aware so MCP lifecycle state persists across requests.
 - [x] Implement compliant `GET /mcp` and `DELETE /mcp` behavior for initialized sessions.
 - [x] Default local HTTP binding to localhost and enforce Origin validation with a configurable allowlist.
+- [x] Add progress notifications for the long-running analysis tools without changing tool result contracts.
 - [x] Update user-facing docs for the new HTTP defaults and environment knobs.
 
 ## Acceptance Criteria
@@ -540,6 +541,7 @@ Reference: umbrella issue #115 and issues #109, #110, #111, #112, #113, and #114
 - [x] Unsupported `MCP-Protocol-Version` headers are rejected and missing headers after initialization still use the SDK default behavior.
 - [x] Local HTTP runs bind to `127.0.0.1` by default, with `HOST` available for explicit overrides.
 - [x] Disallowed browser `Origin` headers receive HTTP 403 while non-browser requests without `Origin` continue to work.
+- [x] `fdic_compare_bank_snapshots` and `fdic_peer_group_analysis` emit monotonic progress notifications when the request includes a progress token.
 - [x] Repo-standard validation passes.
 
 ## Review / Results
@@ -548,5 +550,8 @@ Reference: umbrella issue #115 and issues #109, #110, #111, #112, #113, and #114
 - [x] Reworked [index.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/src/index.ts) to manage one `McpServer` plus `StreamableHTTPServerTransport` per HTTP session instead of rebuilding the server on every POST.
 - [x] Reused the SDK's built-in session, method, protocol-version, and origin-validation behavior by routing requests to the correct persistent transport instance.
 - [x] Added `HOST` and `ALLOWED_ORIGINS` runtime support and documented the localhost-default bind behavior in [README.md](/Users/jlamb/Projects/bankfind-mcp-mcp-http/README.md), [getting-started.md](/Users/jlamb/Projects/bankfind-mcp-mcp-http/docs/getting-started.md), and [troubleshooting.md](/Users/jlamb/Projects/bankfind-mcp-mcp-http/docs/troubleshooting.md).
+- [x] Added a shared progress notification helper in [progress.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/src/tools/shared/progress.ts) and wired it into [analysis.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/src/tools/analysis.ts) and [peerGroup.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/src/tools/peerGroup.ts).
+- [x] Expanded [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/tests/mcp-http.test.ts) to cover session initialization requirements, GET/DELETE handling, protocol-version validation, origin enforcement, and end-to-end progress notifications over the standalone SSE stream.
+- [x] Verified `npm run typecheck`, `npm test -- tests/mcp-http.test.ts tests/analysis.test.ts tests/peerGroup.test.ts`, `npm test`, and `npm run build`.
 - [x] Expanded [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/tests/mcp-http.test.ts) to cover session initialization requirements, GET/DELETE handling, protocol-version validation, and origin enforcement.
 - [x] Verified `npm run typecheck`, `npm test -- tests/mcp-http.test.ts`, `npm test`, and `npm run build`.

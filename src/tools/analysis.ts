@@ -16,6 +16,7 @@ import {
   buildCertFilters,
   mapWithConcurrency,
 } from "./shared/queryUtils.js";
+import { sendProgressNotification } from "./shared/progress.js";
 
 type InstitutionRecord = Record<string, unknown>;
 type ComparisonRecord = Record<string, unknown>;
@@ -879,21 +880,25 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         openWorldHint: true,
       },
     },
-    async ({
-      state,
-      certs,
-      institution_filters,
-      active_only,
-      start_repdte,
-      end_repdte,
-      analysis_mode,
-      include_demographics,
-      limit,
-      sort_by,
-      sort_order,
-    }) => {
+    async (
+      {
+        state,
+        certs,
+        institution_filters,
+        active_only,
+        start_repdte,
+        end_repdte,
+        analysis_mode,
+        include_demographics,
+        limit,
+        sort_by,
+        sort_order,
+      },
+      extra,
+    ) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
+      const progressToken = extra._meta?.progressToken;
 
       try {
         const validationError = validateSnapshotAnalysisParams({
@@ -912,6 +917,13 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         if (validationError) {
           return formatToolError(new Error(validationError));
         }
+
+        await sendProgressNotification(
+          server.server,
+          progressToken,
+          0.1,
+          "Fetching institution roster",
+        );
 
         const rosterResult =
           certs && certs.length > 0
@@ -966,6 +978,13 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         let comparisons: ComparisonRecord[] = [];
 
         if (analysis_mode === "timeseries") {
+          await sendProgressNotification(
+            server.server,
+            progressToken,
+            0.3,
+            "Fetching financial time series",
+          );
+
           const [financialSeriesResult, demographicsSeriesResult] = await Promise.all([
             fetchSeriesRecords(
               ENDPOINTS.FINANCIALS,
@@ -993,6 +1012,23 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             ...financialSeriesResult.warnings,
             ...demographicsSeriesResult.warnings,
           );
+
+          if (include_demographics) {
+            await sendProgressNotification(
+              server.server,
+              progressToken,
+              0.7,
+              "Fetching demographics time series",
+            );
+          }
+
+          await sendProgressNotification(
+            server.server,
+            progressToken,
+            0.9,
+            "Computing metrics and insights",
+          );
+
           const financialSeries = financialSeriesResult.grouped;
           const demographicsSeries = demographicsSeriesResult.grouped;
 
@@ -1011,6 +1047,13 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             )
             .filter((comparison): comparison is ComparisonRecord => comparison !== null);
         } else {
+          await sendProgressNotification(
+            server.server,
+            progressToken,
+            0.3,
+            "Fetching financial snapshots",
+          );
+
           const [financialSnapshotsResult, demographicSnapshotsResult] = await Promise.all([
             fetchBatchedRecordsForDates(
               ENDPOINTS.FINANCIALS,
@@ -1036,6 +1079,23 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             ...financialSnapshotsResult.warnings,
             ...demographicSnapshotsResult.warnings,
           );
+
+          if (include_demographics) {
+            await sendProgressNotification(
+              server.server,
+              progressToken,
+              0.7,
+              "Fetching demographic snapshots",
+            );
+          }
+
+          await sendProgressNotification(
+            server.server,
+            progressToken,
+            0.9,
+            "Computing metrics and insights",
+          );
+
           const financialSnapshots = financialSnapshotsResult.byDate;
           const demographicSnapshots = demographicSnapshotsResult.byDate;
 
@@ -1099,6 +1159,13 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             .join("\n\n"),
           CHARACTER_LIMIT,
           "Reduce the number of certs, narrow institution_filters, request fewer fields, or shorten the date range.",
+        );
+
+        await sendProgressNotification(
+          server.server,
+          progressToken,
+          1,
+          "Analysis complete",
         );
 
         return {
