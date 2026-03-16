@@ -625,6 +625,48 @@ describe("HTTP MCP server", () => {
     );
   });
 
+  it("rejects snapshot analysis requests when start_repdte is not earlier than end_repdte", async () => {
+    const reversed = await mcpPost({
+      jsonrpc: "2.0",
+      id: 801,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20241231",
+          end_repdte: "20211231",
+        },
+      },
+    });
+
+    const equal = await mcpPost({
+      jsonrpc: "2.0",
+      id: 802,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20241231",
+          end_repdte: "20241231",
+        },
+      },
+    });
+
+    expect(reversed.status).toBe(200);
+    expect(reversed.body.result.isError).toBe(true);
+    expect(reversed.body.result.content[0].text).toContain(
+      "start_repdte must be earlier than end_repdte.",
+    );
+
+    expect(equal.status).toBe(200);
+    expect(equal.body.result.isError).toBe(true);
+    expect(equal.body.result.content[0].text).toContain(
+      "start_repdte must be earlier than end_repdte.",
+    );
+  });
+
   it("batches snapshot comparisons into financial and demographic date queries", async () => {
     getMock
       .mockResolvedValueOnce({
@@ -931,6 +973,66 @@ describe("HTTP MCP server", () => {
     expect(
       response.body.result.structuredContent.insights.growth_with_branch_expansion,
     ).toEqual(["Bank Fast", "Bank Slow"]);
+  });
+
+  it("uses cert as a deterministic tie-breaker for equal analysis sort values", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Bank One", CITY: "Raleigh", STALP: "NC" } },
+            { data: { CERT: 2222, NAME: "Bank Two", CITY: "Durham", STALP: "NC" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Bank One", ASSET: 100, DEP: 50, NETINC: 10, ROA: 1.0, ROE: 8.0 } },
+            { data: { CERT: 2222, NAME: "Bank Two", ASSET: 150, DEP: 70, NETINC: 12, ROA: 1.2, ROE: 8.5 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Bank One", ASSET: 200, DEP: 120, NETINC: 15, ROA: 1.1, ROE: 8.2 } },
+            { data: { CERT: 2222, NAME: "Bank Two", ASSET: 250, DEP: 140, NETINC: 17, ROA: 1.3, ROE: 8.7 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { data: [], meta: { total: 0 } },
+      })
+      .mockResolvedValueOnce({
+        data: { data: [], meta: { total: 0 } },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 803,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          sort_by: "asset_growth",
+          limit: 2,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(
+      response.body.result.structuredContent.comparisons.map(
+        (comparison: { cert: number }) => comparison.cert,
+      ),
+    ).toEqual([1111, 2222]);
   });
 
   it("includes all generated insight categories in the top-level summary", async () => {
@@ -1318,5 +1420,50 @@ describe("HTTP MCP server", () => {
     expect(sc.message).toBe("No peers matched the specified criteria.");
     expect(sc.peers).toEqual([]);
     expect(sc.subject.rankings).toBeNull();
+  });
+
+  it("uses cert as a deterministic tie-breaker for equal peer asset values", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 200, NAME: "Peer A", CITY: "Raleigh", STALP: "NC", BKCLASS: "N" } },
+            { data: { CERT: 300, NAME: "Peer B", CITY: "Charlotte", STALP: "NC", BKCLASS: "N" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 300, ASSET: 5000000, DEP: 4000000, NETINC: 100000, ROA: 1.0, ROE: 9.0, NETNIM: 3.0, EQTOT: 500000, LNLSNET: 3000000, INTINC: 200000, EINTEXP: 80000, NONII: 30000, NONIX: 100000 } },
+            { data: { CERT: 200, ASSET: 5000000, DEP: 4100000, NETINC: 110000, ROA: 1.1, ROE: 9.5, NETNIM: 3.1, EQTOT: 520000, LNLSNET: 3050000, INTINC: 210000, EINTEXP: 82000, NONII: 32000, NONIX: 101000 } },
+          ],
+          meta: { total: 2 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 105,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: {
+          repdte: "20241231",
+          asset_min: 5000000,
+          asset_max: 6000000,
+          charter_classes: ["N"],
+          state: "NC",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(
+      response.body.result.structuredContent.peers.map(
+        (peer: { cert: number }) => peer.cert,
+      ),
+    ).toEqual([200, 300]);
   });
 });

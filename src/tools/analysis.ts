@@ -103,6 +103,10 @@ function validateSnapshotAnalysisParams(
     return "Provide either state or certs.";
   }
 
+  if (value.start_repdte >= value.end_repdte) {
+    return "start_repdte must be earlier than end_repdte.";
+  }
+
   return null;
 }
 
@@ -133,16 +137,36 @@ function change(start: number | null, end: number | null): number | null {
   return end - start;
 }
 
-function getQuarterIndex(repdte: string): number | null {
+export function getQuarterIndex(repdte: string): number | null {
   const year = Number.parseInt(repdte.slice(0, 4), 10);
   const month = Number.parseInt(repdte.slice(4, 6), 10);
-  const quarter = month / 3;
-
-  if (!Number.isInteger(quarter) || quarter < 1 || quarter > 4) {
+  if (!Number.isInteger(year) || !Number.isInteger(month)) {
     return null;
   }
 
+  if (month < 1 || month > 12) {
+    return null;
+  }
+
+  const quarter = Math.ceil(month / 3);
+
   return year * 4 + quarter;
+}
+
+function compareComparisonTieBreakers(
+  left: ComparisonRecord,
+  right: ComparisonRecord,
+): number {
+  const leftCert = asNumber(left.cert);
+  const rightCert = asNumber(right.cert);
+
+  if (leftCert !== null && rightCert !== null && leftCert !== rightCert) {
+    return leftCert - rightCert;
+  }
+
+  const leftName = String(left.name ?? "");
+  const rightName = String(right.name ?? "");
+  return leftName.localeCompare(rightName);
 }
 
 export function yearsBetween(startRepdte: string, endRepdte: string): number {
@@ -193,10 +217,14 @@ function sortComparisons(
 ): ComparisonRecord[] {
   const direction = sortOrder === "ASC" ? 1 : -1;
 
+  // Tie-break by CERT/name so repeated runs keep the same ranked order.
   return [...comparisons].sort((left, right) => {
     const leftValue = asNumber(left[sortBy]) ?? Number.NEGATIVE_INFINITY;
     const rightValue = asNumber(right[sortBy]) ?? Number.NEGATIVE_INFINITY;
-    return (leftValue - rightValue) * direction;
+    const primary = (leftValue - rightValue) * direction;
+    return primary !== 0
+      ? primary
+      : compareComparisonTieBreakers(left, right);
   });
 }
 
@@ -357,7 +385,10 @@ function summarizeTimeSeries(
   if (records.length < 2) return null;
 
   const sorted = [...records].sort((left, right) =>
-    String(left.REPDTE).localeCompare(String(right.REPDTE)),
+    String(left.REPDTE).localeCompare(String(right.REPDTE)) ||
+    String(left.NAME ?? institution.NAME ?? "").localeCompare(
+      String(right.NAME ?? institution.NAME ?? ""),
+    ),
   );
   const start = sorted[0];
   const end = sorted[sorted.length - 1];
