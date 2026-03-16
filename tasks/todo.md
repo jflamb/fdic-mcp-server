@@ -624,3 +624,27 @@ Reference: umbrella issue #115 and issues #109, #110, #111, #112, #113, and #114
 - [x] Verified `npm run typecheck`, `npm test -- tests/mcp-http.test.ts tests/analysis.test.ts tests/peerGroup.test.ts`, `npm test`, and `npm run build`.
 - [x] Expanded [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/tests/mcp-http.test.ts) to cover session initialization requirements, GET/DELETE handling, protocol-version validation, and origin enforcement.
 - [x] Verified `npm run typecheck`, `npm test -- tests/mcp-http.test.ts`, `npm test`, and `npm run build`.
+
+# Protected Main Release Flow
+
+Reference: issue #128.
+
+## Goals
+
+- [x] Keep semantic-release fully automatic for version calculation, tagging, npm publishing, GitHub Releases, GitHub Packages, and MCP Registry publication.
+- [x] Remove release-time writes back to protected `main`.
+- [x] Update repo docs so they point to the correct published release source of truth.
+
+## Acceptance Criteria
+
+- [x] semantic-release no longer attempts to push release commits directly to `main`.
+- [x] Automated versioning and downstream publish steps still use the semantic-release-computed version.
+- [x] Repo documentation no longer claims `CHANGELOG.md` on `main` is the authoritative published release record.
+- [x] Repo-standard validation passes.
+
+## Review / Results
+
+- [x] Removed `@semantic-release/changelog` and `@semantic-release/git` from the release path so the workflow no longer needs to mutate `main` after tagging and publishing.
+- [x] Kept `@semantic-release/npm`, `@semantic-release/exec`, and the downstream publish workflow intact so package and MCP Registry artifacts still use the computed release version inside the release workspace.
+- [x] Updated [README.md](/Users/jlamb/Projects/bankfind-mcp/README.md), [CONTRIBUTING.md](/Users/jlamb/Projects/bankfind-mcp/CONTRIBUTING.md), [AGENTS.md](/Users/jlamb/Projects/bankfind-mcp/AGENTS.md), [docs/release-notes/index.md](/Users/jlamb/Projects/bankfind-mcp/docs/release-notes/index.md), and [docs/technical/cloud-run-deployment.md](/Users/jlamb/Projects/bankfind-mcp/docs/technical/cloud-run-deployment.md) to point at GitHub Releases rather than a committed changelog on `main`.
+- [x] Verified `npm run typecheck`, `npm test`, and `npm run build`.

@@ -74,7 +74,7 @@ Container note:
   - `fix:` creates a patch release
   - `feat:` creates a minor release
   - `BREAKING CHANGE:` or `!` creates a major release
-- Release automation publishes npm, GitHub Releases, GitHub Packages, and MCP Registry metadata from the same computed version.
+- Release automation publishes npm, GitHub Releases, GitHub Packages, and MCP Registry metadata from the same computed version without pushing release commits back to `main`.
 
 ## Pull Requests
 
