@@ -516,6 +516,28 @@ Reference: issue #124.
 - [x] Verified the repo now resolves `@semantic-release/npm` `13.1.5`.
 - [x] Verified `npm run typecheck`, `npm test`, and `npm run build` after the dependency update.
 
+# Semantic Release Core Upgrade
+
+Reference: issue #126.
+
+## Goals
+
+- [x] Trace whether the still-failing release run is using the upgraded npm plugin line or a bundled older plugin from `semantic-release`.
+- [x] Upgrade `semantic-release` itself to a trusted-publishing-capable line.
+- [x] Keep the current release config and workflow compatible with the upgraded core.
+- [x] Validate the dependency update before merge.
+
+## Acceptance Criteria
+
+- [x] The repo no longer pins `semantic-release` to `24.2.9`.
+- [x] The upgraded `semantic-release` line is compatible with the release workflow's Node `22` runtime.
+- [x] Repo validation passes after the dependency update.
+
+## Review / Results
+
+- [x] Verified the repo now resolves `semantic-release` `25.0.3` and `@semantic-release/npm` `13.1.5` in the same dependency tree.
+- [x] Verified `npm run typecheck`, `npm test`, and `npm run build` after the dependency update.
+
 # Semantic Release Automation
 
 Reference: issue #105.
