@@ -32,6 +32,7 @@ import {
   clearQueryCache,
   extractRecords,
   formatToolError,
+  getQueryCacheSize,
   queryEndpoint,
   truncateIfNeeded,
   validateFdicResponseShape,
@@ -151,6 +152,40 @@ describe("fdicClient", () => {
 
     expect(getMock).toHaveBeenCalledTimes(3);
     nowSpy.mockRestore();
+  });
+
+  it("keeps expired-entry pruning bounded to the oldest cache entries", async () => {
+    const nowSpy = vi.spyOn(Date, "now");
+    getMock.mockResolvedValue({
+      data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
+    });
+
+    nowSpy.mockReturnValue(1_000);
+    await queryEndpoint("institutions", { filters: "CERT:1" });
+
+    nowSpy.mockReturnValue(1_500);
+    await queryEndpoint("institutions", { filters: "CERT:2" });
+
+    nowSpy.mockReturnValue(61_000);
+    await queryEndpoint("institutions", { filters: "CERT:3" });
+
+    expect(getQueryCacheSize()).toBe(2);
+    nowSpy.mockRestore();
+  });
+
+  it("evicts the oldest live cache entry when the cache exceeds its size cap", async () => {
+    getMock.mockResolvedValue({
+      data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
+    });
+
+    for (let cert = 1; cert <= 501; cert += 1) {
+      await queryEndpoint("institutions", { filters: `CERT:${cert}` });
+    }
+
+    expect(getQueryCacheSize()).toBe(500);
+    await queryEndpoint("institutions", { filters: "CERT:1" });
+
+    expect(getMock).toHaveBeenCalledTimes(502);
   });
 
   it("maps 400 responses to a filter syntax error", async () => {

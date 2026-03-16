@@ -34,13 +34,25 @@ interface CacheEntry {
 }
 
 const QUERY_CACHE_TTL_MS = 60_000;
+const QUERY_CACHE_MAX_ENTRIES = 500;
 const queryCache = new Map<string, CacheEntry>();
 
 function pruneExpiredQueryCache(now: number): void {
   for (const [key, entry] of queryCache.entries()) {
-    if (entry.expiresAt <= now) {
-      queryCache.delete(key);
+    if (entry.expiresAt > now) {
+      break;
     }
+    queryCache.delete(key);
+  }
+}
+
+function evictOverflowQueryCache(): void {
+  while (queryCache.size > QUERY_CACHE_MAX_ENTRIES) {
+    const oldestKey = queryCache.keys().next().value;
+    if (oldestKey === undefined) {
+      break;
+    }
+    queryCache.delete(oldestKey);
   }
 }
 
@@ -58,6 +70,10 @@ function getCacheKey(endpoint: string, params: QueryParams): string {
 
 export function clearQueryCache(): void {
   queryCache.clear();
+}
+
+export function getQueryCacheSize(): number {
+  return queryCache.size;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -180,6 +196,7 @@ export async function queryEndpoint(
       expiresAt: now + QUERY_CACHE_TTL_MS,
       value: requestPromise,
     });
+    evictOverflowQueryCache();
   }
 
   try {
