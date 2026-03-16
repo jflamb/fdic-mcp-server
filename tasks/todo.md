@@ -370,3 +370,26 @@ Reference: issue #76.
 - [x] Opened PR #77.
 - [x] Verified the registry description length is 73 characters.
 - [x] Verified `npm run build`.
+
+# Idempotent Publish Workflow
+
+Reference: issue #78.
+
+## Goals
+
+- [x] Prevent the publish workflow from failing when npm already has the target version.
+- [x] Allow later release steps to continue when npm publish is skipped.
+- [x] Open a PR for the workflow fix.
+
+## Acceptance Criteria
+
+- [x] `.github/workflows/publish.yml` checks whether the npm version already exists before publishing.
+- [x] The npm publish step is skipped instead of failing when the version is already present.
+- [x] The rest of the publish workflow can still run after a skipped npm publish.
+- [x] Workflow YAML remains valid after the change.
+
+## Review / Results
+
+- [x] Used existing issue #78 for the tracked work.
+- [x] Opened PR #79.
+- [x] Verified `.github/workflows/publish.yml` parses with Ruby `YAML.load_file`.
