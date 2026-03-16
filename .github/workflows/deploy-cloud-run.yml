@@ -28,6 +28,7 @@ env:
   GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
   CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT: ${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}
   PUBLIC_MCP_URL: https://bankfind.jflamb.com/mcp
+  PUBLIC_HEALTH_URL: https://bankfind.jflamb.com/health
 
 jobs:
   deploy:
@@ -109,6 +110,52 @@ jobs:
             --allow-unauthenticated
             --port=8080
             --service-account=${{ env.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}
+
+      - name: Run post-deploy smoke checks
+        run: |
+          set -euo pipefail
+
+          health_response="$(mktemp)"
+          mcp_response="$(mktemp)"
+          trap 'rm -f "$health_response" "$mcp_response"' EXIT
+
+          curl --fail --silent --show-error \
+            "$PUBLIC_HEALTH_URL" \
+            --output "$health_response"
+
+          python3 - "$health_response" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          payload = json.loads(pathlib.Path(sys.argv[1]).read_text())
+
+          assert payload["status"] == "ok", payload
+          assert payload["server"] == "fdic-mcp-server", payload
+          assert isinstance(payload["version"], str) and payload["version"], payload
+          PY
+
+          curl --fail --silent --show-error \
+            "$PUBLIC_MCP_URL" \
+            -H 'content-type: application/json' \
+            -H 'accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
+            --output "$mcp_response"
+
+          python3 - "$mcp_response" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          payload = json.loads(pathlib.Path(sys.argv[1]).read_text())
+          result = payload["result"]
+          tools = result["tools"]
+
+          assert payload["jsonrpc"] == "2.0", payload
+          assert payload["id"] == 1, payload
+          assert isinstance(tools, list) and tools, payload
+          assert any(tool.get("name") == "fdic_search_institutions" for tool in tools), payload
+          PY
 
       - name: Show deployed URL
         run: |

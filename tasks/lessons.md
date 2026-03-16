@@ -10,3 +10,5 @@
 - When documenting onboarding, lead with the least-friction path that is genuinely available and position local terminal-based setup as the fallback.
 - In end-user docs, do not imply that users must speak in API-native field formats like `YYYYMMDD` unless that is truly required; distinguish user-facing prompt style from tool-level parameter formats.
 - When documenting MCP onboarding, distinguish clearly between hosted-URL connection flows and agentic local-install flows; do not imply that plain chat products can install a local npm package just because coding agents can.
+- For non-trivial repo work, avoid standalone plan markdown files; prefer grouping related issues in the implementation PR description so the reasoning lands in repo history, and use an umbrella issue only when PR-based grouping is not the better fit.
+- When a user asks to follow the repo workflow, complete the full change-management path rather than stopping at local edits: open or reference the issue, use a dedicated branch, commit the change, open the PR, watch checks, fix failures, and merge when green.
