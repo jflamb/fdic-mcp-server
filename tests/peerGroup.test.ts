@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  deriveMetrics,
-  computeMedian,
   computeCompetitionRank,
   formatRepdteHuman,
   PeerGroupInputSchema,
 } from "../src/tools/peerGroup.js";
+import {
+  computeMedian,
+  deriveMetrics,
+} from "../src/tools/shared/financialMetrics.js";
 
 describe("deriveMetrics", () => {
   it("computes all derived metrics from raw financial fields", () => {
