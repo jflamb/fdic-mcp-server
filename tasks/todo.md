@@ -648,3 +648,25 @@ Reference: issue #128.
 - [x] Kept `@semantic-release/npm`, `@semantic-release/exec`, and the downstream publish workflow intact so package and MCP Registry artifacts still use the computed release version inside the release workspace.
 - [x] Updated [README.md](/Users/jlamb/Projects/bankfind-mcp/README.md), [CONTRIBUTING.md](/Users/jlamb/Projects/bankfind-mcp/CONTRIBUTING.md), [AGENTS.md](/Users/jlamb/Projects/bankfind-mcp/AGENTS.md), [docs/release-notes/index.md](/Users/jlamb/Projects/bankfind-mcp/docs/release-notes/index.md), and [docs/technical/cloud-run-deployment.md](/Users/jlamb/Projects/bankfind-mcp/docs/technical/cloud-run-deployment.md) to point at GitHub Releases rather than a committed changelog on `main`.
 - [x] Verified `npm run typecheck`, `npm test`, and `npm run build`.
+
+# Cloud Run MCP Session Smoke Test
+
+Reference: issue #131.
+
+## Goals
+
+- [x] Fix the Deploy Cloud Run smoke check so it validates the deployed session-based MCP HTTP endpoint correctly.
+- [x] Keep the health probe and tool-list verification in the workflow.
+
+## Acceptance Criteria
+
+- [x] The smoke test performs MCP session initialization before any session-bound method call.
+- [x] The smoke test reuses the returned `MCP-Session-Id` for follow-up requests.
+- [x] Repo-standard validation passes.
+
+## Review / Results
+
+- [x] Confirmed the latest `Deploy Cloud Run` failure was no longer startup-related; the deployment itself succeeded and the workflow failed in `Run post-deploy smoke checks` with HTTP 400 from `/mcp`.
+- [x] Identified the root cause as a protocol mismatch: the smoke test posted `tools/list` without first creating an MCP session, but the server correctly requires `initialize` and a valid `MCP-Session-Id`.
+- [x] Updated [deploy-cloud-run.yml](/Users/jlamb/Projects/bankfind-mcp/.github/workflows/deploy-cloud-run.yml) to run `initialize`, capture the `MCP-Session-Id`, send `notifications/initialized`, and only then call `tools/list`.
+- [x] Verified `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, and a YAML parse check for [deploy-cloud-run.yml](/Users/jlamb/Projects/bankfind-mcp/.github/workflows/deploy-cloud-run.yml).
