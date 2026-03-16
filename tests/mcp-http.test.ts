@@ -218,8 +218,8 @@ describe("HTTP MCP server", () => {
     );
   });
 
-  it("defaults the HTTP host to localhost", () => {
-    expect(parseHttpHost(undefined)).toBe("127.0.0.1");
+  it("defaults the HTTP host to all interfaces", () => {
+    expect(parseHttpHost(undefined)).toBe("0.0.0.0");
   });
 
   it("parses allowed origins from the environment or localhost defaults", () => {
