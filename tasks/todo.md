@@ -157,3 +157,29 @@ Reference: issue #52.
 ## Review / Results
 
 - [x] Parsed `.github/workflows/deploy-cloud-run.yml` successfully with Ruby `YAML.load_file`.
+
+# Non-Root Docker Runtime
+
+Reference: issue #51.
+
+## Goals
+
+- [x] Run the production container as a non-root user.
+- [x] Keep the current Cloud Run startup contract unchanged.
+- [x] Document the runtime hardening in the Cloud Run technical docs.
+- [x] Open a PR for the container hardening change.
+
+## Acceptance Criteria
+
+- [x] The final Docker image includes a non-root `USER`.
+- [x] The application files remain readable and executable for the runtime user.
+- [x] The container still starts with `TRANSPORT=http` and `PORT=8080`.
+- [x] Technical docs mention the non-root runtime expectation.
+
+## Review / Results
+
+- [x] Used existing issue #51 for the tracked work.
+- [x] Opened PR #68.
+- [x] Verified `npm run build`.
+- [x] Confirmed the final Dockerfile stage sets `USER fdicmcp` and copies runtime files with matching ownership.
+- [x] Docker image build could not be run in this environment because `docker` is not installed.
