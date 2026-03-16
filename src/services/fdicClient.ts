@@ -44,10 +44,9 @@ const queryCache = new Map<string, CacheEntry>();
 
 function pruneExpiredQueryCache(now: number): void {
   for (const [key, entry] of queryCache.entries()) {
-    if (entry.expiresAt > now) {
-      break;
+    if (entry.expiresAt <= now) {
+      queryCache.delete(key);
     }
-    queryCache.delete(key);
   }
 }
 

@@ -214,7 +214,7 @@ describe("fdicClient", () => {
     nowSpy.mockRestore();
   });
 
-  it("keeps expired-entry pruning bounded to the oldest cache entries", async () => {
+  it("prunes expired cache entries without relying on insertion order", async () => {
     const nowSpy = vi.spyOn(Date, "now");
     getMock.mockResolvedValue({
       data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
@@ -226,7 +226,10 @@ describe("fdicClient", () => {
     nowSpy.mockReturnValue(1_500);
     await queryEndpoint("institutions", { filters: "CERT:2" });
 
-    nowSpy.mockReturnValue(61_000);
+    nowSpy.mockReturnValue(61_250);
+    await queryEndpoint("institutions", { filters: "CERT:1" });
+
+    nowSpy.mockReturnValue(62_000);
     await queryEndpoint("institutions", { filters: "CERT:3" });
 
     expect(getQueryCacheSize()).toBe(2);
