@@ -263,6 +263,311 @@ describe("HTTP MCP server", () => {
     );
   });
 
+  it("returns failure search results with structured content", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 10001,
+              NAME: "Example Failed Bank",
+              CITY: "Los Angeles",
+              STALP: "CA",
+              FAILDATE: "2024-07-12",
+              COST: 456789,
+              RESTYPE: "MERGER",
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 61,
+      method: "tools/call",
+      params: {
+        name: "fdic_search_failures",
+        arguments: {
+          filters: "STALP:CA",
+          sort_by: "FAILDATE",
+          limit: 1,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      total: 1,
+      offset: 0,
+      count: 1,
+      has_more: false,
+      failures: [
+        {
+          CERT: 10001,
+          NAME: "Example Failed Bank",
+          CITY: "Los Angeles",
+          STALP: "CA",
+          FAILDATE: "2024-07-12",
+          COST: 456789,
+          RESTYPE: "MERGER",
+        },
+      ],
+    });
+    expect(getMock).toHaveBeenLastCalledWith("/failures", {
+      params: {
+        filters: "STALP:CA",
+        limit: 1,
+        offset: 0,
+        output: "json",
+        sort_by: "FAILDATE",
+        sort_order: "ASC",
+      },
+    });
+  });
+
+  it("returns failure lookup details for a certificate number", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 10001,
+              NAME: "Example Failed Bank",
+              FAILDATE: "2024-07-12",
+              RESTYPE: "MERGER",
+              COST: 456789,
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 62,
+      method: "tools/call",
+      params: {
+        name: "fdic_get_institution_failure",
+        arguments: {
+          cert: 10001,
+          fields: "CERT,NAME,FAILDATE,RESTYPE,COST",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      CERT: 10001,
+      NAME: "Example Failed Bank",
+      FAILDATE: "2024-07-12",
+      RESTYPE: "MERGER",
+      COST: 456789,
+    });
+    expect(getMock).toHaveBeenLastCalledWith(
+      "/failures",
+      expect.objectContaining({
+        params: {
+          fields: "CERT,NAME,FAILDATE,RESTYPE,COST",
+          filters: "CERT:10001",
+          limit: 1,
+          offset: 0,
+          output: "json",
+        },
+      }),
+    );
+  });
+
+  it("composes cert filters for history searches", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 3511,
+              INSTNAME: "Wells Fargo Bank, National Association",
+              TYPE: "merger",
+              PROCDATE: "2022-05-01",
+              PCITY: "Sioux Falls",
+              PSTALP: "SD",
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 63,
+      method: "tools/call",
+      params: {
+        name: "fdic_search_history",
+        arguments: {
+          cert: 3511,
+          filters: "TYPE:merger",
+          sort_by: "PROCDATE",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      total: 1,
+      offset: 0,
+      count: 1,
+      has_more: false,
+      events: [
+        {
+          CERT: 3511,
+          INSTNAME: "Wells Fargo Bank, National Association",
+          TYPE: "merger",
+          PROCDATE: "2022-05-01",
+          PCITY: "Sioux Falls",
+          PSTALP: "SD",
+        },
+      ],
+    });
+    expect(getMock).toHaveBeenLastCalledWith("/history", {
+      params: {
+        filters: "CERT:3511 AND (TYPE:merger)",
+        limit: 20,
+        offset: 0,
+        output: "json",
+        sort_by: "PROCDATE",
+        sort_order: "ASC",
+      },
+    });
+  });
+
+  it("composes SOD filters from cert, year, and caller filters", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 3511,
+              YEAR: 2022,
+              UNINAME: "Wells Fargo Bank, National Association",
+              NAMEFULL: "Downtown Branch",
+              CITYBR: "Austin",
+              DEPSUMBR: 250000,
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 64,
+      method: "tools/call",
+      params: {
+        name: "fdic_search_sod",
+        arguments: {
+          cert: 3511,
+          year: 2022,
+          filters: 'CITYBR:"Austin"',
+          sort_by: "DEPSUMBR",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      total: 1,
+      offset: 0,
+      count: 1,
+      has_more: false,
+      deposits: [
+        {
+          CERT: 3511,
+          YEAR: 2022,
+          UNINAME: "Wells Fargo Bank, National Association",
+          NAMEFULL: "Downtown Branch",
+          CITYBR: "Austin",
+          DEPSUMBR: 250000,
+        },
+      ],
+    });
+    expect(getMock).toHaveBeenLastCalledWith("/sod", {
+      params: {
+        filters: '(CITYBR:"Austin") AND CERT:3511 AND YEAR:2022',
+        limit: 20,
+        offset: 0,
+        output: "json",
+        sort_by: "DEPSUMBR",
+        sort_order: "ASC",
+      },
+    });
+  });
+
+  it("composes annual summary filters and returns summary records", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 3511,
+              YEAR: 2023,
+              ASSET: 1000000,
+              DEP: 800000,
+              NETINC: 12000,
+              ROA: 1.2,
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 65,
+      method: "tools/call",
+      params: {
+        name: "fdic_search_summary",
+        arguments: {
+          cert: 3511,
+          year: 2023,
+          filters: "ASSET:[500000 TO *]",
+          sort_by: "YEAR",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      total: 1,
+      offset: 0,
+      count: 1,
+      has_more: false,
+      summary: [
+        {
+          CERT: 3511,
+          YEAR: 2023,
+          ASSET: 1000000,
+          DEP: 800000,
+          NETINC: 12000,
+          ROA: 1.2,
+        },
+      ],
+    });
+    expect(getMock).toHaveBeenLastCalledWith("/summary", {
+      params: {
+        filters: "(ASSET:[500000 TO *]) AND CERT:3511 AND YEAR:2023",
+        limit: 20,
+        offset: 0,
+        output: "json",
+        sort_by: "YEAR",
+        sort_order: "ASC",
+      },
+    });
+  });
+
   it("returns MCP error payloads when the FDIC client throws", async () => {
     getMock.mockRejectedValueOnce(new Error("backend unavailable"));
 
