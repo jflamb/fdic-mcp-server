@@ -1,5 +1,9 @@
 import axios, { AxiosError } from "axios";
-import { FDIC_API_BASE_URL, VERSION } from "../constants.js";
+import {
+  DEFAULT_FDIC_MAX_RESPONSE_BYTES,
+  FDIC_API_BASE_URL,
+  VERSION,
+} from "../constants.js";
 import { validateEndpointQueryParams } from "./fdicSchema.js";
 
 const apiClient = axios.create({
@@ -75,6 +79,21 @@ export function clearQueryCache(): void {
 
 export function getQueryCacheSize(): number {
   return queryCache.size;
+}
+
+export function resolveFdicMaxResponseBytes(rawValue: string | undefined): number {
+  if (!rawValue) {
+    return DEFAULT_FDIC_MAX_RESPONSE_BYTES;
+  }
+
+  const parsed = Number.parseInt(rawValue, 10);
+  if (Number.isNaN(parsed) || parsed <= 0) {
+    throw new Error(
+      `Invalid FDIC_MAX_RESPONSE_BYTES value: ${rawValue}. Expected a positive integer.`,
+    );
+  }
+
+  return parsed;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -156,6 +175,9 @@ export async function queryEndpoint(
       const response = await apiClient.get(`/${endpoint}`, {
         params: queryParams,
         signal: options.signal,
+        maxContentLength: resolveFdicMaxResponseBytes(
+          process.env.FDIC_MAX_RESPONSE_BYTES,
+        ),
       });
       return validateFdicResponseShape(endpoint, response.data);
     } catch (err) {
@@ -174,6 +196,11 @@ export async function queryEndpoint(
         const status = err.response?.status;
         const detail =
           (err.response?.data as { message?: string })?.message ?? err.message;
+        if (err.message.includes("maxContentLength size of")) {
+          throw new Error(
+            "FDIC API response exceeded the configured response-size limit before parsing. Narrow your filters, request fewer fields, or lower the result size and try again.",
+          );
+        }
         if (status === 400) {
           throw new Error(
             `Bad request to FDIC API: ${detail}. Check your filter syntax (use ElasticSearch query string syntax, e.g. STNAME:"California" AND ACTIVE:1).`,

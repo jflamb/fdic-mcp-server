@@ -8,6 +8,7 @@ export const VERSION =
 export const FDIC_API_BASE_URL = "https://banks.data.fdic.gov/api";
 
 export const CHARACTER_LIMIT = 50_000;
+export const DEFAULT_FDIC_MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 
 export const ENDPOINTS = {
   INSTITUTIONS: "institutions",

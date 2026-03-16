@@ -34,6 +34,7 @@ import {
   formatToolError,
   getQueryCacheSize,
   queryEndpoint,
+  resolveFdicMaxResponseBytes,
   truncateIfNeeded,
   validateFdicResponseShape,
 } from "../src/services/fdicClient.js";
@@ -60,6 +61,16 @@ describe("fdicClient", () => {
     );
   });
 
+  it("uses the default FDIC response-size limit when no env override is set", () => {
+    expect(resolveFdicMaxResponseBytes(undefined)).toBe(5 * 1024 * 1024);
+  });
+
+  it("rejects invalid FDIC_MAX_RESPONSE_BYTES values", () => {
+    expect(() => resolveFdicMaxResponseBytes("0")).toThrow(
+      "Invalid FDIC_MAX_RESPONSE_BYTES value: 0. Expected a positive integer.",
+    );
+  });
+
   it("passes default query parameters through to the FDIC API", async () => {
     getMock.mockResolvedValueOnce({
       data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
@@ -67,13 +78,16 @@ describe("fdicClient", () => {
 
     const response = await queryEndpoint("institutions", {});
 
-    expect(getMock).toHaveBeenCalledWith("/institutions", {
-      params: {
-        limit: 20,
-        offset: 0,
-        output: "json",
-      },
-    });
+    expect(getMock).toHaveBeenCalledWith(
+      "/institutions",
+      expect.objectContaining({
+        params: {
+          limit: 20,
+          offset: 0,
+          output: "json",
+        },
+      }),
+    );
     expect(response.meta.total).toBe(1);
   });
 
@@ -111,17 +125,20 @@ describe("fdicClient", () => {
       sort_order: "DESC",
     });
 
-    expect(getMock).toHaveBeenCalledWith("/financials", {
-      params: {
-        filters: "CERT:3511",
-        fields: "CERT,REPDTE",
-        limit: 5,
-        offset: 10,
-        output: "json",
-        sort_by: "REPDTE",
-        sort_order: "DESC",
-      },
-    });
+    expect(getMock).toHaveBeenCalledWith(
+      "/financials",
+      expect.objectContaining({
+        params: {
+          filters: "CERT:3511",
+          fields: "CERT,REPDTE",
+          limit: 5,
+          offset: 10,
+          output: "json",
+          sort_by: "REPDTE",
+          sort_order: "DESC",
+        },
+      }),
+    );
   });
 
   it("rejects invalid fields locally before calling the FDIC API", async () => {
@@ -241,6 +258,16 @@ describe("fdicClient", () => {
 
     await expect(queryEndpoint("institutions", {})).rejects.toThrow(
       'Bad request to FDIC API: Invalid query string. Check your filter syntax (use ElasticSearch query string syntax, e.g. STNAME:"California" AND ACTIVE:1).',
+    );
+  });
+
+  it("maps oversized upstream responses to a clear narrowing error", async () => {
+    getMock.mockRejectedValueOnce(
+      new AxiosError("maxContentLength size of 5242880 exceeded"),
+    );
+
+    await expect(queryEndpoint("institutions", {})).rejects.toThrow(
+      "FDIC API response exceeded the configured response-size limit before parsing. Narrow your filters, request fewer fields, or lower the result size and try again.",
     );
   });
 

@@ -227,15 +227,18 @@ describe("HTTP MCP server", () => {
       has_more: false,
       institutions: [{ CERT: 3511, NAME: "Wells Fargo" }],
     });
-    expect(getMock).toHaveBeenCalledWith("/institutions", {
-      params: {
-        filters: "CERT:3511",
-        limit: 1,
-        offset: 0,
-        output: "json",
-        sort_order: "ASC",
-      },
-    });
+    expect(getMock).toHaveBeenCalledWith(
+      "/institutions",
+      expect.objectContaining({
+        params: {
+          filters: "CERT:3511",
+          limit: 1,
+          offset: 0,
+          output: "json",
+          sort_order: "ASC",
+        },
+      }),
+    );
   });
 
   it("returns structured not-found payloads for single-record tools", async () => {
@@ -261,6 +264,46 @@ describe("HTTP MCP server", () => {
     });
   });
 
+  it("returns structured lookup details for a single institution", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 3511,
+              NAME: "Wells Fargo Bank, National Association",
+              CITY: "Sioux Falls",
+              STALP: "SD",
+              ASSET: 1000000,
+              ACTIVE: 1,
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 41,
+      method: "tools/call",
+      params: {
+        name: "fdic_get_institution",
+        arguments: { cert: 3511, fields: "CERT,NAME,CITY,STALP,ASSET,ACTIVE" },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      CERT: 3511,
+      NAME: "Wells Fargo Bank, National Association",
+      CITY: "Sioux Falls",
+      STALP: "SD",
+      ASSET: 1000000,
+      ACTIVE: 1,
+    });
+  });
+
   it("builds combined filters for location lookups with cert and user filters", async () => {
     getMock.mockResolvedValueOnce({
       data: { data: [], meta: { total: 0 } },
@@ -276,14 +319,65 @@ describe("HTTP MCP server", () => {
       },
     });
 
-    expect(getMock).toHaveBeenLastCalledWith("/locations", {
-      params: {
-        filters: 'CERT:3511 AND (CITY:"Austin")',
-        limit: 20,
-        offset: 0,
-        output: "json",
-        sort_order: "ASC",
+    expect(getMock).toHaveBeenLastCalledWith(
+      "/locations",
+      expect.objectContaining({
+        params: {
+          filters: 'CERT:3511 AND (CITY:"Austin")',
+          limit: 20,
+          offset: 0,
+          output: "json",
+          sort_order: "ASC",
+        },
+      }),
+    );
+  });
+
+  it("returns structured location search results", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 3511,
+              UNINAME: "Wells Fargo Bank, National Association",
+              NAMEFULL: "Downtown Branch",
+              CITY: "Austin",
+              STALP: "TX",
+              BRNUM: 12,
+            },
+          },
+        ],
+        meta: { total: 1 },
       },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 51,
+      method: "tools/call",
+      params: {
+        name: "fdic_search_locations",
+        arguments: { filters: 'CITY:"Austin"', limit: 1 },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      total: 1,
+      offset: 0,
+      count: 1,
+      has_more: false,
+      locations: [
+        {
+          CERT: 3511,
+          UNINAME: "Wells Fargo Bank, National Association",
+          NAMEFULL: "Downtown Branch",
+          CITY: "Austin",
+          STALP: "TX",
+          BRNUM: 12,
+        },
+      ],
     });
   });
 
@@ -310,18 +404,25 @@ describe("HTTP MCP server", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(getMock).toHaveBeenLastCalledWith("/financials", {
-      params: {
-        fields: "CERT,REPDTE",
-        filters: "CERT:3511 AND REPDTE:20251231",
-        limit: 20,
-        offset: 0,
-        output: "json",
-        sort_order: "DESC",
-      },
+    expect(response.body.result.structuredContent).toEqual({
+      total: 1,
+      offset: 0,
+      count: 1,
+      has_more: false,
+      financials: [{ CERT: 3511, REPDTE: "20251231" }],
     });
-    expect(response.body.result.structuredContent.financials[0].REPDTE).toBe(
-      "20251231",
+    expect(getMock).toHaveBeenLastCalledWith(
+      "/financials",
+      expect.objectContaining({
+        params: {
+          fields: "CERT,REPDTE",
+          filters: "CERT:3511 AND REPDTE:20251231",
+          limit: 20,
+          offset: 0,
+          output: "json",
+          sort_order: "DESC",
+        },
+      }),
     );
   });
 
@@ -377,16 +478,19 @@ describe("HTTP MCP server", () => {
         },
       ],
     });
-    expect(getMock).toHaveBeenLastCalledWith("/failures", {
-      params: {
-        filters: "STALP:CA",
-        limit: 1,
-        offset: 0,
-        output: "json",
-        sort_by: "FAILDATE",
-        sort_order: "ASC",
-      },
-    });
+    expect(getMock).toHaveBeenLastCalledWith(
+      "/failures",
+      expect.objectContaining({
+        params: {
+          filters: "STALP:CA",
+          limit: 1,
+          offset: 0,
+          output: "json",
+          sort_by: "FAILDATE",
+          sort_order: "ASC",
+        },
+      }),
+    );
   });
 
   it("returns failure lookup details for a certificate number", async () => {
@@ -492,16 +596,19 @@ describe("HTTP MCP server", () => {
         },
       ],
     });
-    expect(getMock).toHaveBeenLastCalledWith("/history", {
-      params: {
-        filters: "CERT:3511 AND (TYPE:merger)",
-        limit: 20,
-        offset: 0,
-        output: "json",
-        sort_by: "PROCDATE",
-        sort_order: "ASC",
-      },
-    });
+    expect(getMock).toHaveBeenLastCalledWith(
+      "/history",
+      expect.objectContaining({
+        params: {
+          filters: "CERT:3511 AND (TYPE:merger)",
+          limit: 20,
+          offset: 0,
+          output: "json",
+          sort_by: "PROCDATE",
+          sort_order: "ASC",
+        },
+      }),
+    );
   });
 
   it("composes SOD filters from cert, year, and caller filters", async () => {
@@ -555,16 +662,19 @@ describe("HTTP MCP server", () => {
         },
       ],
     });
-    expect(getMock).toHaveBeenLastCalledWith("/sod", {
-      params: {
-        filters: '(CITYBR:"Austin") AND CERT:3511 AND YEAR:2022',
-        limit: 20,
-        offset: 0,
-        output: "json",
-        sort_by: "DEPSUMBR",
-        sort_order: "ASC",
-      },
-    });
+    expect(getMock).toHaveBeenLastCalledWith(
+      "/sod",
+      expect.objectContaining({
+        params: {
+          filters: '(CITYBR:"Austin") AND CERT:3511 AND YEAR:2022',
+          limit: 20,
+          offset: 0,
+          output: "json",
+          sort_by: "DEPSUMBR",
+          sort_order: "ASC",
+        },
+      }),
+    );
   });
 
   it("composes annual summary filters and returns summary records", async () => {
@@ -618,16 +728,19 @@ describe("HTTP MCP server", () => {
         },
       ],
     });
-    expect(getMock).toHaveBeenLastCalledWith("/summary", {
-      params: {
-        filters: "(ASSET:[500000 TO *]) AND CERT:3511 AND YEAR:2023",
-        limit: 20,
-        offset: 0,
-        output: "json",
-        sort_by: "YEAR",
-        sort_order: "ASC",
-      },
-    });
+    expect(getMock).toHaveBeenLastCalledWith(
+      "/summary",
+      expect.objectContaining({
+        params: {
+          filters: "(ASSET:[500000 TO *]) AND CERT:3511 AND YEAR:2023",
+          limit: 20,
+          offset: 0,
+          output: "json",
+          sort_by: "YEAR",
+          sort_order: "ASC",
+        },
+      }),
+    );
   });
 
   it("returns MCP error payloads when the FDIC client throws", async () => {
@@ -648,6 +761,175 @@ describe("HTTP MCP server", () => {
     expect(response.body.result.content[0].text).toBe(
       "Error: Unexpected error calling FDIC API: Error: backend unavailable",
     );
+  });
+
+  it("returns structured demographics search results for combined filters", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 3511,
+              REPDTE: "20241231",
+              OFFTOT: 12,
+              OFFSTATE: 3,
+              METRO: 1,
+              CBSANAME: "Austin-Round Rock-Georgetown, TX",
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 71,
+      method: "tools/call",
+      params: {
+        name: "fdic_search_demographics",
+        arguments: {
+          cert: 3511,
+          repdte: "20241231",
+          filters: "METRO:1",
+          limit: 1,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      total: 1,
+      offset: 0,
+      count: 1,
+      has_more: false,
+      demographics: [
+        {
+          CERT: 3511,
+          REPDTE: "20241231",
+          OFFTOT: 12,
+          OFFSTATE: 3,
+          METRO: 1,
+          CBSANAME: "Austin-Round Rock-Georgetown, TX",
+        },
+      ],
+    });
+    expect(getMock).toHaveBeenLastCalledWith(
+      "/demographics",
+      expect.objectContaining({
+        params: {
+          filters: "(METRO:1) AND CERT:3511 AND REPDTE:20241231",
+          limit: 1,
+          offset: 0,
+          output: "json",
+          sort_order: "ASC",
+        },
+      }),
+    );
+  });
+
+  it("returns empty demographics results with the expected structured shape", async () => {
+    getMock.mockResolvedValueOnce({
+      data: { data: [], meta: { total: 0 } },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 72,
+      method: "tools/call",
+      params: {
+        name: "fdic_search_demographics",
+        arguments: { cert: 3511 },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toEqual({
+      total: 0,
+      offset: 0,
+      count: 0,
+      has_more: false,
+      demographics: [],
+    });
+  });
+
+  it("passes unusual filter strings through all search tools", async () => {
+    const cases = [
+      {
+        name: "fdic_search_institutions",
+        endpoint: "/institutions",
+        filters: `NAME:"O'FALLON"`,
+        expectedFilters: `NAME:"O'FALLON"`,
+      },
+      {
+        name: "fdic_search_failures",
+        endpoint: "/failures",
+        filters: `NAME:"FIRST STATE BANK - ST. CHARLES"`,
+        expectedFilters: `NAME:"FIRST STATE BANK - ST. CHARLES"`,
+      },
+      {
+        name: "fdic_search_locations",
+        endpoint: "/locations",
+        filters: `CITY:"ST. JOHN'S"`,
+        expectedFilters: `(CITY:"ST. JOHN'S")`,
+      },
+      {
+        name: "fdic_search_history",
+        endpoint: "/history",
+        filters: `INSTNAME:"BANK & TRUST"`,
+        expectedFilters: `(INSTNAME:"BANK & TRUST")`,
+      },
+      {
+        name: "fdic_search_financials",
+        endpoint: "/financials",
+        filters: `NAME:"BANK OF THE WEST"`,
+        expectedFilters: `(NAME:"BANK OF THE WEST")`,
+      },
+      {
+        name: "fdic_search_summary",
+        endpoint: "/summary",
+        filters: `NAME:"BANK OF THE WEST"`,
+        expectedFilters: `(NAME:"BANK OF THE WEST")`,
+      },
+      {
+        name: "fdic_search_sod",
+        endpoint: "/sod",
+        filters: `NAMEFULL:"MAIN/OFFICE"`,
+        expectedFilters: `(NAMEFULL:"MAIN/OFFICE")`,
+      },
+      {
+        name: "fdic_search_demographics",
+        endpoint: "/demographics",
+        filters: `CBSANAME:"ST. LOUIS, MO-IL"`,
+        expectedFilters: `(CBSANAME:"ST. LOUIS, MO-IL")`,
+      },
+    ] as const;
+
+    for (const testCase of cases) {
+      getMock.mockResolvedValueOnce({
+        data: { data: [], meta: { total: 0 } },
+      });
+
+      const response = await mcpPost({
+        jsonrpc: "2.0",
+        id: 80,
+        method: "tools/call",
+        params: {
+          name: testCase.name,
+          arguments: { filters: testCase.filters },
+        },
+      });
+
+      expect(response.status).toBe(200);
+      expect(getMock).toHaveBeenLastCalledWith(
+        testCase.endpoint,
+        expect.objectContaining({
+          params: expect.objectContaining({
+            filters: testCase.expectedFilters,
+          }),
+        }),
+      );
+    }
   });
 
   it("rejects snapshot analysis requests without state or certs", async () => {
@@ -1079,6 +1361,64 @@ describe("HTTP MCP server", () => {
         (comparison: { cert: number }) => comparison.cert,
       ),
     ).toEqual([1111, 2222]);
+  });
+
+  it("handles partial snapshot data by analyzing only institutions with both dates present", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Complete Bank", CITY: "Raleigh", STALP: "NC" } },
+            { data: { CERT: 2222, NAME: "Missing End Bank", CITY: "Durham", STALP: "NC" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Complete Bank", ASSET: 100, DEP: 50, NETINC: 10, ROA: 1.0, ROE: 8.0 } },
+            { data: { CERT: 2222, NAME: "Missing End Bank", ASSET: 200, DEP: 80, NETINC: 12, ROA: 1.2, ROE: 8.5 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Complete Bank", ASSET: 140, DEP: 90, NETINC: 14, ROA: 1.1, ROE: 8.2 } },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { data: [], meta: { total: 0 } },
+      })
+      .mockResolvedValueOnce({
+        data: { data: [], meta: { total: 0 } },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 804,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          limit: 2,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent.total_candidates).toBe(2);
+    expect(response.body.result.structuredContent.analyzed_count).toBe(1);
+    expect(response.body.result.structuredContent.comparisons).toEqual([
+      expect.objectContaining({ cert: 1111, name: "Complete Bank" }),
+    ]);
   });
 
   it("includes all generated insight categories in the top-level summary", async () => {
