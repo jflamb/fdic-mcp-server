@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   buildPaginationInfo,
+  buildTruncationWarning,
   extractRecords,
   formatToolError,
   queryEndpoint,
@@ -592,7 +593,10 @@ async function fetchBatchedRecordsForDates(
   repdteFilters: string[],
   fields: string,
   signal?: AbortSignal,
-): Promise<Map<string, Map<number, InstitutionRecord>>> {
+): Promise<{
+  byDate: Map<string, Map<number, InstitutionRecord>>;
+  warnings: string[];
+}> {
   const certFilters = buildCertFilters(certs);
   const tasks = repdteFilters.flatMap((repdteFilter) =>
     certFilters.map((certFilter) => ({
@@ -601,32 +605,49 @@ async function fetchBatchedRecordsForDates(
     })),
   );
 
-  const responses = await mapWithConcurrency(tasks, MAX_CONCURRENCY, async (task) => {
-    const response = await queryEndpoint(endpoint, {
-      filters: `(${task.certFilter}) AND ${task.repdteFilter}`,
-      fields,
-      limit: 10_000,
-      offset: 0,
-      sort_by: "CERT",
-      sort_order: "ASC",
-    }, { signal });
+  const responses = await mapWithConcurrency(
+    tasks,
+    MAX_CONCURRENCY,
+    async (task) => {
+      const response = await queryEndpoint(
+        endpoint,
+        {
+          filters: `(${task.certFilter}) AND ${task.repdteFilter}`,
+          fields,
+          limit: 10_000,
+          offset: 0,
+          sort_by: "CERT",
+          sort_order: "ASC",
+        },
+        { signal },
+      );
 
-    return { repdteFilter: task.repdteFilter, response };
-  });
+      return { repdteFilter: task.repdteFilter, response };
+    },
+  );
 
   const byDate = new Map<string, Map<number, InstitutionRecord>>();
+  const warnings = new Set<string>();
   for (const { repdteFilter, response } of responses) {
     if (!byDate.has(repdteFilter)) {
       byDate.set(repdteFilter, new Map<number, InstitutionRecord>());
     }
+    const records = extractRecords(response);
+    const warning = buildTruncationWarning(
+      `${endpoint} batch for ${repdteFilter}`,
+      response.meta.total,
+      records.length,
+      "Narrow the comparison set with institution_filters or certs for complete analysis.",
+    );
+    if (warning) warnings.add(warning);
     const target = byDate.get(repdteFilter)!;
-    for (const record of extractRecords(response)) {
+    for (const record of records) {
       const cert = asNumber(record.CERT);
       if (cert !== null) target.set(cert, record);
     }
   }
 
-  return byDate;
+  return { byDate, warnings: [...warnings] };
 }
 
 async function fetchSeriesRecords(
@@ -636,7 +657,7 @@ async function fetchSeriesRecords(
   endRepdte: string,
   fields: string,
   signal?: AbortSignal,
-): Promise<Map<number, InstitutionRecord[]>> {
+): Promise<{ grouped: Map<number, InstitutionRecord[]>; warnings: string[] }> {
   const certFilters = buildCertFilters(certs);
   const responses = await mapWithConcurrency(
     certFilters,
@@ -653,8 +674,17 @@ async function fetchSeriesRecords(
   );
 
   const grouped = new Map<number, InstitutionRecord[]>();
+  const warnings = new Set<string>();
   for (const response of responses) {
-    for (const record of extractRecords(response)) {
+    const records = extractRecords(response);
+    const warning = buildTruncationWarning(
+      `${endpoint} batch for REPDTE:[${startRepdte} TO ${endRepdte}]`,
+      response.meta.total,
+      records.length,
+      "Narrow the comparison set with certs or a shorter date range for complete analysis.",
+    );
+    if (warning) warnings.add(warning);
+    for (const record of records) {
       const cert = asNumber(record.CERT);
       if (cert === null) continue;
       if (!grouped.has(cert)) grouped.set(cert, []);
@@ -662,7 +692,7 @@ async function fetchSeriesRecords(
     }
   }
 
-  return grouped;
+  return { grouped, warnings: [...warnings] };
 }
 
 function buildSnapshotComparison(
@@ -846,9 +876,10 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         );
 
         let comparisons: ComparisonRecord[] = [];
+        const warnings = rosterResult.warning ? [rosterResult.warning] : [];
 
         if (analysis_mode === "timeseries") {
-          const [financialSeries, demographicsSeries] = await Promise.all([
+          const [financialSeriesResult, demographicsSeriesResult] = await Promise.all([
             fetchSeriesRecords(
               ENDPOINTS.FINANCIALS,
               candidateCerts,
@@ -866,8 +897,17 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
                   "CERT,REPDTE,OFFTOT,OFFSTATE,CBSANAME",
                   controller.signal,
                 )
-              : Promise.resolve(new Map<number, InstitutionRecord[]>()),
+              : Promise.resolve({
+                  grouped: new Map<number, InstitutionRecord[]>(),
+                  warnings: [],
+                }),
           ]);
+          warnings.push(
+            ...financialSeriesResult.warnings,
+            ...demographicsSeriesResult.warnings,
+          );
+          const financialSeries = financialSeriesResult.grouped;
+          const demographicsSeries = demographicsSeriesResult.grouped;
 
           comparisons = candidateCerts
             .map((cert) =>
@@ -884,7 +924,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             )
             .filter((comparison): comparison is ComparisonRecord => comparison !== null);
         } else {
-          const [financialSnapshots, demographicSnapshots] = await Promise.all([
+          const [financialSnapshotsResult, demographicSnapshotsResult] = await Promise.all([
             fetchBatchedRecordsForDates(
               ENDPOINTS.FINANCIALS,
               candidateCerts,
@@ -900,8 +940,17 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
                   "CERT,REPDTE,OFFTOT,OFFSTATE,CBSANAME",
                   controller.signal,
                 )
-              : Promise.resolve(new Map<string, Map<number, InstitutionRecord>>()),
+              : Promise.resolve({
+                  byDate: new Map<string, Map<number, InstitutionRecord>>(),
+                  warnings: [],
+                }),
           ]);
+          warnings.push(
+            ...financialSnapshotsResult.warnings,
+            ...demographicSnapshotsResult.warnings,
+          );
+          const financialSnapshots = financialSnapshotsResult.byDate;
+          const demographicSnapshots = demographicSnapshotsResult.byDate;
 
           const startFinancials =
             financialSnapshots.get(`REPDTE:${start_repdte}`) ??
@@ -950,7 +999,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           analysis_mode,
           sort_by,
           sort_order,
-          warnings: rosterResult.warning ? [rosterResult.warning] : [],
+          warnings,
           insights: buildTopLevelInsights(sortedComparisons),
           ...pagination,
           comparisons: ranked,
@@ -958,7 +1007,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
 
         const text = truncateIfNeeded(
           [
-            rosterResult.warning ? `Warning: ${rosterResult.warning}` : null,
+            ...warnings.map((warning) => `Warning: ${warning}`),
             formatComparisonText(output),
           ]
             .filter((value): value is string => value !== null)

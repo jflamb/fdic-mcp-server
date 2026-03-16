@@ -984,6 +984,46 @@ describe("HTTP MCP server", () => {
     );
   });
 
+  it("warns when a snapshot analysis financial batch is truncated by the FDIC API limit", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 3510, NAME: "Bank A", REPDTE: "20211231", ASSET: 100, DEP: 50, NETINC: 10, ROA: 1, ROE: 8 } }],
+          meta: { total: 10001 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 3510, NAME: "Bank A", REPDTE: "20250630", ASSET: 150, DEP: 75, NETINC: 12, ROA: 1.2, ROE: 8.5 } }],
+          meta: { total: 1 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 12,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          certs: [3510],
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          include_demographics: false,
+          limit: 1,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent.warnings).toEqual([
+      "financials batch for REPDTE:20211231 truncated to 1 records out of 10,001 matched rows. Narrow the comparison set with institution_filters or certs for complete analysis.",
+    ]);
+    expect(response.body.result.content[0].text).toContain(
+      "Warning: financials batch for REPDTE:20211231 truncated to 1 records out of 10,001 matched rows.",
+    );
+  });
+
   it("includes fdic_peer_group_analysis in the tool list", async () => {
     const response = await mcpPost({
       jsonrpc: "2.0",
@@ -1111,6 +1151,52 @@ describe("HTTP MCP server", () => {
     expect(sc.peer_group.criteria_used.state).toBe("NC");
     expect(sc.peer_group.medians.roa).toBe(1.25);
     expect(response.body.result.content[0].text).toContain("Peer group medians");
+  });
+
+  it("warns when a peer-group financial batch is truncated by the FDIC API limit", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 200, NAME: "Peer A", CITY: "Raleigh", STALP: "NC", BKCLASS: "N" } },
+            { data: { CERT: 300, NAME: "Peer B", CITY: "Charlotte", STALP: "NC", BKCLASS: "N" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 200, ASSET: 5000000, DEP: 4000000, NETINC: 100000, ROA: 1.0, ROE: 9.0, NETNIM: 3.0, EQTOT: 500000, LNLSNET: 3000000, INTINC: 200000, EINTEXP: 80000, NONII: 30000, NONIX: 100000 } },
+            { data: { CERT: 300, ASSET: 8000000, DEP: 6000000, NETINC: 200000, ROA: 1.5, ROE: 11.0, NETNIM: 3.5, EQTOT: 900000, LNLSNET: 4500000, INTINC: 350000, EINTEXP: 120000, NONII: 50000, NONIX: 150000 } },
+          ],
+          meta: { total: 10002 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 104,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: {
+          repdte: "20241231",
+          asset_min: 5000000,
+          asset_max: 20000000,
+          charter_classes: ["N"],
+          state: "NC",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent.warnings).toEqual([
+      "financials batch for REPDTE:20241231 truncated to 2 records out of 10,002 matched rows. Narrow the peer group criteria for complete analysis.",
+    ]);
+    expect(response.body.result.content[0].text).toContain(
+      "Warning: financials batch for REPDTE:20241231 truncated to 2 records out of 10,002 matched rows.",
+    );
   });
 
   it("returns empty result when no peers match", async () => {

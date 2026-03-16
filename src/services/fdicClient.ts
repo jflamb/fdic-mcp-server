@@ -220,6 +220,19 @@ export function buildPaginationInfo(
   };
 }
 
+export function buildTruncationWarning(
+  label: string,
+  total: number,
+  count: number,
+  guidance: string,
+): string | undefined {
+  if (total <= count) return undefined;
+  return (
+    `${label} truncated to ${count.toLocaleString()} records out of ` +
+    `${total.toLocaleString()} matched rows. ${guidance}`
+  );
+}
+
 export function truncateIfNeeded(text: string, charLimit: number): string {
   if (text.length <= charLimit) return text;
   return (
