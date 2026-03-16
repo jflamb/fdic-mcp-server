@@ -111,6 +111,79 @@ async function mcpPost(body: Record<string, unknown>) {
   return mcpRequest(app, sessionId, body);
 }
 
+async function collectProgressNotifications(
+  app: Express,
+  sessionId: string,
+  trigger: () => Promise<unknown>,
+) {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    throw new Error("Expected TCP address for test server");
+  }
+
+  const response = await fetch(`http://127.0.0.1:${address.port}/mcp`, {
+    headers: {
+      accept: "text/event-stream",
+      "mcp-session-id": sessionId,
+    },
+  });
+
+  if (!response.ok || response.body === null) {
+    throw new Error(`Failed to open SSE stream: ${response.status}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  const progressEvents: Array<{
+    progressToken: string | number;
+    progress: number;
+    total: number;
+    message: string;
+  }> = [];
+
+  const readTask = (async () => {
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+      const events = buffer.split("\n\n");
+      buffer = events.pop() ?? "";
+
+      for (const event of events) {
+        const dataLine = event
+          .split("\n")
+          .find((line) => line.startsWith("data: "));
+        if (!dataLine) {
+          continue;
+        }
+
+        const payload = JSON.parse(dataLine.slice(6));
+        if (payload.method === "notifications/progress") {
+          progressEvents.push(payload.params);
+          if (payload.params.progress === 1) {
+            return;
+          }
+        }
+      }
+    }
+  })();
+
+  await trigger();
+  await readTask;
+  await reader.cancel();
+  await new Promise<void>((resolve, reject) => {
+    server.close((error) => (error ? reject(error) : resolve()));
+  });
+
+  return progressEvents;
+}
+
 
 describe("HTTP MCP server", () => {
   beforeEach(() => {
@@ -306,6 +379,196 @@ describe("HTTP MCP server", () => {
       });
 
     expect(disallowedInit.status).toBe(403);
+  });
+
+  it("streams progress notifications for snapshot analysis when the client provides a progress token", async () => {
+    const app = createApp();
+    const { sessionId } = await initializeSession(app);
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Example Bank",
+                REPDTE: "20240331",
+                ASSET: 1000,
+                DEP: 800,
+                NETINC: 10,
+                ROA: 1,
+                ROE: 10,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Example Bank",
+                REPDTE: "20241231",
+                ASSET: 1200,
+                DEP: 900,
+                NETINC: 12,
+                ROA: 1.1,
+                ROE: 10.5,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      });
+
+    const progress = await collectProgressNotifications(app, sessionId, () =>
+      mcpRequest(app, sessionId, {
+        jsonrpc: "2.0",
+        id: 7,
+        method: "tools/call",
+        params: {
+          name: "fdic_compare_bank_snapshots",
+          arguments: {
+            certs: [3511],
+            start_repdte: "20240331",
+            end_repdte: "20241231",
+            include_demographics: false,
+          },
+          _meta: {
+            progressToken: "analysis-progress",
+          },
+        },
+      }),
+    );
+
+    expect(progress).toEqual([
+      {
+        progressToken: "analysis-progress",
+        progress: 0.1,
+        total: 1,
+        message: "Fetching institution roster",
+      },
+      {
+        progressToken: "analysis-progress",
+        progress: 0.3,
+        total: 1,
+        message: "Fetching financial snapshots",
+      },
+      {
+        progressToken: "analysis-progress",
+        progress: 0.9,
+        total: 1,
+        message: "Computing metrics and insights",
+      },
+      {
+        progressToken: "analysis-progress",
+        progress: 1,
+        total: 1,
+        message: "Analysis complete",
+      },
+    ]);
+  });
+
+  it("streams progress notifications for peer group analysis when the client provides a progress token", async () => {
+    const app = createApp();
+    const { sessionId } = await initializeSession(app);
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Example Bank",
+                CITY: "Austin",
+                STALP: "TX",
+                BKCLASS: "N",
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                ASSET: 1000,
+                DEP: 800,
+                NETINC: 10,
+                ROA: 1,
+                ROE: 10,
+                NETNIM: 3,
+                EQTOT: 100,
+                LNLSNET: 700,
+                INTINC: 50,
+                EINTEXP: 10,
+                NONII: 5,
+                NONIX: 4,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      });
+
+    const progress = await collectProgressNotifications(app, sessionId, () =>
+      mcpRequest(app, sessionId, {
+        jsonrpc: "2.0",
+        id: 8,
+        method: "tools/call",
+        params: {
+          name: "fdic_peer_group_analysis",
+          arguments: {
+            repdte: "20241231",
+            asset_min: 500,
+            asset_max: 2000,
+            active_only: false,
+          },
+          _meta: {
+            progressToken: "peer-progress",
+          },
+        },
+      }),
+    );
+
+    expect(progress).toEqual([
+      {
+        progressToken: "peer-progress",
+        progress: 0.1,
+        total: 1,
+        message: "Resolving subject and peer criteria",
+      },
+      {
+        progressToken: "peer-progress",
+        progress: 0.4,
+        total: 1,
+        message: "Fetching peer roster",
+      },
+      {
+        progressToken: "peer-progress",
+        progress: 0.7,
+        total: 1,
+        message: "Fetching peer financials",
+      },
+      {
+        progressToken: "peer-progress",
+        progress: 0.9,
+        total: 1,
+        message: "Computing peer rankings",
+      },
+      {
+        progressToken: "peer-progress",
+        progress: 1,
+        total: 1,
+        message: "Analysis complete",
+      },
+    ]);
   });
 
   it("lists all registered tools including demographics", async () => {
