@@ -492,3 +492,32 @@ Reference: issue #105.
 - [x] Replaced the manual tag-triggered publish workflow with an automated release workflow that runs after successful CI on the latest `main` commit.
 - [x] Added commit-message linting in CI so semantic versioning stays reliable under the current merge workflow.
 - [x] Removed the one-off backfill workflow and updated contributor and deployment docs to describe the automated release process.
+
+# Analysis Bug Batch: Issues #103 And #104
+
+Reference: issues #103 and #104.
+
+## Goals
+
+- [x] Fix invalid `REPDTE` handling in the analysis date-span helpers so impossible calendar dates cannot leak `NaN` into `asset_cagr` or related structured output.
+- [x] Make `fdic_compare_bank_snapshots` return one stable `structuredContent` shape for both empty and populated comparison sets.
+- [x] Add targeted regression coverage for both bugs in the analysis helper tests and MCP HTTP contract tests.
+- [x] Execute the work on a dedicated branch from fresh `main`. Branch: `fix/analysis-batch-103-104`.
+
+## Acceptance Criteria
+
+- [x] `yearsBetween()` returns `0` when either fallback parsed date is invalid, including impossible month/day combinations.
+- [x] `cagr()` returns `null` when `years` is non-finite, so `asset_cagr` never becomes `NaN`.
+- [x] The empty-result path for `fdic_compare_bank_snapshots` includes the same top-level keys as the success path: `warnings`, `insights`, `total`, `offset`, `count`, `has_more`, and `comparisons`.
+- [x] Roster-level warnings remain visible even when the analyzed set is empty.
+- [x] Regression tests cover invalid-date helper inputs and the empty-analysis `structuredContent` contract.
+- [x] Validation passes with `npm run typecheck`, `npm test -- tests/analysis.test.ts tests/mcp-http.test.ts`, and `npm run build`.
+
+## Review / Results
+
+- [x] Created a dedicated worktree and branch from `main` to keep this bug batch isolated from unrelated local publish work.
+- [x] Replaced permissive `Date` fallback parsing in [analysis.ts](/Users/jlamb/Projects/bankfind-mcp-analysis-103-104/src/tools/analysis.ts) with strict UTC round-trip validation so values such as `20240230` are rejected instead of normalized.
+- [x] Tightened `cagr()` in [analysis.ts](/Users/jlamb/Projects/bankfind-mcp-analysis-103-104/src/tools/analysis.ts) to return `null` for non-finite year spans.
+- [x] Centralized the analysis output envelope in [analysis.ts](/Users/jlamb/Projects/bankfind-mcp-analysis-103-104/src/tools/analysis.ts) so empty and populated responses share the same `structuredContent` shape.
+- [x] Added regression coverage in [analysis.test.ts](/Users/jlamb/Projects/bankfind-mcp-analysis-103-104/tests/analysis.test.ts) and [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp-analysis-103-104/tests/mcp-http.test.ts) for invalid dates, non-finite CAGR inputs, empty envelopes, and preserved warnings on empty analyzed results.
+- [x] Verified `npm test -- tests/analysis.test.ts tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
