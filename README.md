@@ -53,7 +53,7 @@ The FDIC BankFind Suite API is public and useful, but it is not packaged for MCP
 
 Prerequisites:
 
-- Node.js 18 or later
+- Node.js 20 or later
 - npm
 
 Run directly without a global install:

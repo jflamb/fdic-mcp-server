@@ -27,7 +27,7 @@ breadcrumbs:
 
 ## Troubleshooting Checklist
 
-- Confirm you are using Node.js 18 or later.
+- Confirm you are using Node.js 20 or later.
 - Confirm the MCP host supports the transport you configured.
 - If using ChatGPT, confirm the server is exposed over reachable HTTPS rather than local stdio only.
 - If using a packaged install, confirm the binary path in the client config is correct.

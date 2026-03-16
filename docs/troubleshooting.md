@@ -14,7 +14,7 @@ breadcrumbs:
 
 Before debugging a client-specific issue, verify:
 
-- Node.js is version 18 or later
+- Node.js is version 20 or later
 - the package is installed or the local build exists
 - the MCP host supports the transport you configured
 - your client config points at the correct binary or HTTP URL
