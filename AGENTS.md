@@ -109,11 +109,16 @@ TRANSPORT=http PORT=3000 node dist/index.js
 
 ## File Guide
 
-- `src/index.ts`: server construction and transport wiring
+- `src/cli.ts`: CLI entrypoint that invokes `main()` and exits non-zero on startup failure
+- `src/index.ts`: server construction, transport wiring, and HTTP app creation
+- `src/constants.ts`: shared runtime constants such as API base URL, version, endpoints, and output limits
+- `src/schemas/common.ts`: shared Zod query schemas reused across tool modules
 - `src/tools/*.ts`: MCP tool definitions
 - `src/services/fdicClient.ts`: FDIC API access, pagination, and error handling
 - `tests/*.test.ts`: behavior and contract coverage
-- `scripts/build.js`: build entrypoint
+- `scripts/build.js`: build entrypoint that produces both `dist/index.js` and `dist/server.js`
+- `dist/index.js`: executable CLI bundle built from `src/cli.ts`
+- `dist/server.js`: reusable server bundle built from `src/index.ts`
 
 ## Testing Expectations
 
