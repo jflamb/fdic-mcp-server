@@ -995,6 +995,77 @@ describe("HTTP MCP server", () => {
     );
   });
 
+  it("returns a stable empty structuredContent envelope when no institutions match", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [],
+        meta: { total: 0 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 803,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          limit: 2,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.content[0].text).toBe(
+      "No institutions matched the comparison set.",
+    );
+
+    const sc = response.body.result.structuredContent;
+    expect(Object.keys(sc).sort()).toEqual([
+      "analysis_mode",
+      "analyzed_count",
+      "comparisons",
+      "count",
+      "end_repdte",
+      "has_more",
+      "insights",
+      "offset",
+      "sort_by",
+      "sort_order",
+      "start_repdte",
+      "total",
+      "total_candidates",
+      "warnings",
+    ]);
+    expect(sc).toMatchObject({
+      total_candidates: 0,
+      analyzed_count: 0,
+      start_repdte: "20211231",
+      end_repdte: "20250630",
+      analysis_mode: "snapshot",
+      sort_by: "asset_growth",
+      sort_order: "DESC",
+      total: 0,
+      offset: 0,
+      count: 0,
+      has_more: false,
+      warnings: [],
+      comparisons: [],
+      insights: {
+        growth_with_better_profitability: [],
+        growth_with_branch_expansion: [],
+        balance_sheet_growth_without_profitability: [],
+        growth_with_branch_consolidation: [],
+        deposit_mix_softening: [],
+        sustained_asset_growth: [],
+        multi_quarter_roa_decline: [],
+      },
+    });
+  });
+
   it("batches snapshot comparisons into financial and demographic date queries", async () => {
     getMock
       .mockResolvedValueOnce({
@@ -1507,6 +1578,65 @@ describe("HTTP MCP server", () => {
     expect(response.body.result.content[0].text).toContain(
       "Warning: Institution roster truncated to 10,000 records out of 10,500 matched institutions.",
     );
+  });
+
+  it("preserves roster warnings when candidates exist but no comparisons can be built", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [{ data: { CERT: 3510, NAME: "Bank A", CITY: "Charlotte", STALP: "NC" } }],
+          meta: { total: 10001 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [],
+          meta: { total: 0 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [],
+          meta: { total: 0 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 1201,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          include_demographics: false,
+          limit: 2,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const sc = response.body.result.structuredContent;
+    expect(sc.total_candidates).toBe(1);
+    expect(sc.analyzed_count).toBe(0);
+    expect(sc.total).toBe(0);
+    expect(sc.count).toBe(0);
+    expect(sc.has_more).toBe(false);
+    expect(sc.comparisons).toEqual([]);
+    expect(sc.warnings).toEqual([
+      "Institution roster truncated to 1 records out of 10,001 matched institutions. Narrow the comparison set with institution_filters or certs for complete analysis.",
+    ]);
+    expect(sc.insights).toMatchObject({
+      growth_with_better_profitability: [],
+      growth_with_branch_expansion: [],
+      balance_sheet_growth_without_profitability: [],
+      growth_with_branch_consolidation: [],
+      deposit_mix_softening: [],
+      sustained_asset_growth: [],
+      multi_quarter_roa_decline: [],
+    });
   });
 
   it("warns when a snapshot analysis financial batch is truncated by the FDIC API limit", async () => {

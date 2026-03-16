@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  cagr,
   getQuarterIndex,
   maxOrNull,
   yearsBetween,
@@ -41,6 +42,20 @@ describe("yearsBetween", () => {
 
   it("clamps reversed ranges to zero", () => {
     expect(yearsBetween("20250630", "20211231")).toBe(0);
+  });
+
+  it("returns zero for impossible calendar dates on the fallback path", () => {
+    expect(yearsBetween("20241301", "20250331")).toBe(0);
+    expect(yearsBetween("20240015", "20250331")).toBe(0);
+    expect(yearsBetween("20240230", "20250331")).toBe(0);
+    expect(yearsBetween("20240229", "20250331")).toBe(1);
+  });
+});
+
+describe("cagr", () => {
+  it("returns null for non-finite year spans", () => {
+    expect(cagr(100, 120, Number.NaN)).toBeNull();
+    expect(cagr(100, 120, Number.POSITIVE_INFINITY)).toBeNull();
   });
 });
 
