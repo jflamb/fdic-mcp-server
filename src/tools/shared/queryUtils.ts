@@ -61,6 +61,8 @@ export async function mapWithConcurrency<T, R>(
 
   async function worker(): Promise<void> {
     while (true) {
+      // Safe under JS async concurrency: no `await` occurs between reading and
+      // incrementing `nextIndex`, so workers cannot interleave during assignment.
       const currentIndex = nextIndex;
       nextIndex += 1;
       if (currentIndex >= values.length) return;

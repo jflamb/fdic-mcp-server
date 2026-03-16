@@ -82,12 +82,18 @@ export function parseAllowedOrigins(
 interface HttpAppOptions {
   port?: number;
   allowedOrigins?: string[];
+  sessionIdleTimeoutMs?: number;
+  sessionSweepIntervalMs?: number;
 }
 
 interface SessionContext {
   server: McpServer;
   transport: StreamableHTTPServerTransport;
+  lastActivityAt: number;
 }
+
+const DEFAULT_SESSION_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+const DEFAULT_SESSION_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
 
 async function closeSession(
   sessions: Map<string, SessionContext>,
@@ -101,6 +107,28 @@ async function closeSession(
   sessions.delete(sessionId);
   await session.server.close().catch(() => {});
   await session.transport.close().catch(() => {});
+}
+
+function touchSession(session: SessionContext, now: number): void {
+  session.lastActivityAt = now;
+}
+
+async function sweepIdleSessions(
+  sessions: Map<string, SessionContext>,
+  idleTimeoutMs: number,
+  now: number,
+): Promise<void> {
+  const expiredSessionIds: string[] = [];
+
+  for (const [sessionId, session] of sessions.entries()) {
+    if (now - session.lastActivityAt >= idleTimeoutMs) {
+      expiredSessionIds.push(sessionId);
+    }
+  }
+
+  await Promise.all(
+    expiredSessionIds.map((sessionId) => closeSession(sessions, sessionId)),
+  );
 }
 
 function sendInvalidSessionResponse(res: express.Response): void {
@@ -120,7 +148,16 @@ export function createApp(options: HttpAppOptions = {}): Express {
   const allowedOrigins =
     options.allowedOrigins ?? parseAllowedOrigins(undefined, port);
   const sessions = new Map<string, SessionContext>();
+  const sessionIdleTimeoutMs =
+    options.sessionIdleTimeoutMs ?? DEFAULT_SESSION_IDLE_TIMEOUT_MS;
+  const sessionSweepIntervalMs =
+    options.sessionSweepIntervalMs ?? DEFAULT_SESSION_SWEEP_INTERVAL_MS;
   app.use(express.json());
+
+  const sessionSweepTimer = setInterval(() => {
+    void sweepIdleSessions(sessions, sessionIdleTimeoutMs, Date.now());
+  }, sessionSweepIntervalMs);
+  sessionSweepTimer.unref?.();
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", server: "fdic-mcp-server", version: VERSION });
@@ -146,6 +183,7 @@ export function createApp(options: HttpAppOptions = {}): Express {
           return;
         }
 
+        touchSession(session, Date.now());
         await session.transport.handleRequest(req, res, req.body);
         if (req.method === "DELETE") {
           await closeSession(sessions, sessionId);
@@ -165,7 +203,11 @@ export function createApp(options: HttpAppOptions = {}): Express {
         enableDnsRebindingProtection: true,
         allowedOrigins,
         onsessioninitialized: (newSessionId) => {
-          sessions.set(newSessionId, { server, transport });
+          sessions.set(newSessionId, {
+            server,
+            transport,
+            lastActivityAt: Date.now(),
+          });
         },
       });
 

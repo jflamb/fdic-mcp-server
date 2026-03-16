@@ -302,6 +302,94 @@ describe("HTTP MCP server", () => {
     expect(postDeleteResponse.body.error.message).toBe("Session not found");
   });
 
+  it("expires idle HTTP sessions even when the client never sends DELETE", async () => {
+    vi.useFakeTimers();
+    const app = createApp({
+      sessionIdleTimeoutMs: 1000,
+      sessionSweepIntervalMs: 250,
+    });
+
+    const { sessionId } = await initializeSession(app);
+
+    await vi.advanceTimersByTimeAsync(1500);
+
+    const response = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("mcp-session-id", sessionId)
+      .send({
+        jsonrpc: "2.0",
+        id: 22,
+        method: "tools/list",
+        params: {},
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error.message).toBe("Session not found");
+    vi.useRealTimers();
+  });
+
+  it("refreshes the idle deadline when an HTTP session stays active", async () => {
+    vi.useFakeTimers();
+    const app = createApp({
+      sessionIdleTimeoutMs: 1000,
+      sessionSweepIntervalMs: 250,
+    });
+
+    const { sessionId } = await initializeSession(app);
+
+    await vi.advanceTimersByTimeAsync(600);
+
+    const keepAliveResponse = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("mcp-session-id", sessionId)
+      .send({
+        jsonrpc: "2.0",
+        id: 23,
+        method: "tools/list",
+        params: {},
+      });
+
+    expect(keepAliveResponse.status).toBe(200);
+
+    await vi.advanceTimersByTimeAsync(600);
+
+    const stillActiveResponse = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("mcp-session-id", sessionId)
+      .send({
+        jsonrpc: "2.0",
+        id: 24,
+        method: "tools/list",
+        params: {},
+      });
+
+    expect(stillActiveResponse.status).toBe(200);
+
+    await vi.advanceTimersByTimeAsync(1200);
+
+    const expiredResponse = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("mcp-session-id", sessionId)
+      .send({
+        jsonrpc: "2.0",
+        id: 25,
+        method: "tools/list",
+        params: {},
+      });
+
+    expect(expiredResponse.status).toBe(404);
+    expect(expiredResponse.body.error.message).toBe("Session not found");
+    vi.useRealTimers();
+  });
+
   it("accepts missing MCP-Protocol-Version after initialization and rejects unsupported versions", async () => {
     const { app, sessionId } = await initializeSession(createApp());
 
