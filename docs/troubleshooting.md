@@ -32,6 +32,8 @@ Use the server's HTTP transport:
 TRANSPORT=http PORT=3000 fdic-mcp-server
 ```
 
+Local HTTP runs bind to `127.0.0.1` by default. Set `HOST` to change the bind address, and set `ALLOWED_ORIGINS` if the browser origin is not one of the local defaults.
+
 Then expose it through a reachable HTTPS URL.
 
 If you are running the Docker image or Cloud Run deployment instead of the local binary, use port `8080` rather than `3000`.

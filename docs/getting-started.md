@@ -82,7 +82,11 @@ HTTP transport:
 TRANSPORT=http PORT=3000 node dist/index.js
 ```
 
-The HTTP MCP endpoint is available at `http://localhost:3000/mcp`.
+The HTTP MCP endpoint is available at `http://127.0.0.1:3000/mcp` by default.
+
+- Set `HOST` if you need to bind somewhere other than localhost.
+- Set `ALLOWED_ORIGINS` to a comma-separated origin allowlist for browser-based access outside the localhost defaults.
+- HTTP clients should reuse the returned `MCP-Session-Id` after initialization.
 
 The Docker image and Cloud Run deployment use port `8080` by default; `3000` is the local shell example for direct runs outside the container.
 

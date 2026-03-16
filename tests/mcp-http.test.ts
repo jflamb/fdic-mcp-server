@@ -1,3 +1,5 @@
+import { once } from "node:events";
+import type { Express } from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -27,19 +29,88 @@ vi.mock("axios", () => {
   };
 });
 
-import { createApp, parseHttpPort } from "../src/index.js";
+import {
+  createApp,
+  parseAllowedOrigins,
+  parseHttpHost,
+  parseHttpPort,
+} from "../src/index.js";
 import { clearQueryCache } from "../src/services/fdicClient.js";
 import packageJson from "../package.json";
 
 const expectedVersion = packageJson.version;
+const mcpAcceptHeader = "application/json, text/event-stream";
+const defaultProtocolVersion = "2025-03-26";
 
-function mcpPost(body: Record<string, unknown>) {
-  return request(createApp())
+async function initializeSession(app = createApp()) {
+  const initializeResponse = await request(app)
     .post("/mcp")
     .set("content-type", "application/json")
-    .set("accept", "application/json, text/event-stream")
-    .send(body);
+    .set("accept", mcpAcceptHeader)
+    .send({
+      jsonrpc: "2.0",
+      id: 0,
+      method: "initialize",
+      params: {
+        protocolVersion: defaultProtocolVersion,
+        capabilities: {},
+        clientInfo: {
+          name: "vitest",
+          version: "1.0.0",
+        },
+      },
+    });
+
+  const sessionId = initializeResponse.headers["mcp-session-id"];
+  if (initializeResponse.status !== 200 || typeof sessionId !== "string") {
+    throw new Error(
+      `Failed to initialize MCP session: ${initializeResponse.status}`,
+    );
+  }
+
+  const initializedResponse = await request(app)
+    .post("/mcp")
+    .set("content-type", "application/json")
+    .set("accept", mcpAcceptHeader)
+    .set("mcp-session-id", sessionId)
+    .send({
+      jsonrpc: "2.0",
+      method: "notifications/initialized",
+    });
+
+  if (initializedResponse.status !== 202) {
+    throw new Error(
+      `Failed to send initialized notification: ${initializedResponse.status}`,
+    );
+  }
+
+  return { app, sessionId, initializeResponse };
 }
+
+function mcpRequest(
+  app: Express,
+  sessionId: string,
+  body: Record<string, unknown>,
+  headers: Record<string, string> = {},
+) {
+  const requestBuilder = request(app)
+    .post("/mcp")
+    .set("content-type", "application/json")
+    .set("accept", mcpAcceptHeader)
+    .set("mcp-session-id", sessionId);
+
+  for (const [name, value] of Object.entries(headers)) {
+    requestBuilder.set(name, value);
+  }
+
+  return requestBuilder.send(body);
+}
+
+async function mcpPost(body: Record<string, unknown>) {
+  const { app, sessionId } = await initializeSession();
+  return mcpRequest(app, sessionId, body);
+}
+
 
 describe("HTTP MCP server", () => {
   beforeEach(() => {
@@ -72,6 +143,169 @@ describe("HTTP MCP server", () => {
     expect(() => parseHttpPort("70000")).toThrow(
       "PORT must be between 0 and 65535. Received: 70000",
     );
+  });
+
+  it("defaults the HTTP host to localhost", () => {
+    expect(parseHttpHost(undefined)).toBe("127.0.0.1");
+  });
+
+  it("parses allowed origins from the environment or localhost defaults", () => {
+    expect(parseAllowedOrigins(undefined, 3000)).toEqual([
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "https://localhost:3000",
+      "https://127.0.0.1:3000",
+    ]);
+    expect(parseAllowedOrigins("https://one.test, https://two.test", 3000)).toEqual([
+      "https://one.test",
+      "https://two.test",
+    ]);
+  });
+
+  it("rejects non-initialize requests without a valid session", async () => {
+    const response = await request(createApp())
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .send({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/list",
+        params: {},
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.message).toBe(
+      "Bad Request: No valid session ID provided",
+    );
+  });
+
+  it("supports GET and DELETE for an initialized session", async () => {
+    const { app, sessionId } = await initializeSession(createApp());
+    const server = app.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected TCP address for test server");
+    }
+
+    const getResponse = await fetch(`http://127.0.0.1:${address.port}/mcp`, {
+      headers: {
+        accept: "text/event-stream",
+        "mcp-session-id": sessionId,
+      },
+    });
+
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.headers.get("content-type")).toContain(
+      "text/event-stream",
+    );
+    await getResponse.body?.cancel();
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+
+    const deleteResponse = await request(app)
+      .delete("/mcp")
+      .set("accept", "application/json")
+      .set("mcp-session-id", sessionId)
+      .set("mcp-protocol-version", defaultProtocolVersion);
+
+    expect(deleteResponse.status).toBe(200);
+
+    const postDeleteResponse = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("mcp-session-id", sessionId)
+      .send({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/list",
+        params: {},
+      });
+
+    expect(postDeleteResponse.status).toBe(404);
+    expect(postDeleteResponse.body.error.message).toBe("Session not found");
+  });
+
+  it("accepts missing MCP-Protocol-Version after initialization and rejects unsupported versions", async () => {
+    const { app, sessionId } = await initializeSession(createApp());
+
+    const withoutVersion = await mcpRequest(app, sessionId, {
+      jsonrpc: "2.0",
+      id: 3,
+      method: "tools/list",
+      params: {},
+    });
+
+    expect(withoutVersion.status).toBe(200);
+
+    const withInvalidVersion = await mcpRequest(
+      app,
+      sessionId,
+      {
+        jsonrpc: "2.0",
+        id: 4,
+        method: "tools/list",
+        params: {},
+      },
+      { "mcp-protocol-version": "2099-01-01" },
+    );
+
+    expect(withInvalidVersion.status).toBe(400);
+    expect(withInvalidVersion.body.error.message).toContain(
+      "Unsupported protocol version",
+    );
+  });
+
+  it("rejects disallowed Origin headers and allows requests without Origin", async () => {
+    const app = createApp({
+      port: 3000,
+      allowedOrigins: ["https://allowed.example"],
+    });
+
+    const allowedInit = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("origin", "https://allowed.example")
+      .send({
+        jsonrpc: "2.0",
+        id: 5,
+        method: "initialize",
+        params: {
+          protocolVersion: defaultProtocolVersion,
+          capabilities: {},
+          clientInfo: {
+            name: "vitest",
+            version: "1.0.0",
+          },
+        },
+      });
+
+    expect(allowedInit.status).toBe(200);
+
+    const disallowedInit = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("origin", "https://disallowed.example")
+      .send({
+        jsonrpc: "2.0",
+        id: 6,
+        method: "initialize",
+        params: {
+          protocolVersion: defaultProtocolVersion,
+          capabilities: {},
+          clientInfo: {
+            name: "vitest",
+            version: "1.0.0",
+          },
+        },
+      });
+
+    expect(disallowedInit.status).toBe(403);
   });
 
   it("lists all registered tools including demographics", async () => {
@@ -161,15 +395,12 @@ describe("HTTP MCP server", () => {
 
   it("reuses cached FDIC responses across sequential HTTP requests", async () => {
     const app = createApp();
+    const { sessionId } = await initializeSession(app);
     getMock.mockResolvedValueOnce({
       data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
     });
 
-    const first = await request(app)
-      .post("/mcp")
-      .set("content-type", "application/json")
-      .set("accept", "application/json, text/event-stream")
-      .send({
+    const first = await mcpRequest(app, sessionId, {
       jsonrpc: "2.0",
       id: 1,
       method: "tools/call",
@@ -179,11 +410,7 @@ describe("HTTP MCP server", () => {
       },
     });
 
-    const second = await request(app)
-      .post("/mcp")
-      .set("content-type", "application/json")
-      .set("accept", "application/json, text/event-stream")
-      .send({
+    const second = await mcpRequest(app, sessionId, {
       jsonrpc: "2.0",
       id: 2,
       method: "tools/call",
