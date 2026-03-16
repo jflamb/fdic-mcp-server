@@ -379,7 +379,7 @@ Reference: issue #78.
 
 - [x] Prevent the publish workflow from failing when npm already has the target version.
 - [x] Allow later release steps to continue when npm publish is skipped.
-- [ ] Open a PR for the workflow fix.
+- [x] Open a PR for the workflow fix.
 
 ## Acceptance Criteria
 
@@ -391,4 +391,5 @@ Reference: issue #78.
 ## Review / Results
 
 - [x] Used existing issue #78 for the tracked work.
+- [x] Opened PR #79.
 - [x] Verified `.github/workflows/publish.yml` parses with Ruby `YAML.load_file`.
