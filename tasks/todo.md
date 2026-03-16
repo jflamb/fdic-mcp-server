@@ -232,3 +232,28 @@ Reference: issue #60.
 - [x] Used existing issue #60 for the tracked work.
 - [x] Opened PR #70.
 - [x] Verified `npm run build`.
+
+# FDIC Batch Truncation Warnings
+
+Reference: issue #50.
+
+## Goals
+
+- [x] Warn when FDIC 10,000-record batch queries are truncated in snapshot analysis.
+- [x] Warn when FDIC 10,000-record batch queries are truncated in time-series analysis.
+- [x] Warn when FDIC 10,000-record batch queries are truncated in peer-group analysis.
+- [ ] Open a PR for the warning behavior.
+
+## Acceptance Criteria
+
+- [x] Analysis responses surface warnings when a financial or demographics batch returns fewer records than `meta.total`.
+- [x] Peer-group responses surface warnings when a peer financial batch returns fewer records than `meta.total`.
+- [x] HTTP tests cover at least one analysis and one peer-group truncation case.
+- [x] Validation passes for the targeted tests plus type/build checks.
+
+## Review / Results
+
+- [x] Used existing issue #50 for the tracked work.
+- [x] Verified `npm test -- tests/mcp-http.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.

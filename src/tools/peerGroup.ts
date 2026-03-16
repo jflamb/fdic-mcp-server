@@ -2,6 +2,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
+  buildTruncationWarning,
   queryEndpoint,
   extractRecords,
   truncateIfNeeded,
@@ -678,7 +679,15 @@ Override precedence: cert derives defaults, then explicit params override them.`
           Record<string, unknown>
         >();
         for (const response of financialResponses) {
-          for (const record of extractRecords(response)) {
+          const records = extractRecords(response);
+          const warning = buildTruncationWarning(
+            `financials batch for REPDTE:${params.repdte}`,
+            response.meta.total,
+            records.length,
+            "Narrow the peer group criteria for complete analysis.",
+          );
+          if (warning && !warnings.includes(warning)) warnings.push(warning);
+          for (const record of records) {
             const cert = asNumber(record.CERT);
             if (cert !== null) peerFinancialsByCert.set(cert, record);
           }
