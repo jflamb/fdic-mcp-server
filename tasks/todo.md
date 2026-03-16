@@ -210,3 +210,25 @@ Reference: issue #54.
 - [x] Verified `npm test -- tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
+
+# AGENTS File Guide Cleanup
+
+Reference: issue #60.
+
+## Goals
+
+- [x] Update the AGENTS file guide to include the CLI entrypoint and shared support modules.
+- [x] Explain the built output split between the executable CLI bundle and the reusable server bundle.
+- [x] Open a PR for the AGENTS documentation cleanup.
+
+## Acceptance Criteria
+
+- [x] `AGENTS.md` mentions `src/cli.ts`, `src/constants.ts`, and `src/schemas/common.ts`.
+- [x] `AGENTS.md` explains the relationship between `dist/index.js` and `dist/server.js`.
+- [x] The update matches the current build script and repository layout.
+
+## Review / Results
+
+- [x] Used existing issue #60 for the tracked work.
+- [x] Opened PR #70.
+- [x] Verified `npm run build`.
