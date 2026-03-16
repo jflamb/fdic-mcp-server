@@ -1,7 +1,11 @@
 name: Deploy Cloud Run
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - main
   workflow_dispatch:
@@ -11,8 +15,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: deploy-cloud-run-${{ github.ref }}
-  cancel-in-progress: true
+  group: deploy-cloud-run-production
+  cancel-in-progress: false
 
 env:
   GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
@@ -28,6 +32,12 @@ env:
 jobs:
   deploy:
     name: Deploy production
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success'
+      )
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -36,6 +46,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Validate required variables
         run: |

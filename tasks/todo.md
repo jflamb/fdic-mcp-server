@@ -136,3 +136,24 @@ Reference: issue #47.
 ## Review / Results
 
 - [x] Verified `npm test -- tests/fdicClient.test.ts`, `npm run typecheck`, and `npm run build`.
+
+# CI-Gated Cloud Run Deployment
+
+Reference: issue #52.
+
+## Goals
+
+- [x] Gate Cloud Run deployment on successful CI rather than raw pushes to `main`.
+- [x] Prevent in-progress production deployments from being canceled by a newer push.
+- [x] Update technical docs to describe the new deploy trigger correctly.
+- [ ] Open a PR for the workflow change.
+
+## Acceptance Criteria
+
+- [x] Cloud Run deploys only after the `CI` workflow completes successfully for `main`.
+- [x] Production deploy concurrency no longer cancels an in-flight deployment.
+- [x] Technical docs describe the CI-gated deploy behavior accurately.
+
+## Review / Results
+
+- [x] Parsed `.github/workflows/deploy-cloud-run.yml` successfully with Ruby `YAML.load_file`.
