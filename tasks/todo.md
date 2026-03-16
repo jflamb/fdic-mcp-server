@@ -258,3 +258,28 @@ Reference: issue #50.
 - [x] Verified `npm test -- tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
+
+# FDIC Cache Bounds
+
+Reference: issue #49.
+
+## Goals
+
+- [x] Prevent unbounded growth of the FDIC query cache during long-lived sessions.
+- [x] Avoid full-map cache pruning on every request.
+- [x] Add focused tests for cache eviction behavior.
+- [ ] Open a PR for the cache-bounding change.
+
+## Acceptance Criteria
+
+- [x] The FDIC query cache has a fixed maximum size.
+- [x] Expired entries are removed without scanning the full map on every request.
+- [x] Tests cover cache reuse, expiration, and cap-based eviction behavior.
+- [x] Validation passes for targeted tests plus type/build checks.
+
+## Review / Results
+
+- [x] Used existing issue #49 for the tracked work.
+- [x] Verified `npm test -- tests/fdicClient.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.
