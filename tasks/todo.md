@@ -429,19 +429,42 @@ Reference: issue #80 and PR #81.
 
 - [x] Bump the package and registry metadata version for the schema-listing fix release.
 - [x] Add matching GitHub and docs release notes for the new version.
-- [ ] Merge the fix branch to `main`.
-- [ ] Tag the merged `main` commit so the publish workflow runs.
+- [x] Merge the fix branch to `main`.
+- [x] Tag the merged `main` commit so the publish workflow runs.
 
 ## Acceptance Criteria
 
 - [x] `package.json`, `package-lock.json`, and `server.json` all point to the new patch version.
 - [x] The docs site points to the new latest release notes entry.
-- [ ] The release tag references a commit already on `main`.
+- [x] The release tag references a commit already on `main`.
 - [x] Validation passes after the release-prep changes.
 
 ## Review / Results
 
 - [x] Release version selected: `1.1.3`.
+- [x] Merged PR #81 to `main`.
+- [x] Tagged merged `main` commit as `v1.1.3`.
 - [x] Verified `npm test -- tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
+
+# Idempotent GitHub Packages Publish
+
+Reference: issue #82.
+
+## Goals
+
+- [ ] Prevent the tagged publish workflow from failing when GitHub Packages already has the target version.
+- [ ] Allow later release steps to continue when GitHub Packages publish is skipped.
+- [ ] Open a PR for the workflow fix.
+
+## Acceptance Criteria
+
+- [ ] `.github/workflows/publish.yml` checks whether the GitHub Packages version already exists before publishing.
+- [ ] The GitHub Packages publish step is skipped instead of failing when the version is already present.
+- [ ] The GitHub Release step can still run after a skipped GitHub Packages publish.
+- [ ] Workflow YAML remains valid after the change.
+
+## Review / Results
+
+- [x] Opened issue #82.

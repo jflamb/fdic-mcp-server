@@ -91,7 +91,21 @@ jobs:
           registry-url: https://npm.pkg.github.com
           scope: "@jflamb"
 
+      - name: Check for existing GitHub Packages version
+        id: gpr
+        working-directory: .tmp/github-package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view @jflamb/fdic-mcp-server@"$VERSION" version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to GitHub Packages
+        if: steps.gpr.outputs.exists != 'true'
         working-directory: .tmp/github-package
         run: npm publish
         env:
