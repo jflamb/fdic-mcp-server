@@ -219,7 +219,7 @@ Reference: issue #60.
 
 - [x] Update the AGENTS file guide to include the CLI entrypoint and shared support modules.
 - [x] Explain the built output split between the executable CLI bundle and the reusable server bundle.
-- [ ] Open a PR for the AGENTS documentation cleanup.
+- [x] Open a PR for the AGENTS documentation cleanup.
 
 ## Acceptance Criteria
 
@@ -230,4 +230,5 @@ Reference: issue #60.
 ## Review / Results
 
 - [x] Used existing issue #60 for the tracked work.
+- [x] Opened PR #70.
 - [x] Verified `npm run build`.
