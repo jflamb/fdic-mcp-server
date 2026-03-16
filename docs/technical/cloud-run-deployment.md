@@ -29,8 +29,7 @@ The repository uses a small set of GitHub Actions workflows with distinct respon
 - `CI`: runs typechecking, tests, build validation, and package-content checks on pushes to `main` and pull requests
 - `Deploy Docs`: builds and publishes the GitHub Pages documentation site from `docs/`
 - `Deploy Cloud Run`: builds the production container image and deploys the public HTTP MCP endpoint to Google Cloud Run
-- `Publish npm and Registry`: publishes tagged releases to npm, updates the official MCP Registry metadata, publishes GitHub Packages, and creates or updates the GitHub release
-- `Publish GitHub Package`: backfills the GitHub release and GitHub Packages artifact from `main` when the tagged release workflow did not produce them; it is a recovery path, not a second primary release flow
+- `Release`: runs after successful `CI` on the latest `main` commit, computes the next semantic version from conventional commits, publishes npm, creates the GitHub release and tag, updates the official MCP Registry metadata, and publishes GitHub Packages
 
 ## Live Hosting Topology
 
@@ -133,13 +132,13 @@ It also avoids running the application process as `root` in production, which is
 
 ## Registry Publication
 
-Release tags are configured to publish server metadata to the official MCP Registry using the documented `mcp-publisher` GitHub OIDC flow.
+Automated releases publish server metadata to the official MCP Registry using the documented `mcp-publisher` GitHub OIDC flow.
 
 Relevant repo assets:
 
 - `server.json` contains the MCP Registry metadata for this server
-- `.github/workflows/publish.yml` runs `mcp-publisher login github-oidc` and `mcp-publisher publish` on tagged releases
-- `scripts/sync-server-json.mjs` keeps `server.json` version fields aligned with `package.json`
+- `.github/workflows/publish.yml` runs after successful `CI` on `main`, uses `semantic-release` to calculate the next version, and then runs `mcp-publisher login github-oidc` and `mcp-publisher publish`
+- `scripts/sync-server-json.mjs` keeps `server.json` version fields aligned with the semantic-release version written into `package.json`
 
 Registry references:
 

@@ -1,10 +1,12 @@
-name: Publish npm and Registry
+name: Release
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
 
 permissions:
   id-token: write
@@ -12,12 +14,20 @@ permissions:
   packages: write
 
 concurrency:
-  group: publish-npm-and-registry-${{ github.ref }}
+  group: release-${{ github.event.workflow_run.head_branch || github.ref }}
   cancel-in-progress: false
 
 jobs:
   publish:
     name: Publish release artifacts
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        !contains(github.event.workflow_run.head_commit.message, '[skip release]')
+      )
     runs-on: ubuntu-latest
 
     steps:
@@ -25,17 +35,33 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: main
 
-      - name: Ensure release tag points to main
-        if: github.event_name == 'push'
+      - name: Ensure release target is the latest validated main commit
+        id: release_target
+        if: github.event_name == 'workflow_run'
         run: |
-          git fetch origin main --depth=1
-          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
-            echo "Release tags must reference a commit already on main."
-            exit 1
+          LATEST_MAIN_SHA="$(git rev-parse HEAD)"
+          VALIDATED_SHA="${{ github.event.workflow_run.head_sha }}"
+
+          if [ "$LATEST_MAIN_SHA" != "$VALIDATED_SHA" ]; then
+            echo "Skipping release because main advanced after the validated CI run."
+            echo "Latest main: $LATEST_MAIN_SHA"
+            echo "Validated:   $VALIDATED_SHA"
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-      - name: Set up Node.js
+          echo "current=true" >> "$GITHUB_OUTPUT"
+
+      - name: Configure Git author
+        if: github.event_name != 'workflow_run' || steps.release_target.outputs.current == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up Node.js for release
+        if: github.event_name != 'workflow_run' || steps.release_target.outputs.current == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: "22"
@@ -43,48 +69,40 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        if: github.event_name != 'workflow_run' || steps.release_target.outputs.current == 'true'
         run: npm ci
 
-      - name: Validate release
+      - name: Validate release inputs
+        if: github.event_name == 'workflow_dispatch'
         run: npm run prepublishOnly
 
-      - name: Check for existing npm version
-        id: npm_version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          if npm view "fdic-mcp-server@${VERSION}" version >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Publish to npm
-        if: steps.npm_version.outputs.exists != 'true'
-        run: npm publish
+      - name: Run semantic-release
+        id: semantic
+        if: github.event_name != 'workflow_run' || steps.release_target.outputs.current == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: node scripts/run-semantic-release.mjs
 
       - name: Install MCP Registry publisher
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
 
       - name: Authenticate to MCP Registry
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.semantic.outputs.new_release_published == 'true'
         run: ./mcp-publisher login github-oidc
 
-      - name: Sync server.json version
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          node scripts/sync-server-json.mjs "${VERSION}"
-
       - name: Publish to official MCP Registry
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.semantic.outputs.new_release_published == 'true'
         run: ./mcp-publisher publish
 
       - name: Prepare GitHub Packages bundle
+        if: steps.semantic.outputs.new_release_published == 'true'
         run: node scripts/prepare-gpr-package.mjs
 
       - name: Set up Node.js for GitHub Packages
+        if: steps.semantic.outputs.new_release_published == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: "22"
@@ -92,6 +110,7 @@ jobs:
           scope: "@jflamb"
 
       - name: Check for existing GitHub Packages version
+        if: steps.semantic.outputs.new_release_published == 'true'
         id: gpr
         working-directory: .tmp/github-package
         env:
@@ -105,27 +124,18 @@ jobs:
           fi
 
       - name: Publish to GitHub Packages
-        if: steps.gpr.outputs.exists != 'true'
+        if: steps.semantic.outputs.new_release_published == 'true' && steps.gpr.outputs.exists != 'true'
         working-directory: .tmp/github-package
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Summarize release result
         run: |
-          NOTES_FILE=".github/release-notes/${GITHUB_REF_NAME}.md"
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            if [ -f "$NOTES_FILE" ]; then
-              gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
-            else
-              gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
-            fi
+          if [ "${{ github.event_name }}" = "workflow_run" ] && [ "${{ steps.release_target.outputs.current }}" = "false" ]; then
+            echo "Skipped release because a newer main commit is already present."
+          elif [ "${{ steps.semantic.outputs.new_release_published }}" = "true" ]; then
+            echo "Published release v${{ steps.semantic.outputs.new_release_version }}."
           else
-            if [ -f "$NOTES_FILE" ]; then
-              gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
-            else
-              gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
-            fi
+            echo "No releasable conventional commits were found."
           fi
