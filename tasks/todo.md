@@ -1,3 +1,29 @@
+# Bug Batch 1: Analysis And Ranking Bugs
+
+Reference: bugs #141 and #146 from the `bug` issue batch generated on 2026-03-16.
+
+## Goals
+
+- [x] Make analysis progress notifications describe work before it happens, especially when financial and demographic fetches run in parallel.
+- [x] Ensure top-level analysis insights are computed from the full analyzed population, not only the returned ranked slice.
+- [x] Add or update tests that fail on the current misleading progress sequence and sliced-insight behavior.
+- [x] Validate the batch with targeted tests plus repo-standard type/build checks.
+
+## Acceptance Criteria
+
+- [x] Snapshot and timeseries analysis progress notifications are semantically accurate for both `include_demographics: false` and `include_demographics: true`.
+- [x] `structuredContent.comparisons` remains limited by `limit`, but `structuredContent.insights` reflects the full sorted comparison population.
+- [x] Existing MCP tool contracts remain unchanged apart from the corrected progress messages and insight population semantics.
+- [x] `npm test -- tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build` pass after the changes.
+
+## Review / Results
+
+- [x] Branch created for Batch 1 work: `fix/bug-batch-1-analysis-ranking-pr`.
+- [x] Replaced misleading post-fetch demographic progress notifications with combined pre-fetch progress messages in [analysis.ts](/Users/jlamb/Projects/bankfind-mcp/src/tools/analysis.ts).
+- [x] Decoupled top-level insight generation from the returned `limit` slice so the insight summary reflects the full sorted analysis population.
+- [x] Added MCP HTTP regression coverage for combined demographic progress messaging and full-population top-level insights in [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp/tests/mcp-http.test.ts).
+- [x] Verified `npm test -- tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
+
 # Hosted Onboarding And Registry Publication
 
 Reference: issue #35 and user request to update the docs around the live hosted endpoint and automate publication to a public MCP registry.
@@ -699,3 +725,29 @@ Reference: issue #131.
 - [x] Identified the root cause as a protocol mismatch: the smoke test posted `tools/list` without first creating an MCP session, but the server correctly requires `initialize` and a valid `MCP-Session-Id`.
 - [x] Updated [deploy-cloud-run.yml](/Users/jlamb/Projects/bankfind-mcp/.github/workflows/deploy-cloud-run.yml) to run `initialize`, capture the `MCP-Session-Id`, send `notifications/initialized`, and only then call `tools/list`.
 - [x] Verified `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, and a YAML parse check for [deploy-cloud-run.yml](/Users/jlamb/Projects/bankfind-mcp/.github/workflows/deploy-cloud-run.yml).
+
+# Label-Driven Issue Batch Helper
+
+Reference: user request to add a shortcut for reviewing issues by label and grouping them into logical execution batches.
+
+## Goals
+
+- [x] Add a repo-local shortcut that fetches GitHub issues by label and emits grouped batches for maintainer review.
+- [x] Make the output align with the repository working norms so each batch can be executed with the expected branch, validation, and PR flow.
+- [x] Add regression coverage for the batching heuristics and markdown brief rendering.
+- [x] Document the shortcut in agent-facing repo guidance.
+
+## Acceptance Criteria
+
+- [x] `npm run issues:batch -- --label bug` produces a markdown brief for the current repository.
+- [x] The brief groups matching issues into logical categories and limits each recommended batch to a configurable size.
+- [x] The brief includes the key execution norms for branch, validation, testing, and PR handling.
+- [x] Automated tests cover category classification, batch splitting, and markdown rendering.
+
+## Review / Results
+
+- [x] Added [prepare-issue-batches.mjs](/Users/jlamb/Projects/bankfind-mcp/scripts/prepare-issue-batches.mjs) plus [issue-batching.mjs](/Users/jlamb/Projects/bankfind-mcp/scripts/lib/issue-batching.mjs) to fetch labeled issues through `gh`, group them by subsystem heuristics, and render a Codex-ready markdown brief.
+- [x] Added the `npm run issues:batch` shortcut in [package.json](/Users/jlamb/Projects/bankfind-mcp/package.json).
+- [x] Documented the helper in [AGENTS.md](/Users/jlamb/Projects/bankfind-mcp/AGENTS.md) so label-driven maintenance passes start from an explicit batch review step.
+- [x] Added the prompt shorthand `/issue-batch <label>` to [AGENTS.md](/Users/jlamb/Projects/bankfind-mcp/AGENTS.md) and [prompting-guide.md](/Users/jlamb/Projects/bankfind-mcp/docs/prompting-guide.md) for AI-driven orchestration.
+- [x] Run `npm run typecheck`, `npm test -- tests/issue-batching.test.ts`, and `npm run build`.
