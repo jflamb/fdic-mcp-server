@@ -472,6 +472,127 @@ describe("HTTP MCP server", () => {
     ]);
   });
 
+  it("uses combined fetch progress messages when snapshot analysis includes demographics", async () => {
+    const app = createApp();
+    const { sessionId } = await initializeSession(app);
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Example Bank",
+                REPDTE: "20240331",
+                ASSET: 1000,
+                DEP: 800,
+                NETINC: 10,
+                ROA: 1,
+                ROE: 10,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Example Bank",
+                REPDTE: "20241231",
+                ASSET: 1200,
+                DEP: 900,
+                NETINC: 12,
+                ROA: 1.1,
+                ROE: 10.5,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                REPDTE: "20240331",
+                OFFTOT: 5,
+                CBSANAME: "Austin",
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                REPDTE: "20241231",
+                OFFTOT: 6,
+                CBSANAME: "Austin",
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      });
+
+    const progress = await collectProgressNotifications(app, sessionId, () =>
+      mcpRequest(app, sessionId, {
+        jsonrpc: "2.0",
+        id: 71,
+        method: "tools/call",
+        params: {
+          name: "fdic_compare_bank_snapshots",
+          arguments: {
+            certs: [3511],
+            start_repdte: "20240331",
+            end_repdte: "20241231",
+            include_demographics: true,
+          },
+          _meta: {
+            progressToken: "analysis-progress-with-demographics",
+          },
+        },
+      }),
+    );
+
+    expect(progress).toEqual([
+      {
+        progressToken: "analysis-progress-with-demographics",
+        progress: 0.1,
+        total: 1,
+        message: "Fetching institution roster",
+      },
+      {
+        progressToken: "analysis-progress-with-demographics",
+        progress: 0.3,
+        total: 1,
+        message: "Fetching financial and demographic snapshots",
+      },
+      {
+        progressToken: "analysis-progress-with-demographics",
+        progress: 0.9,
+        total: 1,
+        message: "Computing metrics and insights",
+      },
+      {
+        progressToken: "analysis-progress-with-demographics",
+        progress: 1,
+        total: 1,
+        message: "Analysis complete",
+      },
+    ]);
+  });
+
   it("streams progress notifications for peer group analysis when the client provides a progress token", async () => {
     const app = createApp();
     const { sessionId } = await initializeSession(app);
@@ -2022,6 +2143,70 @@ describe("HTTP MCP server", () => {
       deposit_mix_softening: ["Trend Bank", "Funding Bank"],
       sustained_asset_growth: ["Trend Bank", "Funding Bank"],
       multi_quarter_roa_decline: ["Trend Bank"],
+    });
+  });
+
+  it("builds top-level insights from the full sorted population instead of the returned slice", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Slice Bank", CITY: "Raleigh", STALP: "NC" } },
+            { data: { CERT: 2222, NAME: "Hidden Insight Bank", CITY: "Durham", STALP: "NC" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Slice Bank", ASSET: 100, DEP: 90, NETINC: 10, ROA: 1.0, ROE: 8.0 } },
+            { data: { CERT: 2222, NAME: "Hidden Insight Bank", ASSET: 100, DEP: 90, NETINC: 10, ROA: 1.0, ROE: 8.0 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 1111, NAME: "Slice Bank", ASSET: 160, DEP: 130, NETINC: 15, ROA: 1.3, ROE: 9.0 } },
+            { data: { CERT: 2222, NAME: "Hidden Insight Bank", ASSET: 125, DEP: 80, NETINC: 9, ROA: 0.8, ROE: 7.5 } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { data: [], meta: { total: 0 } },
+      })
+      .mockResolvedValueOnce({
+        data: { data: [], meta: { total: 0 } },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 1202,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          state: "North Carolina",
+          start_repdte: "20211231",
+          end_repdte: "20250630",
+          include_demographics: true,
+          limit: 1,
+          sort_by: "asset_growth",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent.comparisons).toHaveLength(1);
+    expect(
+      response.body.result.structuredContent.comparisons[0].name,
+    ).toBe("Slice Bank");
+    expect(response.body.result.structuredContent.insights).toMatchObject({
+      growth_with_better_profitability: ["Slice Bank"],
+      balance_sheet_growth_without_profitability: ["Hidden Insight Bank"],
     });
   });
 

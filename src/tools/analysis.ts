@@ -603,6 +603,7 @@ function buildAnalysisOutput(params: {
   sortOrder: "ASC" | "DESC";
   warnings: string[];
   comparisons: ComparisonRecord[];
+  insightComparisons?: ComparisonRecord[];
   offset?: number;
   limitCount?: number;
 }) {
@@ -618,7 +619,9 @@ function buildAnalysisOutput(params: {
     sort_by: params.sortBy,
     sort_order: params.sortOrder,
     warnings: params.warnings,
-    insights: buildTopLevelInsights(params.comparisons),
+    insights: buildTopLevelInsights(
+      params.insightComparisons ?? params.comparisons,
+    ),
     ...buildPaginationInfo(params.analyzedCount, offset, count),
     comparisons: params.comparisons,
   };
@@ -982,7 +985,9 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             server.server,
             progressToken,
             0.3,
-            "Fetching financial time series",
+            include_demographics
+              ? "Fetching financial and demographic time series"
+              : "Fetching financial time series",
           );
 
           const [financialSeriesResult, demographicsSeriesResult] = await Promise.all([
@@ -1013,15 +1018,6 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             ...demographicsSeriesResult.warnings,
           );
 
-          if (include_demographics) {
-            await sendProgressNotification(
-              server.server,
-              progressToken,
-              0.7,
-              "Fetching demographics time series",
-            );
-          }
-
           await sendProgressNotification(
             server.server,
             progressToken,
@@ -1051,7 +1047,9 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             server.server,
             progressToken,
             0.3,
-            "Fetching financial snapshots",
+            include_demographics
+              ? "Fetching financial and demographic snapshots"
+              : "Fetching financial snapshots",
           );
 
           const [financialSnapshotsResult, demographicSnapshotsResult] = await Promise.all([
@@ -1079,15 +1077,6 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             ...financialSnapshotsResult.warnings,
             ...demographicSnapshotsResult.warnings,
           );
-
-          if (include_demographics) {
-            await sendProgressNotification(
-              server.server,
-              progressToken,
-              0.7,
-              "Fetching demographic snapshots",
-            );
-          }
 
           await sendProgressNotification(
             server.server,
@@ -1147,6 +1136,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           sortOrder: sort_order,
           warnings,
           comparisons: ranked,
+          insightComparisons: sortedComparisons,
           limitCount: ranked.length,
         });
 
