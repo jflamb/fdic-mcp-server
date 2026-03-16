@@ -28,6 +28,21 @@ export interface RankResult {
   percentile: number;
 }
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+] as const;
+
 export function computeCompetitionRank(
   subjectValue: number,
   peerValues: number[],
@@ -58,17 +73,20 @@ export function computeCompetitionRank(
 
 export function formatRepdteHuman(repdte: string): string {
   if (repdte.length !== 8) return repdte;
-  const year = repdte.slice(0, 4);
-  const month = repdte.slice(4, 6);
-  const day = repdte.slice(6, 8);
-  const date = new Date(`${year}-${month}-${day}T00:00:00Z`);
+  const year = Number.parseInt(repdte.slice(0, 4), 10);
+  const month = Number.parseInt(repdte.slice(4, 6), 10);
+  const day = Number.parseInt(repdte.slice(6, 8), 10);
+  const date = new Date(Date.UTC(year, month - 1, day));
   if (Number.isNaN(date.getTime())) return repdte;
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return repdte;
+  }
+
+  return `${MONTH_NAMES[month - 1]} ${day}, ${year}`;
 }
 
 interface MetricDefinition {
