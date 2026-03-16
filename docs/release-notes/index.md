@@ -9,7 +9,11 @@ breadcrumbs:
   - title: Project Info
     url: /project-information/
 ---
+{% assign latest_release = site.data.latest_release %}
+
 Current releases are generated automatically by `semantic-release` and recorded on the GitHub Releases page.
+
+Latest published release: [{{ latest_release.tag_name }}]({{ latest_release.url }}){% if latest_release.published_at %}, published {{ latest_release.published_at | date: "%B %-d, %Y" }}{% endif %}.
 
 Historical manually curated notes remain here for earlier releases:
 

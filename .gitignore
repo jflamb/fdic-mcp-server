@@ -1,5 +1,9 @@
 node_modules/
 dist/
+.tmp/
+.jekyll-cache/
+.jekyll-metadata
+docs/.jekyll-cache/
 .DS_Store
 *.tsbuildinfo
 .envrc
