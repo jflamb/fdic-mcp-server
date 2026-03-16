@@ -521,3 +521,32 @@ Reference: issues #103 and #104.
 - [x] Centralized the analysis output envelope in [analysis.ts](/Users/jlamb/Projects/bankfind-mcp-analysis-103-104/src/tools/analysis.ts) so empty and populated responses share the same `structuredContent` shape.
 - [x] Added regression coverage in [analysis.test.ts](/Users/jlamb/Projects/bankfind-mcp-analysis-103-104/tests/analysis.test.ts) and [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp-analysis-103-104/tests/mcp-http.test.ts) for invalid dates, non-finite CAGR inputs, empty envelopes, and preserved warnings on empty analyzed results.
 - [x] Verified `npm test -- tests/analysis.test.ts tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
+
+# MCP Compliance Remediation
+
+Reference: umbrella issue #115 and issues #109, #110, #111, #112, #113, and #114.
+
+## Goals
+
+- [x] Make the HTTP transport session-aware so MCP lifecycle state persists across requests.
+- [x] Implement compliant `GET /mcp` and `DELETE /mcp` behavior for initialized sessions.
+- [x] Default local HTTP binding to localhost and enforce Origin validation with a configurable allowlist.
+- [x] Update user-facing docs for the new HTTP defaults and environment knobs.
+
+## Acceptance Criteria
+
+- [x] `initialize` creates a reusable session and subsequent requests require `MCP-Session-Id`.
+- [x] `GET /mcp` opens an SSE stream for an initialized session and `DELETE /mcp` terminates that session.
+- [x] Unsupported `MCP-Protocol-Version` headers are rejected and missing headers after initialization still use the SDK default behavior.
+- [x] Local HTTP runs bind to `127.0.0.1` by default, with `HOST` available for explicit overrides.
+- [x] Disallowed browser `Origin` headers receive HTTP 403 while non-browser requests without `Origin` continue to work.
+- [x] Repo-standard validation passes.
+
+## Review / Results
+
+- [x] Opened umbrella issue #115 and set it as the parent issue for #109 through #114.
+- [x] Reworked [index.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/src/index.ts) to manage one `McpServer` plus `StreamableHTTPServerTransport` per HTTP session instead of rebuilding the server on every POST.
+- [x] Reused the SDK's built-in session, method, protocol-version, and origin-validation behavior by routing requests to the correct persistent transport instance.
+- [x] Added `HOST` and `ALLOWED_ORIGINS` runtime support and documented the localhost-default bind behavior in [README.md](/Users/jlamb/Projects/bankfind-mcp-mcp-http/README.md), [getting-started.md](/Users/jlamb/Projects/bankfind-mcp-mcp-http/docs/getting-started.md), and [troubleshooting.md](/Users/jlamb/Projects/bankfind-mcp-mcp-http/docs/troubleshooting.md).
+- [x] Expanded [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp-mcp-http/tests/mcp-http.test.ts) to cover session initialization requirements, GET/DELETE handling, protocol-version validation, and origin enforcement.
+- [x] Verified `npm run typecheck`, `npm test -- tests/mcp-http.test.ts`, `npm test`, and `npm run build`.
