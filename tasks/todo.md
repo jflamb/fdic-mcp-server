@@ -393,3 +393,55 @@ Reference: issue #78.
 - [x] Used existing issue #78 for the tracked work.
 - [x] Opened PR #79.
 - [x] Verified `.github/workflows/publish.yml` parses with Ruby `YAML.load_file`.
+
+# Tool Schema Listing Fix
+
+Reference: issue #80.
+
+## Goals
+
+- [x] Fix empty `inputSchema` listings for `fdic_compare_bank_snapshots` and `fdic_peer_group_analysis`.
+- [x] Preserve runtime rejection of invalid cross-field argument combinations.
+- [x] Add regression tests for the advertised `tools/list` schemas and invalid argument handling.
+- [x] Open a PR for the fix.
+
+## Acceptance Criteria
+
+- [x] `tools/list` returns non-empty parameter schemas for both affected analysis tools.
+- [x] `fdic_compare_bank_snapshots` still rejects requests that provide neither `state` nor `certs`.
+- [x] `fdic_peer_group_analysis` still rejects requests that provide no peer-group constructor or an invalid asset range.
+- [x] Validation passes for targeted tests plus repo type/build checks.
+
+## Review / Results
+
+- [x] Opened issue #80.
+- [x] Opened PR #81.
+- [x] Verified `npm test -- tests/mcp-http.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.
+- [x] Verified post-build `tools/list` output contains populated schemas for both affected tools.
+
+# Schema Fix Release Prep
+
+Reference: issue #80 and PR #81.
+
+## Goals
+
+- [x] Bump the package and registry metadata version for the schema-listing fix release.
+- [x] Add matching GitHub and docs release notes for the new version.
+- [ ] Merge the fix branch to `main`.
+- [ ] Tag the merged `main` commit so the publish workflow runs.
+
+## Acceptance Criteria
+
+- [x] `package.json`, `package-lock.json`, and `server.json` all point to the new patch version.
+- [x] The docs site points to the new latest release notes entry.
+- [ ] The release tag references a commit already on `main`.
+- [x] Validation passes after the release-prep changes.
+
+## Review / Results
+
+- [x] Release version selected: `1.1.3`.
+- [x] Verified `npm test -- tests/mcp-http.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.
