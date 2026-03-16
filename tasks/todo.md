@@ -284,3 +284,29 @@ Reference: issue #49.
 - [x] Verified `npm test -- tests/fdicClient.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
+
+# Shared Analysis Query Utilities
+
+Reference: issue #48.
+
+## Goals
+
+- [x] Extract duplicated query and batching helpers from `analysis.ts` and `peerGroup.ts`.
+- [x] Keep the refactor limited to the clearly shared mechanics.
+- [x] Validate the affected analysis and peer-group behavior after the extraction.
+- [ ] Open a PR for the refactor.
+
+## Acceptance Criteria
+
+- [x] `asNumber`, `buildCertFilters`, `mapWithConcurrency`, and the shared batch constants live in one module.
+- [x] `analysis.ts` and `peerGroup.ts` import those helpers instead of maintaining local copies.
+- [x] Existing analysis and peer-group tests still pass without changing observable behavior.
+- [x] Validation passes for targeted tests plus type/build checks.
+
+## Review / Results
+
+- [x] Used existing issue #48 for the tracked work.
+- [x] Left older local branches intact because they are not merged and still diverge from `main`.
+- [x] Verified `npm test -- tests/analysis.test.ts tests/peerGroup.test.ts tests/mcp-http.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.

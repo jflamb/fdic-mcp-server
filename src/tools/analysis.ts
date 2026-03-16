@@ -9,13 +9,16 @@ import {
   queryEndpoint,
   truncateIfNeeded,
 } from "../services/fdicClient.js";
+import {
+  ANALYSIS_TIMEOUT_MS,
+  MAX_CONCURRENCY,
+  asNumber,
+  buildCertFilters,
+  mapWithConcurrency,
+} from "./shared/queryUtils.js";
 
 type InstitutionRecord = Record<string, unknown>;
 type ComparisonRecord = Record<string, unknown>;
-
-const CHUNK_SIZE = 25;
-const MAX_CONCURRENCY = 4;
-const ANALYSIS_TIMEOUT_MS = 90_000;
 
 const SortFieldSchema = z.enum([
   "asset_growth",
@@ -101,48 +104,9 @@ const SnapshotAnalysisSchema = z
     }
   });
 
-function asNumber(value: unknown): number | null {
-  return typeof value === "number" ? value : null;
-}
-
 export function maxOrNull(values: Array<number | null>): number | null {
   const nonNullValues = values.filter((value): value is number => value !== null);
   return nonNullValues.length > 0 ? Math.max(...nonNullValues) : null;
-}
-
-function buildCertFilters(certs: number[]): string[] {
-  const filters: string[] = [];
-
-  for (let i = 0; i < certs.length; i += CHUNK_SIZE) {
-    const chunk = certs.slice(i, i + CHUNK_SIZE);
-    filters.push(chunk.map((cert) => `CERT:${cert}`).join(" OR "));
-  }
-
-  return filters;
-}
-
-async function mapWithConcurrency<T, R>(
-  values: T[],
-  limit: number,
-  mapper: (value: T, index: number) => Promise<R>,
-): Promise<R[]> {
-  const results = new Array<R>(values.length);
-  let nextIndex = 0;
-
-  async function worker(): Promise<void> {
-    while (true) {
-      const currentIndex = nextIndex;
-      nextIndex += 1;
-      if (currentIndex >= values.length) return;
-      results[currentIndex] = await mapper(values[currentIndex], currentIndex);
-    }
-  }
-
-  await Promise.all(
-    Array.from({ length: Math.min(limit, values.length) }, () => worker()),
-  );
-
-  return results;
 }
 
 function ratio(numerator: number | null, denominator: number | null): number | null {
