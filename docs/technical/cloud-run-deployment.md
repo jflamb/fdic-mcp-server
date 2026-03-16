@@ -45,6 +45,7 @@ Operationally, this means the public MCP endpoint is a stateless Cloud Run revis
 
 - `TRANSPORT=http`
 - `PORT=8080`
+- a non-root container user for the production runtime
 
 ## Expected Google Cloud Resources
 
@@ -118,6 +119,17 @@ On an automatic production deploy, the workflow:
 5. deploys the new revision to Cloud Run
 
 Production deploy concurrency is serialized. Newer deploy requests wait rather than canceling an in-flight production rollout.
+
+## Container Runtime Expectations
+
+The production image is built as a multi-stage Docker image and the final runtime stage switches to a dedicated non-root user before startup.
+
+That gives Cloud Run the same HTTP contract as before:
+
+- `TRANSPORT=http`
+- `PORT=8080`
+
+It also avoids running the application process as `root` in production, which is the expected baseline for this service unless a future deployment target imposes a different requirement.
 
 ## Registry Publication
 
