@@ -241,14 +241,7 @@ export async function queryEndpoint(
 export function extractRecords(
   response: FdicResponse,
 ): Array<Record<string, unknown>> {
-  return response.data.map((item, index) => {
-    if (!isRecord(item) || !isRecord(item.data)) {
-      throw new Error(
-        `Unexpected FDIC API response shape: expected data[${index}] to contain an object 'data' property.`,
-      );
-    }
-    return item.data;
-  });
+  return response.data.map((item) => item.data);
 }
 
 export function buildPaginationInfo(

@@ -939,3 +939,33 @@ Reference: issue #149.
 - [x] Branch created for this work: `fix/issue-149-map-with-concurrency-tests`.
 - [x] Added direct `mapWithConcurrency()` regression coverage in [queryUtils.test.ts](/Users/jlamb/Projects/bankfind-mcp/tests/queryUtils.test.ts) for out-of-order async completion and in-flight concurrency limits.
 - [x] Verified `npm test -- tests/queryUtils.test.ts`, `npm run typecheck`, and `npm run build`.
+
+# Issue #136: extractRecords Dead Validation
+
+Reference: issue #136.
+
+## Goals
+
+- [x] Remove the unreachable `extractRecords()` record-wrapper validation that duplicates `validateFdicResponseShape()`.
+- [x] Keep the public FDIC client contract unchanged for validated responses.
+- [x] Update tests to assert the real invariant boundary instead of direct misuse of `extractRecords()`.
+- [x] Validate with repo-standard commands and record the result.
+
+## Acceptance Criteria
+
+- [x] `extractRecords()` is a plain projection from validated response wrappers to record payloads.
+- [x] Malformed FDIC record wrappers are still rejected before callers receive an `FdicResponse`.
+- [x] `npm run typecheck`, `npm test`, and `npm run build` pass after the change.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/issue-136-extract-records`.
+- [x] Simplified [fdicClient.ts](/Users/jlamb/Projects/bankfind-mcp/src/services/fdicClient.ts) so `extractRecords()` now trusts the validated `FdicResponse` shape guaranteed by `validateFdicResponseShape()`.
+- [x] Updated [fdicClient.test.ts](/Users/jlamb/Projects/bankfind-mcp/tests/fdicClient.test.ts) to cover extracting records from a validated response instead of expecting unreachable dead-code errors from `extractRecords()`.
+- [x] Verified `npm run typecheck`, `npm test`, and `npm run build`.
