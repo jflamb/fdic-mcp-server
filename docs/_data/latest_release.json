@@ -1,0 +1,10 @@
+{
+  "source": "github",
+  "tag_name": "v1.2.2",
+  "version": "1.2.2",
+  "display_name": "Version 1.2.2",
+  "release_name": "v1.2.2",
+  "url": "https://github.com/jflamb/fdic-mcp-server/releases/tag/v1.2.2",
+  "published_at": "2026-03-16T17:55:57Z",
+  "summary": "bug fixes in the latest published release, including initialize MCP session in Cloud Run smoke test (132)."
+}

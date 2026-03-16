@@ -219,6 +219,35 @@ Reference: issue #54.
 
 # AGENTS File Guide Cleanup
 
+# Docs Release Sync Automation
+
+Reference: issue #133 and user report that the GitHub Pages site still advertises `1.1.3` while GitHub Releases shows `v1.2.2`.
+
+## Goals
+
+- [x] Identify why the docs site release card drifted behind the actual published releases.
+- [x] Remove the hardcoded latest-release version from the docs homepage.
+- [x] Generate latest-release metadata for Jekyll automatically from GitHub Releases during the Pages build.
+- [x] Ensure the Pages workflow rebuilds when a GitHub release is published, not only when `main` receives a push.
+- [x] Validate the automation with targeted checks.
+
+## Acceptance Criteria
+
+- [x] The docs homepage latest-release card renders from generated data instead of a manually edited version string.
+- [x] A newly published GitHub release is sufficient to refresh the GitHub Pages site.
+- [x] If release metadata is unavailable, the docs build still succeeds with a safe fallback.
+- [x] Targeted validation passes for the generation script and Jekyll build.
+
+## Review / Results
+
+- [x] Root cause documented.
+- [x] Automation implemented and validated.
+- [x] Issue created and linked: #133.
+- [x] Verified `node scripts/generate-docs-release-data.mjs`.
+- [x] Verified fallback generation with `GITHUB_API_URL=http://127.0.0.1:9 DOCS_LATEST_RELEASE_OUTPUT=.tmp/latest_release_fallback.json node scripts/generate-docs-release-data.mjs`.
+- [x] Parsed `.github/workflows/pages.yml` successfully with Ruby `YAML.load_file`.
+- [x] Verified `PATH="$HOME/.gem/ruby/2.6.0/bin:$PATH" jekyll build --source docs --destination .tmp/jekyll-site`.
+
 Reference: issue #60.
 
 ## Goals
