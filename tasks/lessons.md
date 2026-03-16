@@ -14,3 +14,4 @@
 - When a user asks to follow the repo workflow, complete the full change-management path rather than stopping at local edits: open or reference the issue, use a dedicated branch, commit the change, open the PR, watch checks, fix failures, and merge when green.
 - When the repository has standing SOPs, document them explicitly in `AGENTS.md` instead of relying on adjacent bullets or implied behavior.
 - When running `/issue-batch-run` or another repo workflow shortcut, do not stop at isolated validated worktrees; finish the documented change-management path on branches rooted at `origin/main`, then open PRs, watch checks, and merge unless the user explicitly asks to pause.
+- If a task requires temporary local scratch files for work that ultimately lives elsewhere, remove those files before closing the task and do not leave workspace-only artifacts behind.

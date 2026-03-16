@@ -93,6 +93,7 @@ Reference: bugs #141 and #146 from the `bug` issue batch generated on 2026-03-16
 - [x] Branch created for Batch 1 work: `fix/bug-batch-1-analysis-ranking-pr`.
 - [x] Replaced misleading post-fetch demographic progress notifications with combined pre-fetch progress messages in [analysis.ts](/Users/jlamb/Projects/bankfind-mcp/src/tools/analysis.ts).
 - [x] Decoupled top-level insight generation from the returned `limit` slice so the insight summary reflects the full sorted analysis population.
+- [x] Follow-up review fix: kept human-readable analysis text insights scoped to the returned ranked slice while leaving `structuredContent.insights` sourced from the full sorted population.
 - [x] Added MCP HTTP regression coverage for combined demographic progress messaging and full-population top-level insights in [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp/tests/mcp-http.test.ts).
 - [x] Verified `npm test -- tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
 
@@ -819,6 +820,7 @@ Reference: user request to add a shortcut for reviewing issues by label and grou
 ## Review / Results
 
 - [x] Added [prepare-issue-batches.mjs](/Users/jlamb/Projects/bankfind-mcp/scripts/prepare-issue-batches.mjs) plus [issue-batching.mjs](/Users/jlamb/Projects/bankfind-mcp/scripts/lib/issue-batching.mjs) to fetch labeled issues through `gh`, group them by subsystem heuristics, and render a Codex-ready markdown brief.
+- [x] Follow-up review fix: `prepare-issue-batches.mjs` now resolves the default repository from the current git remote before falling back to package metadata.
 - [x] Added the `npm run issues:batch` shortcut in [package.json](/Users/jlamb/Projects/bankfind-mcp/package.json).
 - [x] Documented the helper in [AGENTS.md](/Users/jlamb/Projects/bankfind-mcp/AGENTS.md) so label-driven maintenance passes start from an explicit batch review step.
 - [x] Added the prompt shorthand `/issue-batch <label>` to [AGENTS.md](/Users/jlamb/Projects/bankfind-mcp/AGENTS.md) and [prompting-guide.md](/Users/jlamb/Projects/bankfind-mcp/docs/prompting-guide.md) for AI-driven orchestration.

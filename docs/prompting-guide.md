@@ -108,3 +108,35 @@ Ask for:
 - "Now explain which of the top growers also improved profitability."
 - "Show the same peer group but sort by efficiency ratio instead of assets."
 - "Call out any warnings or missing data that affect the ranking."
+## Repo Shortcuts
+
+For maintainer-oriented issue triage in agentic environments, you can use two repo-specific prompt shorthands:
+
+- `/issue-batch <label>` to generate and review the proposed batches before choosing execution scope
+- `/issue-batch-run <label>` to generate the batches and then work through them sequentially using the repo working norms
+
+Example:
+
+```text
+/issue-batch bug
+```
+
+Expected agent behavior:
+
+- Run `npm run issues:batch -- --label bug`
+- Review the generated markdown brief
+- Propose or execute one coherent batch at a time using the repo working norms in `AGENTS.md`
+
+Execution-mode example:
+
+```text
+/issue-batch-run bug
+```
+
+Expected agent behavior:
+
+- Run `npm run issues:batch -- --label bug`
+- Review the generated markdown brief and confirm the first coherent batch
+- For each batch, follow the working norms in `AGENTS.md`: restate acceptance criteria, refresh from `main`, create a dedicated branch, update `tasks/todo.md` for non-trivial work, implement root-cause fixes with tests, validate, open a PR, watch checks, merge when green, then continue to the next batch unless the user asks to stop
+
+This is a repository convention rather than a GitHub or Codex built-in command. It works because the agent instructions in `AGENTS.md` define how the shorthand should be expanded.
