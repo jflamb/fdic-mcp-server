@@ -1,4 +1,6 @@
-FROM node:22-bookworm-slim AS build
+ARG NODE_VERSION=22.22.1
+
+FROM node:${NODE_VERSION}-bookworm-slim AS build
 
 WORKDIR /app
 
@@ -10,7 +12,7 @@ COPY scripts ./scripts
 COPY tsconfig.json ./
 RUN npm run build && npm prune --omit=dev
 
-FROM node:22-bookworm-slim
+FROM node:${NODE_VERSION}-bookworm-slim
 
 ENV NODE_ENV=production
 ENV TRANSPORT=http
@@ -27,6 +29,9 @@ COPY --chown=fdicmcp:fdicmcp --from=build /app/node_modules ./node_modules
 COPY --chown=fdicmcp:fdicmcp --from=build /app/dist ./dist
 
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD ["node", "-e", "fetch('http://localhost:8080/health').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1))"]
 
 USER fdicmcp
 

@@ -1,3 +1,35 @@
+# Docker Healthcheck And Runtime Parity
+
+Reference: issues #139 and #147.
+
+## Goals
+
+- [x] Add a container `HEALTHCHECK` that exercises the existing `/health` endpoint.
+- [x] Make the Dockerfile runtime version explicit and reproducible instead of relying on a mutable major tag.
+- [x] Add CI coverage that actually builds the Docker image across the supported container runtime matrix.
+- [x] Validate the batch with repo-standard checks plus Dockerfile/workflow verification.
+
+## Acceptance Criteria
+
+- [x] `Dockerfile` includes a non-shell `HEALTHCHECK` that fails when `http://localhost:8080/health` is unavailable or non-OK.
+- [x] The Docker base image is pinned to a specific published Node 22 patch version by default.
+- [x] CI adds a Docker build job that builds the container with both Node 20 and Node 22 image args so Dockerfile regressions are caught in the same matrix CI claims to support.
+- [x] Repo-standard validation passes after the changes.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] Parse the updated workflow YAML successfully.
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/issues-139-147-docker-runtime-parity`.
+- [x] Pinned the Docker build and runtime stages to `node:22.22.1-bookworm-slim` by default while keeping `NODE_VERSION` overrideable for CI matrix builds.
+- [x] Added a JSON-array `HEALTHCHECK` that probes the existing HTTP `/health` endpoint.
+- [x] Added CI Docker image builds for `20.20.1` and `22.22.1`, then asserted that the built images carry `Healthcheck` metadata.
+
 # Bug Batch 4: CI, Release, And Deployment Bugs
 
 Reference: bug #144 from the `bug` issue batch generated on 2026-03-16.
