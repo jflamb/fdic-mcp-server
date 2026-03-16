@@ -242,7 +242,7 @@ Reference: issue #50.
 - [x] Warn when FDIC 10,000-record batch queries are truncated in snapshot analysis.
 - [x] Warn when FDIC 10,000-record batch queries are truncated in time-series analysis.
 - [x] Warn when FDIC 10,000-record batch queries are truncated in peer-group analysis.
-- [ ] Open a PR for the warning behavior.
+- [x] Open a PR for the warning behavior.
 
 ## Acceptance Criteria
 
@@ -254,6 +254,7 @@ Reference: issue #50.
 ## Review / Results
 
 - [x] Used existing issue #50 for the tracked work.
+- [x] Opened PR #71.
 - [x] Verified `npm test -- tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
