@@ -8,6 +8,13 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import {
+  ANALYSIS_TIMEOUT_MS,
+  MAX_CONCURRENCY,
+  asNumber,
+  buildCertFilters,
+  mapWithConcurrency,
+} from "./shared/queryUtils.js";
 
 type RawFinancials = Record<string, unknown>;
 
@@ -22,10 +29,6 @@ export interface DerivedMetrics {
   loan_to_deposit: number | null;
   deposits_to_assets: number | null;
   noninterest_income_share: number | null;
-}
-
-function asNumber(value: unknown): number | null {
-  return typeof value === "number" ? value : null;
 }
 
 function safeRatio(
@@ -299,41 +302,8 @@ export const PeerGroupInputSchema = z
     }
   });
 
-const CHUNK_SIZE = 25;
-const MAX_CONCURRENCY = 4;
-const ANALYSIS_TIMEOUT_MS = 90_000;
 const FINANCIAL_FIELDS =
   "CERT,ASSET,DEP,NETINC,ROA,ROE,NETNIM,EQTOT,LNLSNET,INTINC,EINTEXP,NONII,NONIX";
-
-function buildCertFilters(certs: number[]): string[] {
-  const filters: string[] = [];
-  for (let i = 0; i < certs.length; i += CHUNK_SIZE) {
-    const chunk = certs.slice(i, i + CHUNK_SIZE);
-    filters.push(chunk.map((cert) => `CERT:${cert}`).join(" OR "));
-  }
-  return filters;
-}
-
-async function mapWithConcurrency<T, R>(
-  values: T[],
-  limit: number,
-  mapper: (value: T, index: number) => Promise<R>,
-): Promise<R[]> {
-  const results = new Array<R>(values.length);
-  let nextIndex = 0;
-  async function worker(): Promise<void> {
-    while (true) {
-      const currentIndex = nextIndex;
-      nextIndex += 1;
-      if (currentIndex >= values.length) return;
-      results[currentIndex] = await mapper(values[currentIndex], currentIndex);
-    }
-  }
-  await Promise.all(
-    Array.from({ length: Math.min(limit, values.length) }, () => worker()),
-  );
-  return results;
-}
 
 interface PeerEntry {
   cert: number;
