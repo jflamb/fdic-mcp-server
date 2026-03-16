@@ -34,7 +34,7 @@ Reference: issue #41 and user request to continue with the next-tier workflow hy
 - [x] Normalize concurrency-group naming across GitHub Actions workflows.
 - [x] Standardize job display names for a cleaner Actions UI.
 - [x] Clarify in the technical docs that the GitHub Package workflow is a backfill workflow, not a second primary release path.
-- [ ] Open a PR for the resulting cleanup.
+- [x] Open a PR for the resulting cleanup.
 
 ## Acceptance Criteria
 
@@ -46,6 +46,7 @@ Reference: issue #41 and user request to continue with the next-tier workflow hy
 ## Review / Results
 
 - [x] Issue created and linked: #41.
+- [x] Opened PR #42.
 - [x] Parsed all workflow YAML files successfully with Ruby `YAML.load_file`.
 
 # Docs And Config Bug Batch
@@ -68,7 +69,8 @@ Reference: issues #44, #55, #56, and #57 and the follow-up bug triage work.
 
 ## Review / Results
 
-- [ ] Final verification and PR creation pending.
+- [x] Opened PR #61.
+- [x] Verified stale wording searches after the edits.
 
 # Correctness Bug Batch
 
@@ -80,7 +82,7 @@ Reference: issue #62 and bugs #46, #53, and #59.
 - [x] Make `scripts/deploy-local.sh` fail immediately on shell command errors.
 - [x] Validate `PORT` explicitly for HTTP startup and return a clearer configuration error.
 - [x] Add or update tests for the code-path changes where practical.
-- [ ] Open a PR for the resulting fixes.
+- [x] Open a PR for the resulting fixes.
 
 ## Acceptance Criteria
 
@@ -92,6 +94,7 @@ Reference: issue #62 and bugs #46, #53, and #59.
 ## Review / Results
 
 - [x] Issue created and linked: #62.
+- [x] Opened PR #63.
 - [x] Verified `npm test -- tests/analysis.test.ts tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
 
 # Peer Group Ranking Semantics
@@ -103,7 +106,7 @@ Reference: issue #64 and bug #45.
 - [x] Make rank, denominator, and percentile use the same comparison set in peer-group output.
 - [x] Update tests to reflect the chosen ranking contract.
 - [x] Update user-facing wording where it currently implies different denominator semantics.
-- [ ] Open a PR for the resulting fix.
+- [x] Open a PR for the resulting fix.
 
 ## Acceptance Criteria
 
@@ -114,6 +117,7 @@ Reference: issue #64 and bug #45.
 ## Review / Results
 
 - [x] Issue created and linked: #64.
+- [x] Opened PR #65.
 - [x] Verified `npm test -- tests/peerGroup.test.ts tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
 
 # FDIC Response Shape Hardening
@@ -125,7 +129,7 @@ Reference: issue #47.
 - [x] Validate the FDIC API response shape centrally in the client layer.
 - [x] Replace low-level shape errors with explicit, actionable error messages.
 - [x] Add tests for malformed FDIC response payloads.
-- [ ] Open a PR for the hardening change.
+- [x] Open a PR for the hardening change.
 
 ## Acceptance Criteria
 
@@ -135,6 +139,7 @@ Reference: issue #47.
 
 ## Review / Results
 
+- [x] Opened PR #66.
 - [x] Verified `npm test -- tests/fdicClient.test.ts`, `npm run typecheck`, and `npm run build`.
 
 # CI-Gated Cloud Run Deployment
@@ -146,7 +151,7 @@ Reference: issue #52.
 - [x] Gate Cloud Run deployment on successful CI rather than raw pushes to `main`.
 - [x] Prevent in-progress production deployments from being canceled by a newer push.
 - [x] Update technical docs to describe the new deploy trigger correctly.
-- [ ] Open a PR for the workflow change.
+- [x] Open a PR for the workflow change.
 
 ## Acceptance Criteria
 
@@ -156,6 +161,7 @@ Reference: issue #52.
 
 ## Review / Results
 
+- [x] Opened PR #67.
 - [x] Parsed `.github/workflows/deploy-cloud-run.yml` successfully with Ruby `YAML.load_file`.
 
 # Non-Root Docker Runtime
@@ -309,5 +315,30 @@ Reference: issue #48.
 - [x] Opened PR #73.
 - [x] Left older local branches intact because they are not merged and still diverge from `main`.
 - [x] Verified `npm test -- tests/analysis.test.ts tests/peerGroup.test.ts tests/mcp-http.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.
+
+# Metrics And Task Cleanup
+
+Reference: issue #74.
+
+## Goals
+
+- [x] Normalize stale completed checklist items in `tasks/todo.md`.
+- [x] Extract the remaining reusable financial metric helpers from `peerGroup.ts`.
+- [x] Validate the peer-group behavior after the extraction.
+- [ ] Open a PR for the cleanup/refactor work.
+
+## Acceptance Criteria
+
+- [x] Older completed sections in `tasks/todo.md` no longer show stale unchecked PR bookkeeping.
+- [x] `DerivedMetrics`, `deriveMetrics`, and `computeMedian` live in a shared module.
+- [x] `peerGroup.ts` imports the shared metric helpers instead of maintaining local copies.
+- [x] Validation passes for targeted peer-group tests plus type/build checks.
+
+## Review / Results
+
+- [x] Used existing issue #74 for the tracked work.
+- [x] Verified `npm test -- tests/peerGroup.test.ts tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
