@@ -170,6 +170,13 @@ function compareComparisonTieBreakers(
 }
 
 export function yearsBetween(startRepdte: string, endRepdte: string): number {
+  const start = parseRepdteDate(startRepdte);
+  const end = parseRepdteDate(endRepdte);
+
+  if (!start || !end) {
+    return 0;
+  }
+
   const startQuarterIndex = getQuarterIndex(startRepdte);
   const endQuarterIndex = getQuarterIndex(endRepdte);
 
@@ -177,21 +184,54 @@ export function yearsBetween(startRepdte: string, endRepdte: string): number {
     return Math.max((endQuarterIndex - startQuarterIndex) / 4, 0);
   }
 
-  const start = new Date(
-    `${startRepdte.slice(0, 4)}-${startRepdte.slice(4, 6)}-${startRepdte.slice(6, 8)}T00:00:00Z`,
-  );
-  const end = new Date(
-    `${endRepdte.slice(0, 4)}-${endRepdte.slice(4, 6)}-${endRepdte.slice(6, 8)}T00:00:00Z`,
-  );
-
   return Math.max(
     (end.getTime() - start.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
     0,
   );
 }
 
-function cagr(start: number | null, end: number | null, years: number): number | null {
-  if (start === null || end === null || start <= 0 || end <= 0 || years <= 0) {
+function parseRepdteDate(repdte: string): Date | null {
+  const year = Number.parseInt(repdte.slice(0, 4), 10);
+  const month = Number.parseInt(repdte.slice(4, 6), 10);
+  const day = Number.parseInt(repdte.slice(6, 8), 10);
+
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day)
+  ) {
+    return null;
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+export function cagr(
+  start: number | null,
+  end: number | null,
+  years: number,
+): number | null {
+  if (
+    start === null ||
+    end === null ||
+    start <= 0 ||
+    end <= 0 ||
+    !Number.isFinite(years) ||
+    years <= 0
+  ) {
     return null;
   }
   return (Math.pow(end / start, 1 / years) - 1) * 100;
@@ -552,6 +592,37 @@ function formatComparisonText(output: {
   return insights ? `${header}\n${rows.join("\n")}\nInsights\n${insights}` : `${header}\n${rows.join("\n")}`;
 }
 
+function buildAnalysisOutput(params: {
+  totalCandidates: number;
+  analyzedCount: number;
+  startRepdte: string;
+  endRepdte: string;
+  analysisMode: "snapshot" | "timeseries";
+  sortBy: z.infer<typeof SortFieldSchema>;
+  sortOrder: "ASC" | "DESC";
+  warnings: string[];
+  comparisons: ComparisonRecord[];
+  offset?: number;
+  limitCount?: number;
+}) {
+  const offset = params.offset ?? 0;
+  const count = params.limitCount ?? params.comparisons.length;
+
+  return {
+    total_candidates: params.totalCandidates,
+    analyzed_count: params.analyzedCount,
+    start_repdte: params.startRepdte,
+    end_repdte: params.endRepdte,
+    analysis_mode: params.analysisMode,
+    sort_by: params.sortBy,
+    sort_order: params.sortOrder,
+    warnings: params.warnings,
+    insights: buildTopLevelInsights(params.comparisons),
+    ...buildPaginationInfo(params.analyzedCount, offset, count),
+    comparisons: params.comparisons,
+  };
+}
+
 async function fetchInstitutionRoster(
   state: string | undefined,
   institutionFilters: string | undefined,
@@ -855,22 +926,25 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
                 controller.signal,
               );
         const roster = rosterResult.records;
+        const warnings = rosterResult.warning ? [rosterResult.warning] : [];
 
         const candidateCerts = roster
           .map((record) => asNumber(record.CERT))
           .filter((cert): cert is number => cert !== null);
 
         if (candidateCerts.length === 0) {
-          const output = {
-            total_candidates: 0,
-            analyzed_count: 0,
-            start_repdte,
-            end_repdte,
-            analysis_mode,
-            sort_by,
-            sort_order,
+          const output = buildAnalysisOutput({
+            totalCandidates: 0,
+            analyzedCount: 0,
+            startRepdte: start_repdte,
+            endRepdte: end_repdte,
+            analysisMode: analysis_mode,
+            sortBy: sort_by,
+            sortOrder: sort_order,
+            warnings,
             comparisons: [],
-          };
+            limitCount: 0,
+          });
 
           return {
             content: [
@@ -890,7 +964,6 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         );
 
         let comparisons: ComparisonRecord[] = [];
-        const warnings = rosterResult.warning ? [rosterResult.warning] : [];
 
         if (analysis_mode === "timeseries") {
           const [financialSeriesResult, demographicsSeriesResult] = await Promise.all([
@@ -1004,20 +1077,18 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           sort_order,
         );
         const ranked = sortedComparisons.slice(0, limit);
-        const pagination = buildPaginationInfo(comparisons.length, 0, ranked.length);
-        const output = {
-          total_candidates: candidateCerts.length,
-          analyzed_count: comparisons.length,
-          start_repdte,
-          end_repdte,
-          analysis_mode,
-          sort_by,
-          sort_order,
+        const output = buildAnalysisOutput({
+          totalCandidates: candidateCerts.length,
+          analyzedCount: comparisons.length,
+          startRepdte: start_repdte,
+          endRepdte: end_repdte,
+          analysisMode: analysis_mode,
+          sortBy: sort_by,
+          sortOrder: sort_order,
           warnings,
-          insights: buildTopLevelInsights(sortedComparisons),
-          ...pagination,
           comparisons: ranked,
-        };
+          limitCount: ranked.length,
+        });
 
         const text = truncateIfNeeded(
           [
