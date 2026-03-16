@@ -45,7 +45,7 @@ The FDIC BankFind Suite API is public and useful, but it is not packaged for MCP
 - Technical specification: [docs/technical/specification.md](./docs/technical/specification.md)
 - Architecture: [docs/technical/architecture.md](./docs/technical/architecture.md)
 - Key decisions: [docs/technical/decisions.md](./docs/technical/decisions.md)
-- Release history: [CHANGELOG.md](./CHANGELOG.md)
+- Release history: [GitHub Releases](https://github.com/jflamb/fdic-mcp-server/releases)
 - Archived release notes: [docs/release-notes/index.md](./docs/release-notes/index.md)
 - Security policy: [SECURITY.md](./SECURITY.md)
 
@@ -242,7 +242,7 @@ npm test
 npm run build
 ```
 
-Releases are published automatically from validated `main` commits by `semantic-release`. Do not manually edit the package version or create release tags by hand.
+Releases are published automatically from validated `main` commits by `semantic-release`. Do not manually edit the package version or create release tags by hand. GitHub Releases is the authoritative release record for published versions.
 
 ## License
 

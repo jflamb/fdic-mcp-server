@@ -9,7 +9,7 @@ breadcrumbs:
   - title: Project Info
     url: /project-information/
 ---
-Current releases are generated automatically by `semantic-release` and recorded in [CHANGELOG.md]({{ '/CHANGELOG.md' | relative_url }}) and the GitHub Releases page.
+Current releases are generated automatically by `semantic-release` and recorded on the GitHub Releases page.
 
 Historical manually curated notes remain here for earlier releases:
 

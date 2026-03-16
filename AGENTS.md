@@ -82,7 +82,7 @@ Follow this sequence for substantive repo work unless the user explicitly asks f
 - Commit in logical chunks with clear, concise commit messages.
 - Use conventional commit messages for any commit that may land on `main`, because release automation derives versions from commit semantics. Use `fix:` for patch-level behavior fixes, `feat:` for new user-facing capability, and `!` or `BREAKING CHANGE:` for breaking changes. Do not hide behavior changes under `docs:` or `chore:` just to avoid a release bump.
 - Ensure the final commit message that reaches `main` remains conventional. If the repo uses squash merges, make the PR title conventional as well so the squashed mainline commit keeps the correct release signal.
-- Do not manually bump `package.json` versions or create release tags by hand. `semantic-release` owns version calculation, tagging, changelog updates, and downstream publishing.
+- Do not manually bump `package.json` versions or create release tags by hand. `semantic-release` owns version calculation, tagging, GitHub Release publication, and downstream publishing.
 - When the work is ready for review, open a pull request that explains what changed, why it changed, how it was validated, and any follow-up risk or context.
 - After opening the PR, monitor the required checks rather than assuming they passed. If validation fails, investigate the root cause, fix it on the same branch, and iterate until checks pass.
 - If validation passes, merge the PR and clean up local and remote working branches.

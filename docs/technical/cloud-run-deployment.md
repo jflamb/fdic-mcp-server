@@ -138,7 +138,7 @@ Relevant repo assets:
 
 - `server.json` contains the MCP Registry metadata for this server
 - `.github/workflows/publish.yml` runs after successful `CI` on `main`, uses `semantic-release` to calculate the next version, and then runs `mcp-publisher login github-oidc` and `mcp-publisher publish`
-- `scripts/sync-server-json.mjs` keeps `server.json` version fields aligned with the semantic-release version written into `package.json`
+- `scripts/sync-server-json.mjs` keeps `server.json` version fields aligned with the semantic-release version in the release workspace before the MCP Registry publish step
 
 Registry references:
 
