@@ -55,6 +55,22 @@ TRANSPORT=http PORT=3000 node dist/index.js
 - Use parallel exploration where tooling allows it to keep the main execution path focused.
 - For larger problems, break work into focused tracks rather than mixing research, implementation, and verification in one pass.
 
+## Standard Operating Procedure
+
+Follow this sequence for substantive repo work unless the user explicitly asks for a narrower slice:
+
+1. Review the issue, bug report, or request and restate the acceptance criteria before editing.
+2. Check the current repo state, refresh from `main` as needed, and avoid building new work on a stale base.
+3. Create a focused branch from updated `main`. Keep one branch and one PR scoped to one coherent change set.
+4. For non-trivial work, add or update `tasks/todo.md` with goals, acceptance criteria, validation steps, and a review/results section.
+5. Inspect the existing implementation and tests before deciding on the fix. Prefer root-cause changes over symptom patches.
+6. Implement in small, reviewable steps. Preserve MCP tool contracts unless a breaking change is intentional and coordinated.
+7. Add or update tests in the same change set whenever behavior, ranking, output shape, filtering, error handling, or release-critical workflow behavior changes.
+8. Run the required validation commands before declaring the work ready. At minimum, use the repo-standard commands unless the change clearly justifies a narrower targeted suite.
+9. Commit in logical chunks with conventional commit messages that match the release impact.
+10. Open a PR that links the issue, explains what changed and why, lists exact validation commands, and calls out release impact or residual risk when relevant.
+11. Merge only after checks pass, then clean up local and remote branches.
+
 ## Change Management
 
 - Treat `main` as protected. Do not develop directly on `main` for substantive work.
@@ -62,6 +78,9 @@ TRANSPORT=http PORT=3000 node dist/index.js
 - Open or reference an issue before implementation. The issue should describe the work, acceptance criteria, and any supporting context needed to execute cleanly.
 - Use sub-tasks when the work naturally splits into distinct deliverables or validation tracks.
 - Commit in logical chunks with clear, concise commit messages.
+- Use conventional commit messages for any commit that may land on `main`, because release automation derives versions from commit semantics. Use `fix:` for patch-level behavior fixes, `feat:` for new user-facing capability, and `!` or `BREAKING CHANGE:` for breaking changes. Do not hide behavior changes under `docs:` or `chore:` just to avoid a release bump.
+- Ensure the final commit message that reaches `main` remains conventional. If the repo uses squash merges, make the PR title conventional as well so the squashed mainline commit keeps the correct release signal.
+- Do not manually bump `package.json` versions or create release tags by hand. `semantic-release` owns version calculation, tagging, changelog updates, and downstream publishing.
 - When the work is ready for review, open a pull request that explains what changed, why it changed, how it was validated, and any follow-up risk or context.
 - If validation passes, merge the PR and clean up local and remote working branches.
 - If validation fails, investigate the root cause, fix it, and iterate until checks pass.
