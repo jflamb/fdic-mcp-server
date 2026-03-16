@@ -33,10 +33,10 @@ body_class: overview-page
     <h3>Connect to the live endpoint</h3>
     <p>Start with the hosted MCP URL when your host accepts remote servers. Use the local install path only when your host requires stdio.</p>
   </a>
-  <a class="card" href="{{ '/release-notes/v1.1.2/' | relative_url }}">
+  <a class="card" href="{{ '/release-notes/v1.1.3/' | relative_url }}">
     <span class="card__eyebrow">Latest Release</span>
-    <h3>Version 1.1.2</h3>
-    <p>Includes the MCP registry metadata validation fix needed for a clean follow-up release.</p>
+    <h3>Version 1.1.3</h3>
+    <p>Fixes empty listed parameter schemas for the analysis tools in MCP clients.</p>
   </a>
   <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
     <span class="card__eyebrow">Best Next Read</span>

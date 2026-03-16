@@ -420,3 +420,28 @@ Reference: issue #80.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
 - [x] Verified post-build `tools/list` output contains populated schemas for both affected tools.
+
+# Schema Fix Release Prep
+
+Reference: issue #80 and PR #81.
+
+## Goals
+
+- [x] Bump the package and registry metadata version for the schema-listing fix release.
+- [x] Add matching GitHub and docs release notes for the new version.
+- [ ] Merge the fix branch to `main`.
+- [ ] Tag the merged `main` commit so the publish workflow runs.
+
+## Acceptance Criteria
+
+- [x] `package.json`, `package-lock.json`, and `server.json` all point to the new patch version.
+- [x] The docs site points to the new latest release notes entry.
+- [ ] The release tag references a commit already on `main`.
+- [x] Validation passes after the release-prep changes.
+
+## Review / Results
+
+- [x] Release version selected: `1.1.3`.
+- [x] Verified `npm test -- tests/mcp-http.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.
