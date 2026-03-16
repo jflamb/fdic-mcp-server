@@ -343,3 +343,5 @@ Reference: issue #74.
 - [x] Verified `npm test -- tests/peerGroup.test.ts tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
+- [x] Bumped the package and registry metadata version to `1.1.1`.
+- [x] Added matching GitHub and docs release notes for `1.1.1`.
