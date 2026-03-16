@@ -26,6 +26,28 @@ function quoteFieldList(fields: string[]): string {
   return fields.map((field) => `'${field}'`).join(", ");
 }
 
+export function findInvalidEndpointFields(
+  endpoint: string,
+  fields: string[],
+): string[] {
+  const metadata = getEndpointMetadata(endpoint);
+  if (!metadata) {
+    return [];
+  }
+
+  return fields.filter((field) => metadata.fields[field] === undefined);
+}
+
+export function buildInvalidFieldError(
+  endpoint: string,
+  invalidFields: string[],
+): Error {
+  return new Error(
+    `Invalid field ${quoteFieldList(invalidFields)} for endpoint ${endpoint}. ` +
+      `Use the endpoint-specific field catalog for ${endpoint}.`,
+  );
+}
+
 export function getEndpointMetadata(endpoint: string) {
   const baseMetadata = FDIC_ENDPOINT_METADATA[endpoint];
   if (!baseMetadata) {
@@ -67,15 +89,10 @@ export function validateEndpointQueryParams(
 
   if (params.fields) {
     const requestedFields = parseCommaSeparatedFields(params.fields);
-    const invalidFields = requestedFields.filter(
-      (field) => metadata.fields[field] === undefined,
-    );
+    const invalidFields = findInvalidEndpointFields(endpoint, requestedFields);
 
     if (invalidFields.length > 0) {
-      throw new Error(
-        `Invalid field ${quoteFieldList(invalidFields)} for endpoint ${endpoint}. ` +
-          `Use the endpoint-specific field catalog for ${endpoint}.`,
-      );
+      throw buildInvalidFieldError(endpoint, invalidFields);
     }
   }
 

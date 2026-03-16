@@ -14,6 +14,10 @@ import {
   formatToolError,
 } from "../services/fdicClient.js";
 import {
+  buildInvalidFieldError,
+  findInvalidEndpointFields,
+} from "../services/fdicSchema.js";
+import {
   ANALYSIS_TIMEOUT_MS,
   MAX_CONCURRENCY,
   asNumber,
@@ -245,6 +249,24 @@ function validatePeerGroupParams(value: PeerGroupParams): string | null {
   return null;
 }
 
+function validateExtraFields(
+  extraFields: string[] | undefined,
+): Error | null {
+  if (!extraFields || extraFields.length === 0) {
+    return null;
+  }
+
+  const invalidFields = findInvalidEndpointFields(
+    ENDPOINTS.FINANCIALS,
+    extraFields,
+  );
+  if (invalidFields.length === 0) {
+    return null;
+  }
+
+  return buildInvalidFieldError(ENDPOINTS.FINANCIALS, invalidFields);
+}
+
 const FINANCIAL_FIELDS =
   "CERT,ASSET,DEP,NETINC,ROA,ROE,NETNIM,EQTOT,LNLSNET,INTINC,EINTEXP,NONII,NONIX";
 
@@ -403,6 +425,11 @@ Override precedence: cert derives defaults, then explicit params override them.`
         const validationError = validatePeerGroupParams(params);
         if (validationError) {
           return formatToolError(new Error(validationError));
+        }
+
+        const extraFieldsError = validateExtraFields(params.extra_fields);
+        if (extraFieldsError) {
+          return formatToolError(extraFieldsError);
         }
 
         await sendProgressNotification(
