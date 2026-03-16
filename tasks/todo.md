@@ -403,7 +403,7 @@ Reference: issue #80.
 - [x] Fix empty `inputSchema` listings for `fdic_compare_bank_snapshots` and `fdic_peer_group_analysis`.
 - [x] Preserve runtime rejection of invalid cross-field argument combinations.
 - [x] Add regression tests for the advertised `tools/list` schemas and invalid argument handling.
-- [ ] Open a PR for the fix.
+- [x] Open a PR for the fix.
 
 ## Acceptance Criteria
 
@@ -415,6 +415,7 @@ Reference: issue #80.
 ## Review / Results
 
 - [x] Opened issue #80.
+- [x] Opened PR #81.
 - [x] Verified `npm test -- tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
