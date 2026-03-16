@@ -469,6 +469,31 @@ Reference: issue #82.
 
 - [x] Opened issue #82.
 
+# Trusted Publishing Release Recovery
+
+Reference: issue #122.
+
+## Goals
+
+- [x] Trace why the `Release` workflow on `main` is failing before it can publish a new version.
+- [x] Verify whether npm trusted publishing is still the supported path for this repo.
+- [x] Update the release workflow to use the supported trusted-publishing configuration instead of the broken token-oriented path.
+- [x] Validate the workflow change before merge.
+
+## Acceptance Criteria
+
+- [x] The repo captures evidence for the current `Release` workflow failure mode.
+- [x] The release workflow no longer configures `setup-node` with npm `registry-url` in the semantic-release job.
+- [x] The semantic-release step no longer requires `NPM_TOKEN` when the repo is using npm trusted publishing from GitHub Actions.
+- [x] Validation covers workflow syntax and the repo-standard PR checks.
+
+## Review / Results
+
+- [x] Confirmed failed `Release` runs on March 16, 2026 were stopping in semantic-release with `EINVALIDNPMTOKEN` during `@semantic-release/npm` `verifyConditions`.
+- [x] Verified the workflow was still setting `registry-url` in `setup-node` and passing `NPM_TOKEN`, which conflicts with the semantic-release trusted-publishing guidance.
+- [x] Validated `.github/workflows/publish.yml` parses cleanly with `ruby -e 'require "yaml"; YAML.load_file(".github/workflows/publish.yml"); puts "YAML OK"'`.
+- [x] Verified `npm run typecheck`, `npm test`, and `npm run build`.
+
 # Semantic Release Automation
 
 Reference: issue #105.
