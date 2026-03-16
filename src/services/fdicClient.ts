@@ -250,11 +250,15 @@ export function buildTruncationWarning(
   );
 }
 
-export function truncateIfNeeded(text: string, charLimit: number): string {
+export function truncateIfNeeded(
+  text: string,
+  charLimit: number,
+  guidance = "Request fewer fields, narrow your filters, or paginate with limit/offset.",
+): string {
   if (text.length <= charLimit) return text;
   return (
     text.slice(0, charLimit) +
-    `\n\n[Response truncated at ${charLimit} characters. Use limit/offset parameters to paginate or narrow your query with filters.]`
+    `\n\n[Response truncated at ${charLimit} characters. ${guidance}]`
   );
 }
 

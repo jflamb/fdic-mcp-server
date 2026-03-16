@@ -1027,6 +1027,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             .filter((value): value is string => value !== null)
             .join("\n\n"),
           CHARACTER_LIMIT,
+          "Reduce the number of certs, narrow institution_filters, request fewer fields, or shorten the date range.",
         );
 
         return {

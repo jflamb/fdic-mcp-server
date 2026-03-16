@@ -6,6 +6,40 @@ export function asNumber(value: unknown): number | null {
   return typeof value === "number" ? value : null;
 }
 
+interface BuildFilterStringOptions {
+  cert?: number;
+  dateField?: string;
+  dateValue?: string | number;
+  rawFilters?: string;
+  rawFiltersPosition?: "first" | "last";
+}
+
+export function buildFilterString({
+  cert,
+  dateField,
+  dateValue,
+  rawFilters,
+  rawFiltersPosition = "first",
+}: BuildFilterStringOptions): string | undefined {
+  const filterParts: string[] = [];
+  const rawFilter = rawFilters ? `(${rawFilters})` : undefined;
+
+  if (rawFiltersPosition === "first" && rawFilter) {
+    filterParts.push(rawFilter);
+  }
+  if (cert !== undefined) {
+    filterParts.push(`CERT:${cert}`);
+  }
+  if (dateField && dateValue !== undefined) {
+    filterParts.push(`${dateField}:${dateValue}`);
+  }
+  if (rawFiltersPosition === "last" && rawFilter) {
+    filterParts.push(rawFilter);
+  }
+
+  return filterParts.length > 0 ? filterParts.join(" AND ") : undefined;
+}
+
 export function buildCertFilters(certs: number[]): string[] {
   const filters: string[] = [];
 

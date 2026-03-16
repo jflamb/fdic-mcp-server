@@ -10,6 +10,7 @@ import {
   formatToolError,
 } from "../services/fdicClient.js";
 import { CommonQuerySchema } from "../schemas/common.js";
+import { buildFilterString } from "./shared/queryUtils.js";
 
 const DemographicsQuerySchema = CommonQuerySchema.extend({
   cert: z
@@ -77,14 +78,14 @@ Prefer concise human-readable summaries or tables when answering users. Structur
     },
     async ({ cert, repdte, ...params }) => {
       try {
-        const filterParts: string[] = [];
-        if (params.filters) filterParts.push(`(${params.filters})`);
-        if (cert !== undefined) filterParts.push(`CERT:${cert}`);
-        if (repdte) filterParts.push(`REPDTE:${repdte}`);
         const response = await queryEndpoint(ENDPOINTS.DEMOGRAPHICS, {
           ...params,
-          filters:
-            filterParts.length > 0 ? filterParts.join(" AND ") : undefined,
+          filters: buildFilterString({
+            cert,
+            dateField: "REPDTE",
+            dateValue: repdte,
+            rawFilters: params.filters,
+          }),
         });
         const records = extractRecords(response);
         const pagination = buildPaginationInfo(
@@ -103,6 +104,7 @@ Prefer concise human-readable summaries or tables when answering users. Structur
             "CBSANAME",
           ]),
           CHARACTER_LIMIT,
+          "Request fewer fields, narrow your filters, or paginate with limit/offset.",
         );
         return {
           content: [{ type: "text", text }],

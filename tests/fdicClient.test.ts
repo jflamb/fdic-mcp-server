@@ -294,6 +294,15 @@ describe("fdicClient", () => {
     expect(truncateIfNeeded("abcdef", 3)).toContain(
       "[Response truncated at 3 characters.",
     );
+    expect(truncateIfNeeded("abcdef", 3)).toContain(
+      "Request fewer fields, narrow your filters, or paginate with limit/offset.",
+    );
+  });
+
+  it("allows context-specific truncation guidance", () => {
+    expect(
+      truncateIfNeeded("abcdef", 3, "Shorten the date range or reduce the cert list."),
+    ).toContain("Shorten the date range or reduce the cert list.");
   });
 
   it("formats tool errors with MCP-compatible shape", () => {
