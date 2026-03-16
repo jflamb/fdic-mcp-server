@@ -54,6 +54,8 @@ export function parseHttpPort(rawPort: string | undefined): number {
 
 export function createApp(): Express {
   const app = express();
+  const server = createServer();
+  let requestQueue = Promise.resolve();
   app.use(express.json());
 
   app.get("/health", (_req, res) => {
@@ -61,7 +63,6 @@ export function createApp(): Express {
   });
 
   app.post("/mcp", async (req, res) => {
-    const server = createServer();
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
@@ -69,27 +70,35 @@ export function createApp(): Express {
 
     res.on("close", () => {
       void transport.close().catch(() => {});
-      void server.close().catch(() => {});
     });
 
-    try {
-      await server.connect(transport);
-      await transport.handleRequest(req, res, req.body);
-    } catch (error: unknown) {
-      console.error("MCP request error:", error);
-      if (!res.headersSent) {
-        res.status(500).json({
-          jsonrpc: "2.0",
-          error: {
-            code: -32603,
-            message: "Internal server error",
-          },
-          id: null,
-        });
+    // The SDK server can only connect to one transport at a time, so HTTP
+    // requests reuse the same tool-registered server instance sequentially.
+    const runRequest = async () => {
+      try {
+        await server.connect(transport);
+        await transport.handleRequest(req, res, req.body);
+      } catch (error: unknown) {
+        console.error("MCP request error:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32603,
+              message: "Internal server error",
+            },
+            id: null,
+          });
+        }
+      } finally {
+        await transport.close().catch(() => {});
+        await server.close().catch(() => {});
       }
-      await transport.close().catch(() => {});
-      await server.close().catch(() => {});
-    }
+    };
+
+    const queuedRequest = requestQueue.catch(() => {}).then(runRequest);
+    requestQueue = queuedRequest;
+    await queuedRequest;
   });
 
   return app;

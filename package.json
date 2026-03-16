@@ -23,7 +23,7 @@
     "pack:check": "npm pack --dry-run",
     "registry:sync": "node scripts/sync-server-json.mjs",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "dev": "tsx src/cli.ts",
     "deploy:local": "bash scripts/deploy-local.sh"
   },
   "repository": {
@@ -56,6 +56,7 @@
     "@types/supertest": "^6.0.3",
     "esbuild": "^0.27.4",
     "supertest": "^7.1.4",
+    "tsx": "^4.20.6",
     "typescript": "^5.3.0",
     "vitest": "^3.2.4"
   },

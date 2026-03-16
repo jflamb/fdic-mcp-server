@@ -84,6 +84,8 @@ TRANSPORT=http PORT=3000 node dist/index.js
 
 The HTTP MCP endpoint is available at `http://localhost:3000/mcp`.
 
+The Docker image and Cloud Run deployment use port `8080` by default; `3000` is the local shell example for direct runs outside the container.
+
 ### Connect A Client
 
 Use the client-specific instructions in [Client Setup]({{ '/clients/' | relative_url }}).

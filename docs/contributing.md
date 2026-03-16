@@ -19,6 +19,7 @@ The full contributor workflow lives in the repository root at `CONTRIBUTING.md`.
 - Update tests for behavior or contract changes.
 - Update the docs when prompts, client setup, or technical behavior changes.
 - Run `npm run typecheck`, `npm test`, and `npm run build` before opening a pull request.
+- Use Node.js 20 or 22 locally when possible to match CI, release publishing, and the production container baseline.
 
 ## Repository Guide
 

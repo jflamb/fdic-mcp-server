@@ -113,16 +113,17 @@ describe("HTTP MCP server", () => {
     expect(peerGroupTool.inputSchema.properties.asset_min.type).toBe("number");
   });
 
-  it("handles repeated MCP requests without reusing a connected server", async () => {
-    getMock
-      .mockResolvedValueOnce({
-        data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
-      })
-      .mockResolvedValueOnce({
-        data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
-      });
+  it("reuses cached FDIC responses across sequential HTTP requests", async () => {
+    const app = createApp();
+    getMock.mockResolvedValueOnce({
+      data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
+    });
 
-    const first = await mcpPost({
+    const first = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", "application/json, text/event-stream")
+      .send({
       jsonrpc: "2.0",
       id: 1,
       method: "tools/call",
@@ -132,7 +133,11 @@ describe("HTTP MCP server", () => {
       },
     });
 
-    const second = await mcpPost({
+    const second = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", "application/json, text/event-stream")
+      .send({
       jsonrpc: "2.0",
       id: 2,
       method: "tools/call",
@@ -147,6 +152,7 @@ describe("HTTP MCP server", () => {
     expect(second.body.result.structuredContent.institutions[0].CERT).toBe(
       3511,
     );
+    expect(getMock).toHaveBeenCalledTimes(1);
   });
 
   it("returns structuredContent for search tools", async () => {
