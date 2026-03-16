@@ -345,3 +345,28 @@ Reference: issue #74.
 - [x] Verified `npm run build`.
 - [x] Bumped the package and registry metadata version to `1.1.1`.
 - [x] Added matching GitHub and docs release notes for `1.1.1`.
+
+# Registry Validation Recovery Release
+
+Reference: issue #76.
+
+## Goals
+
+- [x] Shorten the MCP registry description to satisfy the schema validation limit.
+- [x] Roll the release metadata forward from `1.1.1` to `1.1.2`.
+- [x] Add matching release notes for `1.1.2`.
+- [x] Open a PR for the recovery release preparation.
+
+## Acceptance Criteria
+
+- [x] `server.json.description` is 100 characters or fewer.
+- [x] `package.json`, `package-lock.json`, and `server.json` all point to `1.1.2`.
+- [x] The GitHub release notes and docs release notes include `1.1.2`.
+- [x] Validation passes for the updated branch.
+
+## Review / Results
+
+- [x] Used existing issue #76 for the tracked work.
+- [x] Opened PR #77.
+- [x] Verified the registry description length is 73 characters.
+- [x] Verified `npm run build`.
