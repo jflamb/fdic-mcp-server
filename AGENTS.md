@@ -54,6 +54,9 @@ TRANSPORT=http PORT=3000 node dist/index.js
 - For non-trivial work, write a detailed spec up front to reduce ambiguity before editing.
 - Use parallel exploration where tooling allows it to keep the main execution path focused.
 - For larger problems, break work into focused tracks rather than mixing research, implementation, and verification in one pass.
+- Prompt macros for label-driven orchestration:
+  - If the user says `/issue-batch <label>` or `issue-batch <label>`, treat that as an instruction to run `npm run issues:batch -- --label <label>`, review the generated batches, and use the brief as the planning input for the next implementation steps.
+  - If the user says `/issue-batch-run <label>` or `issue-batch-run <label>`, first run `npm run issues:batch -- --label <label>`, then execute the recommended batches one at a time using the document agent working norms in this file. That means restating acceptance criteria, refreshing from `main`, creating a dedicated branch per coherent batch, updating `tasks/todo.md` for non-trivial work, implementing root-cause fixes with tests, validating, opening a PR, watching checks, merging when green, and only then moving to the next batch unless the user explicitly asks to pause.
 
 ## Standard Operating Procedure
 
@@ -95,6 +98,9 @@ Follow this sequence for substantive repo work unless the user explicitly asks f
 - Update progress as work advances.
 - Add a short review/results section before closing the task.
 - After any user correction, update `tasks/lessons.md`. If it does not exist yet, create it at that point.
+- For label-driven maintenance passes, use `npm run issues:batch -- --label <label>` to generate grouped issue batches before starting implementation. Review the proposed batches before treating them as execution scope.
+- In prompt-driven orchestration, the shorthand `/issue-batch <label>` is the preferred way to invoke that batching step.
+- In prompt-driven orchestration, use `/issue-batch-run <label>` when the user wants the agent to carry the work through batch execution rather than stop after planning.
 
 ## Self-Improvement Loop
 

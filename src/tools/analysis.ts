@@ -1139,11 +1139,15 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           insightComparisons: sortedComparisons,
           limitCount: ranked.length,
         });
+        const textOutput = {
+          ...output,
+          insights: buildTopLevelInsights(ranked),
+        };
 
         const text = truncateIfNeeded(
           [
             ...warnings.map((warning) => `Warning: ${warning}`),
-            formatComparisonText(output),
+            formatComparisonText(textOutput),
           ]
             .filter((value): value is string => value !== null)
             .join("\n\n"),

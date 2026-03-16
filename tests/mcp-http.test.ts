@@ -2296,6 +2296,12 @@ describe("HTTP MCP server", () => {
       growth_with_better_profitability: ["Slice Bank"],
       balance_sheet_growth_without_profitability: ["Hidden Insight Bank"],
     });
+    expect(response.body.result.content[0].text).toContain(
+      "growth_with_better_profitability: Slice Bank",
+    );
+    expect(response.body.result.content[0].text).not.toContain(
+      "Hidden Insight Bank",
+    );
   });
 
   it("warns when the analysis roster is truncated by the FDIC API limit", async () => {
