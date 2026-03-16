@@ -1,3 +1,26 @@
+# Bug Batch 3: FDIC Data And Query Contract Bugs
+
+Reference: bug #135 from the `bug` issue batch generated on 2026-03-16.
+
+## Goals
+
+- [x] Remove the insertion-order assumption from query-cache expiration pruning.
+- [x] Add regression coverage for mixed expired and live cache entries.
+- [x] Validate the batch with targeted tests plus repo-standard type/build checks.
+
+## Acceptance Criteria
+
+- [x] Expired query-cache entries are pruned wherever they appear in the cache map.
+- [x] Live cache entries are preserved while stale entries are removed.
+- [x] `npm test -- tests/fdicClient.test.ts`, `npm run typecheck`, and `npm run build` pass after the changes.
+
+## Review / Results
+
+- [x] Branch created for Batch 3 work: `fix/bug-batch-3-cache-pr`.
+- [x] Removed the early `break` from cache pruning in [fdicClient.ts](/Users/jlamb/Projects/bankfind-mcp-batch3/src/services/fdicClient.ts) so expiration cleanup no longer depends on map iteration order.
+- [x] Added a cache-regression scenario in [fdicClient.test.ts](/Users/jlamb/Projects/bankfind-mcp-batch3/tests/fdicClient.test.ts) that exercises stale-entry cleanup alongside live cache entries.
+- [x] Verified `npm test -- tests/fdicClient.test.ts`, `npm run typecheck`, and `npm run build`.
+
 # Bug Batch 2: HTTP Transport And Protocol Bugs
 
 Reference: bugs #143 and #149 from the `bug` issue batch generated on 2026-03-16.
