@@ -194,7 +194,7 @@ Reference: issue #54.
 - [x] Add MCP HTTP coverage for the history tool handler.
 - [x] Add MCP HTTP coverage for the SOD tool handler.
 - [x] Add MCP HTTP coverage for the annual summary tool handler.
-- [ ] Open a PR for the test coverage batch.
+- [x] Open a PR for the test coverage batch.
 
 ## Acceptance Criteria
 
@@ -206,6 +206,7 @@ Reference: issue #54.
 ## Review / Results
 
 - [x] Used existing issue #54 for the tracked work.
+- [x] Opened PR #69.
 - [x] Verified `npm test -- tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
