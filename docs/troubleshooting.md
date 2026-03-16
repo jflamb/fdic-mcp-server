@@ -41,6 +41,7 @@ If you are running the Docker image or Cloud Run deployment instead of the local
 Common causes:
 
 - the filter field is wrong for that dataset
+- the `fields` or `sort_by` value belongs to a different FDIC endpoint
 - the bank is inactive and you filtered on `ACTIVE:1`
 - the report date is outside the relevant range
 - you are using SOD-style branch questions against a quarterly dataset
