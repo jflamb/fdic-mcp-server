@@ -187,18 +187,18 @@ describe("PeerGroupInputSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects when no peer-group constructor is provided", () => {
+  it("accepts schema-level parsing when no peer-group constructor is provided", () => {
     const result = PeerGroupInputSchema.safeParse({ repdte: "20241231" });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
-  it("rejects when asset_min > asset_max", () => {
+  it("accepts schema-level parsing when asset_min > asset_max", () => {
     const result = PeerGroupInputSchema.safeParse({
       repdte: "20241231",
       asset_min: 20000000,
       asset_max: 5000000,
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("rejects invalid state codes", () => {
