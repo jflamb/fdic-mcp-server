@@ -49,6 +49,13 @@ export function getEndpointMetadata(endpoint: string) {
   };
 }
 
+export function listEndpointMetadata() {
+  return Object.keys(FDIC_ENDPOINT_METADATA)
+    .sort()
+    .map((endpoint) => getEndpointMetadata(endpoint))
+    .filter((metadata): metadata is NonNullable<typeof metadata> => metadata !== undefined);
+}
+
 export function validateEndpointQueryParams(
   endpoint: string,
   params: { fields?: string; sort_by?: string },
