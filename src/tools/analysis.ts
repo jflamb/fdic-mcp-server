@@ -37,8 +37,7 @@ const SortFieldSchema = z.enum([
 
 const AnalysisModeSchema = z.enum(["snapshot", "timeseries"]);
 
-const SnapshotAnalysisSchema = z
-  .object({
+const SnapshotAnalysisSchema = z.object({
     state: z
       .string()
       .optional()
@@ -93,16 +92,19 @@ const SnapshotAnalysisSchema = z
       .enum(["ASC", "DESC"])
       .default("DESC")
       .describe("Sort direction for the ranked comparisons."),
-  })
-  .superRefine((value, ctx) => {
-    if (!value.state && (!value.certs || value.certs.length === 0)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Provide either state or certs.",
-        path: ["state"],
-      });
-    }
   });
+
+type SnapshotAnalysisParams = z.infer<typeof SnapshotAnalysisSchema>;
+
+function validateSnapshotAnalysisParams(
+  value: SnapshotAnalysisParams,
+): string | null {
+  if (!value.state && (!value.certs || value.certs.length === 0)) {
+    return "Provide either state or certs.";
+  }
+
+  return null;
+}
 
 export function maxOrNull(values: Array<number | null>): number | null {
   const nonNullValues = values.filter((value): value is number => value !== null);
@@ -792,6 +794,23 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
 
       try {
+        const validationError = validateSnapshotAnalysisParams({
+          state,
+          certs,
+          institution_filters,
+          active_only,
+          start_repdte,
+          end_repdte,
+          analysis_mode,
+          include_demographics,
+          limit,
+          sort_by,
+          sort_order,
+        });
+        if (validationError) {
+          return formatToolError(new Error(validationError));
+        }
+
         const rosterResult =
           certs && certs.length > 0
             ? {

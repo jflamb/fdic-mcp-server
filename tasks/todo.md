@@ -393,3 +393,29 @@ Reference: issue #78.
 - [x] Used existing issue #78 for the tracked work.
 - [x] Opened PR #79.
 - [x] Verified `.github/workflows/publish.yml` parses with Ruby `YAML.load_file`.
+
+# Tool Schema Listing Fix
+
+Reference: issue #80.
+
+## Goals
+
+- [x] Fix empty `inputSchema` listings for `fdic_compare_bank_snapshots` and `fdic_peer_group_analysis`.
+- [x] Preserve runtime rejection of invalid cross-field argument combinations.
+- [x] Add regression tests for the advertised `tools/list` schemas and invalid argument handling.
+- [ ] Open a PR for the fix.
+
+## Acceptance Criteria
+
+- [x] `tools/list` returns non-empty parameter schemas for both affected analysis tools.
+- [x] `fdic_compare_bank_snapshots` still rejects requests that provide neither `state` nor `certs`.
+- [x] `fdic_peer_group_analysis` still rejects requests that provide no peer-group constructor or an invalid asset range.
+- [x] Validation passes for targeted tests plus repo type/build checks.
+
+## Review / Results
+
+- [x] Opened issue #80.
+- [x] Verified `npm test -- tests/mcp-http.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.
+- [x] Verified post-build `tools/list` output contains populated schemas for both affected tools.

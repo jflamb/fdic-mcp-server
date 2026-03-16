@@ -101,6 +101,16 @@ describe("HTTP MCP server", () => {
       (tool: { name: string }) => tool.name === "fdic_compare_bank_snapshots",
     );
     expect(analysisTool.title).toBe("Compare Bank Snapshot Trends");
+    expect(analysisTool.inputSchema.properties.state.type).toBe("string");
+    expect(analysisTool.inputSchema.properties.certs.type).toBe("array");
+    expect(analysisTool.inputSchema.properties.start_repdte.type).toBe("string");
+
+    const peerGroupTool = response.body.result.tools.find(
+      (tool: { name: string }) => tool.name === "fdic_peer_group_analysis",
+    );
+    expect(peerGroupTool.inputSchema.properties.repdte.type).toBe("string");
+    expect(peerGroupTool.inputSchema.properties.cert.type).toBe("integer");
+    expect(peerGroupTool.inputSchema.properties.asset_min.type).toBe("number");
   });
 
   it("handles repeated MCP requests without reusing a connected server", async () => {
@@ -585,6 +595,27 @@ describe("HTTP MCP server", () => {
     expect(response.body.result.isError).toBe(true);
     expect(response.body.result.content[0].text).toBe(
       "Error: Unexpected error calling FDIC API: Error: backend unavailable",
+    );
+  });
+
+  it("rejects snapshot analysis requests without state or certs", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 8,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_bank_snapshots",
+        arguments: {
+          start_repdte: "20211231",
+          end_repdte: "20241231",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.isError).toBe(true);
+    expect(response.body.result.content[0].text).toContain(
+      "Provide either state or certs.",
     );
   });
 
@@ -1151,6 +1182,48 @@ describe("HTTP MCP server", () => {
     expect(sc.peer_group.criteria_used.state).toBe("NC");
     expect(sc.peer_group.medians.roa).toBe(1.25);
     expect(response.body.result.content[0].text).toContain("Peer group medians");
+  });
+
+  it("rejects peer group requests without a constructor", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 1021,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: {
+          repdte: "20241231",
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.isError).toBe(true);
+    expect(response.body.result.content[0].text).toContain(
+      "At least one peer-group constructor is required",
+    );
+  });
+
+  it("rejects peer group requests with an invalid asset range", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 1022,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: {
+          repdte: "20241231",
+          asset_min: 200,
+          asset_max: 100,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.isError).toBe(true);
+    expect(response.body.result.content[0].text).toContain(
+      "asset_min must be <= asset_max.",
+    );
   });
 
   it("warns when a peer-group financial batch is truncated by the FDIC API limit", async () => {

@@ -199,35 +199,32 @@ export const PeerGroupInputSchema = z
       .describe(
         "Max peer records returned in the response. All matched peers are used for ranking regardless of this limit.",
       ),
-  })
-  .superRefine((value, ctx) => {
-    if (
-      !value.cert &&
-      value.asset_min === undefined &&
-      value.asset_max === undefined &&
-      !value.charter_classes &&
-      !value.state &&
-      !value.raw_filter
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          "At least one peer-group constructor is required: cert, asset_min, asset_max, charter_classes, state, or raw_filter.",
-        path: ["cert"],
-      });
-    }
-    if (
-      value.asset_min !== undefined &&
-      value.asset_max !== undefined &&
-      value.asset_min > value.asset_max
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "asset_min must be <= asset_max.",
-        path: ["asset_min"],
-      });
-    }
   });
+
+type PeerGroupParams = z.infer<typeof PeerGroupInputSchema>;
+
+function validatePeerGroupParams(value: PeerGroupParams): string | null {
+  if (
+    !value.cert &&
+    value.asset_min === undefined &&
+    value.asset_max === undefined &&
+    !value.charter_classes &&
+    !value.state &&
+    !value.raw_filter
+  ) {
+    return "At least one peer-group constructor is required: cert, asset_min, asset_max, charter_classes, state, or raw_filter.";
+  }
+
+  if (
+    value.asset_min !== undefined &&
+    value.asset_max !== undefined &&
+    value.asset_min > value.asset_max
+  ) {
+    return "asset_min must be <= asset_max.";
+  }
+
+  return null;
+}
 
 const FINANCIAL_FIELDS =
   "CERT,ASSET,DEP,NETINC,ROA,ROE,NETNIM,EQTOT,LNLSNET,INTINC,EINTEXP,NONII,NONIX";
@@ -369,6 +366,11 @@ Override precedence: cert derives defaults, then explicit params override them.`
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
 
       try {
+        const validationError = validatePeerGroupParams(params);
+        if (validationError) {
+          return formatToolError(new Error(validationError));
+        }
+
         const warnings: string[] = [];
         let subjectProfile: Record<string, unknown> | null = null;
         let subjectFinancials: Record<string, unknown> | null = null;
