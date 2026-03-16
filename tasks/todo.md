@@ -183,3 +183,29 @@ Reference: issue #51.
 - [x] Verified `npm run build`.
 - [x] Confirmed the final Dockerfile stage sets `USER fdicmcp` and copies runtime files with matching ownership.
 - [x] Docker image build could not be run in this environment because `docker` is not installed.
+
+# Tool Coverage Batch
+
+Reference: issue #54.
+
+## Goals
+
+- [x] Add MCP HTTP coverage for the failures tool handlers.
+- [x] Add MCP HTTP coverage for the history tool handler.
+- [x] Add MCP HTTP coverage for the SOD tool handler.
+- [x] Add MCP HTTP coverage for the annual summary tool handler.
+- [ ] Open a PR for the test coverage batch.
+
+## Acceptance Criteria
+
+- [x] The HTTP suite exercises the uncovered tool handlers with happy-path requests.
+- [x] New tests verify structured output for each covered tool.
+- [x] New tests verify the expected FDIC endpoint and composed query parameters.
+- [x] Validation passes for the targeted test suite and repo type/build checks.
+
+## Review / Results
+
+- [x] Used existing issue #54 for the tracked work.
+- [x] Verified `npm test -- tests/mcp-http.test.ts`.
+- [x] Verified `npm run typecheck`.
+- [x] Verified `npm run build`.
