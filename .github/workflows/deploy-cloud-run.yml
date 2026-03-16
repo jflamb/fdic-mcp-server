@@ -106,6 +106,8 @@ jobs:
           region: ${{ env.GCP_REGION }}
           project_id: ${{ env.GCP_PROJECT_ID }}
           image: ${{ steps.image.outputs.uri }}
+          env_vars: |-
+            HOST=0.0.0.0
           flags: >-
             --allow-unauthenticated
             --port=8080

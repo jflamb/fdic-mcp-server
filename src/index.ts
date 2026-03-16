@@ -57,7 +57,7 @@ export function parseHttpPort(rawPort: string | undefined): number {
 }
 
 export function parseHttpHost(rawHost: string | undefined): string {
-  return rawHost?.trim() || "0.0.0.0";
+  return rawHost?.trim() || "127.0.0.1";
 }
 
 export function parseAllowedOrigins(
