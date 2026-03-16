@@ -268,7 +268,7 @@ Reference: issue #49.
 - [x] Prevent unbounded growth of the FDIC query cache during long-lived sessions.
 - [x] Avoid full-map cache pruning on every request.
 - [x] Add focused tests for cache eviction behavior.
-- [ ] Open a PR for the cache-bounding change.
+- [x] Open a PR for the cache-bounding change.
 
 ## Acceptance Criteria
 
@@ -280,6 +280,7 @@ Reference: issue #49.
 ## Review / Results
 
 - [x] Used existing issue #49 for the tracked work.
+- [x] Opened PR #72.
 - [x] Verified `npm test -- tests/fdicClient.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
