@@ -857,3 +857,24 @@ Reference: user request to add a shortcut for reviewing issues by label and grou
 - [x] Documented the helper in [AGENTS.md](/Users/jlamb/Projects/bankfind-mcp/AGENTS.md) so label-driven maintenance passes start from an explicit batch review step.
 - [x] Added the prompt shorthand `/issue-batch <label>` to [AGENTS.md](/Users/jlamb/Projects/bankfind-mcp/AGENTS.md) and [prompting-guide.md](/Users/jlamb/Projects/bankfind-mcp/docs/prompting-guide.md) for AI-driven orchestration.
 - [x] Run `npm run typecheck`, `npm test -- tests/issue-batching.test.ts`, and `npm run build`.
+# Issue #149: mapWithConcurrency Safety Follow-Up
+
+Reference: issue #149.
+
+## Goals
+
+- [x] Add direct regression coverage for `mapWithConcurrency()` so its async work distribution contract is exercised, not just documented.
+- [x] Keep the current implementation and safety comment intact unless testing exposes a real behavioral defect.
+- [x] Validate with targeted tests plus repo-standard type/build checks.
+
+## Acceptance Criteria
+
+- [x] `mapWithConcurrency()` maps every input exactly once under interleaved async completion and preserves result ordering.
+- [x] `mapWithConcurrency()` does not exceed the requested concurrency limit while work is in flight.
+- [x] `npm test -- tests/queryUtils.test.ts`, `npm run typecheck`, and `npm run build` pass after the change.
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/issue-149-map-with-concurrency-tests`.
+- [x] Added direct `mapWithConcurrency()` regression coverage in [queryUtils.test.ts](/Users/jlamb/Projects/bankfind-mcp/tests/queryUtils.test.ts) for out-of-order async completion and in-flight concurrency limits.
+- [x] Verified `npm test -- tests/queryUtils.test.ts`, `npm run typecheck`, and `npm run build`.
