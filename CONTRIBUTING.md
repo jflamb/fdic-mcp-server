@@ -15,6 +15,10 @@ Prerequisites:
 - Node.js 18 or later
 - npm
 
+Recommended local versions:
+
+- Node.js 20 or 22 for parity with CI
+
 Install and validate:
 
 ```bash
@@ -22,6 +26,12 @@ npm install
 npm run typecheck
 npm test
 npm run build
+```
+
+Run directly from TypeScript during development:
+
+```bash
+npm run dev
 ```
 
 Run locally over stdio:
@@ -35,6 +45,17 @@ Run locally over HTTP:
 ```bash
 TRANSPORT=http PORT=3000 node dist/index.js
 ```
+
+Container note:
+
+- Local HTTP examples default to port `3000`.
+- The production Docker and Cloud Run runtime default to port `8080`.
+
+## Node Version Policy
+
+- CI validates the project on Node.js 20 and 22.
+- Release publishing workflows run on Node.js 22.
+- The production Docker image also uses Node.js 22.
 
 ## Workflow
 

@@ -34,6 +34,8 @@ TRANSPORT=http PORT=3000 fdic-mcp-server
 
 Then expose it through a reachable HTTPS URL.
 
+If you are running the Docker image or Cloud Run deployment instead of the local binary, use port `8080` rather than `3000`.
+
 ### Why do I get no results for a bank I know exists?
 
 Common causes:

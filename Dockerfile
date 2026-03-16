@@ -14,6 +14,7 @@ FROM node:22-bookworm-slim
 
 ENV NODE_ENV=production
 ENV TRANSPORT=http
+# Cloud Run injects PORT=8080, so the image uses the same container default.
 ENV PORT=8080
 
 WORKDIR /app

@@ -110,6 +110,8 @@ TRANSPORT=http PORT=3000 node dist/index.js
 
 The HTTP MCP endpoint is `http://localhost:3000/mcp`.
 
+Container builds use `PORT=8080` by default for Cloud Run compatibility.
+
 ### Minimal MCP Configuration
 
 ```json
