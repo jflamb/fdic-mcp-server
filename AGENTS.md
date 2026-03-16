@@ -69,7 +69,9 @@ Follow this sequence for substantive repo work unless the user explicitly asks f
 8. Run the required validation commands before declaring the work ready. At minimum, use the repo-standard commands unless the change clearly justifies a narrower targeted suite.
 9. Commit in logical chunks with conventional commit messages that match the release impact.
 10. Open a PR that links the issue, explains what changed and why, lists exact validation commands, and calls out release impact or residual risk when relevant.
-11. Merge only after checks pass, then clean up local and remote branches.
+11. Watch the PR checks to completion. If any required check fails, investigate the root cause, push the fix to the same branch, and re-run the workflow until the PR is green.
+12. Merge only after checks pass, then clean up local and remote branches.
+13. Do not treat local edits, a local commit, or an open PR by itself as completion. For substantive work, the workflow is complete only after the validated PR is merged.
 
 ## Change Management
 
@@ -82,8 +84,9 @@ Follow this sequence for substantive repo work unless the user explicitly asks f
 - Ensure the final commit message that reaches `main` remains conventional. If the repo uses squash merges, make the PR title conventional as well so the squashed mainline commit keeps the correct release signal.
 - Do not manually bump `package.json` versions or create release tags by hand. `semantic-release` owns version calculation, tagging, changelog updates, and downstream publishing.
 - When the work is ready for review, open a pull request that explains what changed, why it changed, how it was validated, and any follow-up risk or context.
+- After opening the PR, monitor the required checks rather than assuming they passed. If validation fails, investigate the root cause, fix it on the same branch, and iterate until checks pass.
 - If validation passes, merge the PR and clean up local and remote working branches.
-- If validation fails, investigate the root cause, fix it, and iterate until checks pass.
+- For substantive work, do not stop after opening a PR. The expected endpoint is a merged PR unless the user explicitly asks to pause earlier.
 
 ## Task Management
 
