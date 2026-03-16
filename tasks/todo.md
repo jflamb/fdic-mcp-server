@@ -327,7 +327,7 @@ Reference: issue #74.
 - [x] Normalize stale completed checklist items in `tasks/todo.md`.
 - [x] Extract the remaining reusable financial metric helpers from `peerGroup.ts`.
 - [x] Validate the peer-group behavior after the extraction.
-- [ ] Open a PR for the cleanup/refactor work.
+- [x] Open a PR for the cleanup/refactor work.
 
 ## Acceptance Criteria
 
@@ -339,6 +339,7 @@ Reference: issue #74.
 ## Review / Results
 
 - [x] Used existing issue #74 for the tracked work.
+- [x] Opened PR #75.
 - [x] Verified `npm test -- tests/peerGroup.test.ts tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
 - [x] Verified `npm run build`.
