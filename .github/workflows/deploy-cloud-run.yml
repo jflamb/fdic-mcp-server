@@ -118,8 +118,11 @@ jobs:
           set -euo pipefail
 
           health_response="$(mktemp)"
+          init_headers="$(mktemp)"
+          init_response="$(mktemp)"
+          initialized_response="$(mktemp)"
           mcp_response="$(mktemp)"
-          trap 'rm -f "$health_response" "$mcp_response"' EXIT
+          trap 'rm -f "$health_response" "$init_headers" "$init_response" "$initialized_response" "$mcp_response"' EXIT
 
           curl --fail --silent --show-error \
             "$PUBLIC_HEALTH_URL" \
@@ -141,18 +144,59 @@ jobs:
             "$PUBLIC_MCP_URL" \
             -H 'content-type: application/json' \
             -H 'accept: application/json, text/event-stream' \
-            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
-            --output "$mcp_response"
+            -D "$init_headers" \
+            -d '{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"github-actions-smoke-test","version":"1.0.0"}}}' \
+            --output "$init_response"
 
-          python3 - "$mcp_response" <<'PY'
+          session_id="$(python3 - "$init_headers" "$init_response" <<'PY'
           import json
           import pathlib
           import sys
 
-          payload = json.loads(pathlib.Path(sys.argv[1]).read_text())
+          headers = pathlib.Path(sys.argv[1]).read_text().splitlines()
+          payload = json.loads(pathlib.Path(sys.argv[2]).read_text())
+
+          session_id = None
+          for header in headers:
+            name, sep, value = header.partition(":")
+            if sep and name.lower() == "mcp-session-id":
+              session_id = value.strip()
+              break
+
+          assert session_id, headers
+          assert payload["jsonrpc"] == "2.0", payload
+          assert payload["id"] == 0, payload
+          print(session_id)
+          PY
+          )"
+
+          curl --fail --silent --show-error \
+            "$PUBLIC_MCP_URL" \
+            -H 'content-type: application/json' \
+            -H 'accept: application/json, text/event-stream' \
+            -H "mcp-session-id: $session_id" \
+            -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+            --output "$initialized_response"
+
+          curl --fail --silent --show-error \
+            "$PUBLIC_MCP_URL" \
+            -H 'content-type: application/json' \
+            -H 'accept: application/json, text/event-stream' \
+            -H "mcp-session-id: $session_id" \
+            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
+            --output "$mcp_response"
+
+          python3 - "$initialized_response" "$mcp_response" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          initialized_payload = pathlib.Path(sys.argv[1]).read_text().strip()
+          payload = json.loads(pathlib.Path(sys.argv[2]).read_text())
           result = payload["result"]
           tools = result["tools"]
 
+          assert initialized_payload == "", initialized_payload
           assert payload["jsonrpc"] == "2.0", payload
           assert payload["id"] == 1, payload
           assert isinstance(tools, list) and tools, payload
