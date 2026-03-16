@@ -112,6 +112,8 @@ The HTTP MCP endpoint is `http://localhost:3000/mcp`.
 
 Container builds use `PORT=8080` by default for Cloud Run compatibility.
 
+Set `FDIC_MAX_RESPONSE_BYTES` to override the upstream FDIC response-size guard. The default is `5242880` bytes (5 MiB).
+
 ### Minimal MCP Configuration
 
 ```json
