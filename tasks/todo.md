@@ -1,3 +1,26 @@
+# Bug Batch 4: CI, Release, And Deployment Bugs
+
+Reference: bug #144 from the `bug` issue batch generated on 2026-03-16.
+
+## Goals
+
+- [x] Replace locale-dependent report-date formatting with deterministic manual formatting.
+- [x] Add regression coverage for valid and invalid formatted dates.
+- [x] Validate the batch with targeted tests plus repo-standard type/build checks.
+
+## Acceptance Criteria
+
+- [x] `formatRepdteHuman()` returns stable `Month D, YYYY` output without relying on runtime ICU locale data.
+- [x] Invalid report dates still round-trip as the original string.
+- [x] `npm test -- tests/peerGroup.test.ts`, `npm run typecheck`, and `npm run build` pass after the changes.
+
+## Review / Results
+
+- [x] Branch created for Batch 4 work: `fix/bug-batch-4-date-format-pr`.
+- [x] Replaced locale-dependent formatting with explicit UTC validation plus month-name formatting in [peerGroup.ts](/Users/jlamb/Projects/bankfind-mcp-batch4/src/tools/peerGroup.ts).
+- [x] Added deterministic date-format regression coverage, including impossible calendar dates, in [peerGroup.test.ts](/Users/jlamb/Projects/bankfind-mcp-batch4/tests/peerGroup.test.ts).
+- [x] Verified `npm test -- tests/peerGroup.test.ts`, `npm run typecheck`, and `npm run build`.
+
 # Bug Batch 3: FDIC Data And Query Contract Bugs
 
 Reference: bug #135 from the `bug` issue batch generated on 2026-03-16.

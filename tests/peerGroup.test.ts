@@ -161,6 +161,10 @@ describe("formatRepdteHuman", () => {
   it("returns the raw string for invalid dates", () => {
     expect(formatRepdteHuman("bad")).toBe("bad");
   });
+
+  it("returns the raw string for impossible calendar dates", () => {
+    expect(formatRepdteHuman("20240230")).toBe("20240230");
+  });
 });
 
 describe("PeerGroupInputSchema", () => {
