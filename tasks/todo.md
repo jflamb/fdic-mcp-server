@@ -1,3 +1,34 @@
+# Issue #148: Peer Group extra_fields Validation
+
+Reference: issue #148.
+
+## Goals
+
+- [x] Validate `fdic_peer_group_analysis.extra_fields` against the financials endpoint field catalog before any FDIC API call.
+- [x] Return a clear error that lists invalid field names while preserving the existing tool contract for valid requests.
+- [x] Add regression coverage for both invalid and valid `extra_fields` behavior.
+- [x] Validate with repo-standard commands and record the final review outcome.
+
+## Acceptance Criteria
+
+- [x] Invalid `extra_fields` entries are rejected before any upstream FDIC request is attempted.
+- [x] The error message clearly lists the invalid field names.
+- [x] Valid `extra_fields` values are still included as raw values in peer-group output.
+- [x] `npm run typecheck`, `npm test`, and `npm run build` pass after the change.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/issue-148-peer-group-extra-fields-validation`.
+- [x] Reused the shared endpoint metadata catalog in [fdicSchema.ts](/Users/jlamb/Projects/bankfind-mcp/src/services/fdicSchema.ts) so peer-group validation and low-level query validation use the same invalid-field detection and error wording.
+- [x] Added an early `extra_fields` guard in [peerGroup.ts](/Users/jlamb/Projects/bankfind-mcp/src/tools/peerGroup.ts) so invalid requests fail before progress or FDIC API calls begin.
+- [x] Added MCP HTTP regression coverage for invalid and valid `extra_fields` requests in [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp/tests/mcp-http.test.ts).
+
 # Docker Healthcheck And Runtime Parity
 
 Reference: issues #139 and #147.

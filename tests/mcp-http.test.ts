@@ -2619,6 +2619,29 @@ describe("HTTP MCP server", () => {
     );
   });
 
+  it("rejects invalid peer-group extra_fields before calling the FDIC API", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 1023,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: {
+          repdte: "20241231",
+          asset_min: 5000000,
+          extra_fields: ["CERT", "FAILDATE"],
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.isError).toBe(true);
+    expect(response.body.result.content[0].text).toContain(
+      "Invalid field 'FAILDATE' for endpoint financials.",
+    );
+    expect(getMock).not.toHaveBeenCalled();
+  });
+
   it("warns when a peer-group financial batch is truncated by the FDIC API limit", async () => {
     getMock
       .mockResolvedValueOnce({
@@ -2750,5 +2773,51 @@ describe("HTTP MCP server", () => {
         (peer: { cert: number }) => peer.cert,
       ),
     ).toEqual([200, 300]);
+  });
+
+  it("includes valid peer-group extra_fields as raw values in structured output", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 200, NAME: "Peer A", CITY: "Raleigh", STALP: "NC", BKCLASS: "N" } },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 200, ASSET: 5000000, DEPDOM: 3500000, DEP: 4000000, NETINC: 100000, ROA: 1.0, ROE: 9.0, NETNIM: 3.0, EQTOT: 500000, LNLSNET: 3000000, INTINC: 200000, EINTEXP: 80000, NONII: 30000, NONIX: 100000 } },
+          ],
+          meta: { total: 1 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 106,
+      method: "tools/call",
+      params: {
+        name: "fdic_peer_group_analysis",
+        arguments: {
+          repdte: "20241231",
+          asset_min: 5000000,
+          asset_max: 6000000,
+          charter_classes: ["N"],
+          state: "NC",
+          extra_fields: ["DEPDOM"],
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.isError).not.toBe(true);
+    expect(response.body.result.structuredContent.peers).toEqual([
+      expect.objectContaining({
+        cert: 200,
+        DEPDOM: 3500000,
+      }),
+    ]);
   });
 });
