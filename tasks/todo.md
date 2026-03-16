@@ -1,3 +1,29 @@
+# Bug Batch 2: HTTP Transport And Protocol Bugs
+
+Reference: bugs #143 and #149 from the `bug` issue batch generated on 2026-03-16.
+
+## Goals
+
+- [x] Add idle-session cleanup for HTTP MCP sessions so abandoned sessions do not accumulate indefinitely.
+- [x] Make the `mapWithConcurrency()` safety invariant explicit in code.
+- [x] Add regression coverage for idle-session expiration.
+- [x] Validate the batch with targeted tests plus repo-standard type/build checks.
+
+## Acceptance Criteria
+
+- [x] HTTP sessions expire after a configurable idle timeout even if the client never sends `DELETE`.
+- [x] Session activity refreshes the idle deadline for active clients.
+- [x] `mapWithConcurrency()` documents why its shared `nextIndex` access is safe under JavaScript’s execution model.
+- [x] `npm test -- tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build` pass after the changes.
+
+## Review / Results
+
+- [x] Branch created for Batch 2 work: `fix/bug-batch-2-http-transport-pr`.
+- [x] Added configurable idle-session sweeping plus per-request activity refresh in [index.ts](/Users/jlamb/Projects/bankfind-mcp-batch2/src/index.ts).
+- [x] Added MCP HTTP regression coverage for session expiration and keep-alive behavior in [mcp-http.test.ts](/Users/jlamb/Projects/bankfind-mcp-batch2/tests/mcp-http.test.ts).
+- [x] Documented the `mapWithConcurrency()` safety invariant inline in [queryUtils.ts](/Users/jlamb/Projects/bankfind-mcp-batch2/src/tools/shared/queryUtils.ts).
+- [x] Verified `npm test -- tests/mcp-http.test.ts`, `npm run typecheck`, and `npm run build`.
+
 # Bug Batch 1: Analysis And Ranking Bugs
 
 Reference: bugs #141 and #146 from the `bug` issue batch generated on 2026-03-16.
