@@ -113,6 +113,52 @@ describe("HTTP MCP server", () => {
     expect(peerGroupTool.inputSchema.properties.asset_min.type).toBe("number");
   });
 
+  it("lists schema resources for each supported FDIC endpoint", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 101,
+      method: "resources/list",
+      params: {},
+    });
+
+    expect(response.status).toBe(200);
+    expect(
+      response.body.result.resources.map(
+        (resource: { uri: string }) => resource.uri,
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        "fdic://schemas/index",
+        "fdic://schemas/institutions",
+        "fdic://schemas/financials",
+        "fdic://schemas/summary",
+        "fdic://schemas/sod",
+        "fdic://schemas/demographics",
+      ]),
+    );
+  });
+
+  it("reads an endpoint schema resource over HTTP", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 102,
+      method: "resources/read",
+      params: {
+        uri: "fdic://schemas/financials",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const resource = response.body.result.contents[0];
+    const parsed = JSON.parse(resource.text);
+
+    expect(resource.uri).toBe("fdic://schemas/financials");
+    expect(parsed.endpoint).toBe("financials");
+    expect(parsed.fields.CERT).toBeDefined();
+    expect(parsed.fields.NETNIM).toBeDefined();
+    expect(parsed.sort_fields).toContain("CERT");
+  });
+
   it("reuses cached FDIC responses across sequential HTTP requests", async () => {
     const app = createApp();
     getMock.mockResolvedValueOnce({

@@ -39,6 +39,15 @@ Server-side analysis tools:
 - `fdic_compare_bank_snapshots`
 - `fdic_peer_group_analysis`
 
+## Resource Surface
+
+The server also exposes MCP `resources` for endpoint field discovery:
+
+- `fdic://schemas/index` for the schema index
+- `fdic://schemas/{endpoint}` for one machine-readable field catalog per FDIC endpoint
+
+Clients and agents should use these resources to discover valid endpoint-specific `fields` and `sort_by` values before composing search requests.
+
 ## Data Contracts
 
 All tools return:
