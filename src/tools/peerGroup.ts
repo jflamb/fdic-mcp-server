@@ -239,6 +239,20 @@ interface PeerEntry {
   extraFields: Record<string, unknown>;
 }
 
+function comparePeerEntriesByAsset(left: PeerEntry, right: PeerEntry): number {
+  const primary = (right.metrics.asset ?? 0) - (left.metrics.asset ?? 0);
+  if (primary !== 0) {
+    return primary;
+  }
+
+  // Tie-break by CERT/name so peer ordering is deterministic across runs.
+  if (left.cert !== right.cert) {
+    return left.cert - right.cert;
+  }
+
+  return left.name.localeCompare(right.name);
+}
+
 function formatMetricValue(key: MetricKey, value: number | null): string {
   if (value === null) return "n/a";
   const def = METRIC_DEFINITIONS[key];
@@ -651,8 +665,8 @@ Override precedence: cert derives defaults, then explicit params override them.`
           }
         }
 
-        // Sort peers by asset descending, truncate
-        peers.sort((a, b) => (b.metrics.asset ?? 0) - (a.metrics.asset ?? 0));
+        // Sort peers by asset descending with a deterministic tie-breaker.
+        peers.sort(comparePeerEntriesByAsset);
         const returnedPeers = peers.slice(0, params.limit);
         const returnedCount = returnedPeers.length;
         const hasMore = peerCount > returnedCount;
