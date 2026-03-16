@@ -1,5 +1,7 @@
 # Lessons
 
+- For non-trivial repo work, avoid standalone plan markdown files; prefer grouping related issues in the implementation PR description so the reasoning lands in repo history, and use an umbrella issue only when PR-based grouping is not the better fit.
+
 - When a user gives UX feedback on published docs, treat it as a concrete correction and capture the underlying rule here before closing the follow-up work.
 - For docs landing pages, prioritize high-signal project status and starting points above lower-value summary blocks or decorative notes.
 - For docs intended for copy-paste workflows, code blocks should offer an obvious copy affordance instead of assuming users will select text manually.

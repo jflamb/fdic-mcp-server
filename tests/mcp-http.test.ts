@@ -1,3 +1,5 @@
+import { once } from "node:events";
+import type { Express } from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -27,19 +29,161 @@ vi.mock("axios", () => {
   };
 });
 
-import { createApp, parseHttpPort } from "../src/index.js";
+import {
+  createApp,
+  parseAllowedOrigins,
+  parseHttpHost,
+  parseHttpPort,
+} from "../src/index.js";
 import { clearQueryCache } from "../src/services/fdicClient.js";
 import packageJson from "../package.json";
 
 const expectedVersion = packageJson.version;
+const mcpAcceptHeader = "application/json, text/event-stream";
+const defaultProtocolVersion = "2025-03-26";
 
-function mcpPost(body: Record<string, unknown>) {
-  return request(createApp())
+async function initializeSession(app = createApp()) {
+  const initializeResponse = await request(app)
     .post("/mcp")
     .set("content-type", "application/json")
-    .set("accept", "application/json, text/event-stream")
-    .send(body);
+    .set("accept", mcpAcceptHeader)
+    .send({
+      jsonrpc: "2.0",
+      id: 0,
+      method: "initialize",
+      params: {
+        protocolVersion: defaultProtocolVersion,
+        capabilities: {},
+        clientInfo: {
+          name: "vitest",
+          version: "1.0.0",
+        },
+      },
+    });
+
+  const sessionId = initializeResponse.headers["mcp-session-id"];
+  if (initializeResponse.status !== 200 || typeof sessionId !== "string") {
+    throw new Error(
+      `Failed to initialize MCP session: ${initializeResponse.status}`,
+    );
+  }
+
+  const initializedResponse = await request(app)
+    .post("/mcp")
+    .set("content-type", "application/json")
+    .set("accept", mcpAcceptHeader)
+    .set("mcp-session-id", sessionId)
+    .send({
+      jsonrpc: "2.0",
+      method: "notifications/initialized",
+    });
+
+  if (initializedResponse.status !== 202) {
+    throw new Error(
+      `Failed to send initialized notification: ${initializedResponse.status}`,
+    );
+  }
+
+  return { app, sessionId, initializeResponse };
 }
+
+function mcpRequest(
+  app: Express,
+  sessionId: string,
+  body: Record<string, unknown>,
+  headers: Record<string, string> = {},
+) {
+  const requestBuilder = request(app)
+    .post("/mcp")
+    .set("content-type", "application/json")
+    .set("accept", mcpAcceptHeader)
+    .set("mcp-session-id", sessionId);
+
+  for (const [name, value] of Object.entries(headers)) {
+    requestBuilder.set(name, value);
+  }
+
+  return requestBuilder.send(body);
+}
+
+async function mcpPost(body: Record<string, unknown>) {
+  const { app, sessionId } = await initializeSession();
+  return mcpRequest(app, sessionId, body);
+}
+
+async function collectProgressNotifications(
+  app: Express,
+  sessionId: string,
+  trigger: () => Promise<unknown>,
+) {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    throw new Error("Expected TCP address for test server");
+  }
+
+  const response = await fetch(`http://127.0.0.1:${address.port}/mcp`, {
+    headers: {
+      accept: "text/event-stream",
+      "mcp-session-id": sessionId,
+    },
+  });
+
+  if (!response.ok || response.body === null) {
+    throw new Error(`Failed to open SSE stream: ${response.status}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  const progressEvents: Array<{
+    progressToken: string | number;
+    progress: number;
+    total: number;
+    message: string;
+  }> = [];
+
+  const readTask = (async () => {
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+      const events = buffer.split("\n\n");
+      buffer = events.pop() ?? "";
+
+      for (const event of events) {
+        const dataLine = event
+          .split("\n")
+          .find((line) => line.startsWith("data: "));
+        if (!dataLine) {
+          continue;
+        }
+
+        const payload = JSON.parse(dataLine.slice(6));
+        if (payload.method === "notifications/progress") {
+          progressEvents.push(payload.params);
+          if (payload.params.progress === 1) {
+            return;
+          }
+        }
+      }
+    }
+  })();
+
+  await trigger();
+  await readTask;
+  await reader.cancel();
+  await new Promise<void>((resolve, reject) => {
+    server.close((error) => (error ? reject(error) : resolve()));
+  });
+
+  return progressEvents;
+}
+
 
 describe("HTTP MCP server", () => {
   beforeEach(() => {
@@ -72,6 +216,359 @@ describe("HTTP MCP server", () => {
     expect(() => parseHttpPort("70000")).toThrow(
       "PORT must be between 0 and 65535. Received: 70000",
     );
+  });
+
+  it("defaults the HTTP host to localhost", () => {
+    expect(parseHttpHost(undefined)).toBe("127.0.0.1");
+  });
+
+  it("parses allowed origins from the environment or localhost defaults", () => {
+    expect(parseAllowedOrigins(undefined, 3000)).toEqual([
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "https://localhost:3000",
+      "https://127.0.0.1:3000",
+    ]);
+    expect(parseAllowedOrigins("https://one.test, https://two.test", 3000)).toEqual([
+      "https://one.test",
+      "https://two.test",
+    ]);
+  });
+
+  it("rejects non-initialize requests without a valid session", async () => {
+    const response = await request(createApp())
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .send({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/list",
+        params: {},
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.message).toBe(
+      "Bad Request: No valid session ID provided",
+    );
+  });
+
+  it("supports GET and DELETE for an initialized session", async () => {
+    const { app, sessionId } = await initializeSession(createApp());
+    const server = app.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected TCP address for test server");
+    }
+
+    const getResponse = await fetch(`http://127.0.0.1:${address.port}/mcp`, {
+      headers: {
+        accept: "text/event-stream",
+        "mcp-session-id": sessionId,
+      },
+    });
+
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.headers.get("content-type")).toContain(
+      "text/event-stream",
+    );
+    await getResponse.body?.cancel();
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+
+    const deleteResponse = await request(app)
+      .delete("/mcp")
+      .set("accept", "application/json")
+      .set("mcp-session-id", sessionId)
+      .set("mcp-protocol-version", defaultProtocolVersion);
+
+    expect(deleteResponse.status).toBe(200);
+
+    const postDeleteResponse = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("mcp-session-id", sessionId)
+      .send({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/list",
+        params: {},
+      });
+
+    expect(postDeleteResponse.status).toBe(404);
+    expect(postDeleteResponse.body.error.message).toBe("Session not found");
+  });
+
+  it("accepts missing MCP-Protocol-Version after initialization and rejects unsupported versions", async () => {
+    const { app, sessionId } = await initializeSession(createApp());
+
+    const withoutVersion = await mcpRequest(app, sessionId, {
+      jsonrpc: "2.0",
+      id: 3,
+      method: "tools/list",
+      params: {},
+    });
+
+    expect(withoutVersion.status).toBe(200);
+
+    const withInvalidVersion = await mcpRequest(
+      app,
+      sessionId,
+      {
+        jsonrpc: "2.0",
+        id: 4,
+        method: "tools/list",
+        params: {},
+      },
+      { "mcp-protocol-version": "2099-01-01" },
+    );
+
+    expect(withInvalidVersion.status).toBe(400);
+    expect(withInvalidVersion.body.error.message).toContain(
+      "Unsupported protocol version",
+    );
+  });
+
+  it("rejects disallowed Origin headers and allows requests without Origin", async () => {
+    const app = createApp({
+      port: 3000,
+      allowedOrigins: ["https://allowed.example"],
+    });
+
+    const allowedInit = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("origin", "https://allowed.example")
+      .send({
+        jsonrpc: "2.0",
+        id: 5,
+        method: "initialize",
+        params: {
+          protocolVersion: defaultProtocolVersion,
+          capabilities: {},
+          clientInfo: {
+            name: "vitest",
+            version: "1.0.0",
+          },
+        },
+      });
+
+    expect(allowedInit.status).toBe(200);
+
+    const disallowedInit = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("origin", "https://disallowed.example")
+      .send({
+        jsonrpc: "2.0",
+        id: 6,
+        method: "initialize",
+        params: {
+          protocolVersion: defaultProtocolVersion,
+          capabilities: {},
+          clientInfo: {
+            name: "vitest",
+            version: "1.0.0",
+          },
+        },
+      });
+
+    expect(disallowedInit.status).toBe(403);
+  });
+
+  it("streams progress notifications for snapshot analysis when the client provides a progress token", async () => {
+    const app = createApp();
+    const { sessionId } = await initializeSession(app);
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Example Bank",
+                REPDTE: "20240331",
+                ASSET: 1000,
+                DEP: 800,
+                NETINC: 10,
+                ROA: 1,
+                ROE: 10,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Example Bank",
+                REPDTE: "20241231",
+                ASSET: 1200,
+                DEP: 900,
+                NETINC: 12,
+                ROA: 1.1,
+                ROE: 10.5,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      });
+
+    const progress = await collectProgressNotifications(app, sessionId, () =>
+      mcpRequest(app, sessionId, {
+        jsonrpc: "2.0",
+        id: 7,
+        method: "tools/call",
+        params: {
+          name: "fdic_compare_bank_snapshots",
+          arguments: {
+            certs: [3511],
+            start_repdte: "20240331",
+            end_repdte: "20241231",
+            include_demographics: false,
+          },
+          _meta: {
+            progressToken: "analysis-progress",
+          },
+        },
+      }),
+    );
+
+    expect(progress).toEqual([
+      {
+        progressToken: "analysis-progress",
+        progress: 0.1,
+        total: 1,
+        message: "Fetching institution roster",
+      },
+      {
+        progressToken: "analysis-progress",
+        progress: 0.3,
+        total: 1,
+        message: "Fetching financial snapshots",
+      },
+      {
+        progressToken: "analysis-progress",
+        progress: 0.9,
+        total: 1,
+        message: "Computing metrics and insights",
+      },
+      {
+        progressToken: "analysis-progress",
+        progress: 1,
+        total: 1,
+        message: "Analysis complete",
+      },
+    ]);
+  });
+
+  it("streams progress notifications for peer group analysis when the client provides a progress token", async () => {
+    const app = createApp();
+    const { sessionId } = await initializeSession(app);
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Example Bank",
+                CITY: "Austin",
+                STALP: "TX",
+                BKCLASS: "N",
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                ASSET: 1000,
+                DEP: 800,
+                NETINC: 10,
+                ROA: 1,
+                ROE: 10,
+                NETNIM: 3,
+                EQTOT: 100,
+                LNLSNET: 700,
+                INTINC: 50,
+                EINTEXP: 10,
+                NONII: 5,
+                NONIX: 4,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      });
+
+    const progress = await collectProgressNotifications(app, sessionId, () =>
+      mcpRequest(app, sessionId, {
+        jsonrpc: "2.0",
+        id: 8,
+        method: "tools/call",
+        params: {
+          name: "fdic_peer_group_analysis",
+          arguments: {
+            repdte: "20241231",
+            asset_min: 500,
+            asset_max: 2000,
+            active_only: false,
+          },
+          _meta: {
+            progressToken: "peer-progress",
+          },
+        },
+      }),
+    );
+
+    expect(progress).toEqual([
+      {
+        progressToken: "peer-progress",
+        progress: 0.1,
+        total: 1,
+        message: "Resolving subject and peer criteria",
+      },
+      {
+        progressToken: "peer-progress",
+        progress: 0.4,
+        total: 1,
+        message: "Fetching peer roster",
+      },
+      {
+        progressToken: "peer-progress",
+        progress: 0.7,
+        total: 1,
+        message: "Fetching peer financials",
+      },
+      {
+        progressToken: "peer-progress",
+        progress: 0.9,
+        total: 1,
+        message: "Computing peer rankings",
+      },
+      {
+        progressToken: "peer-progress",
+        progress: 1,
+        total: 1,
+        message: "Analysis complete",
+      },
+    ]);
   });
 
   it("lists all registered tools including demographics", async () => {
@@ -161,15 +658,12 @@ describe("HTTP MCP server", () => {
 
   it("reuses cached FDIC responses across sequential HTTP requests", async () => {
     const app = createApp();
+    const { sessionId } = await initializeSession(app);
     getMock.mockResolvedValueOnce({
       data: { data: [{ data: { CERT: 3511 } }], meta: { total: 1 } },
     });
 
-    const first = await request(app)
-      .post("/mcp")
-      .set("content-type", "application/json")
-      .set("accept", "application/json, text/event-stream")
-      .send({
+    const first = await mcpRequest(app, sessionId, {
       jsonrpc: "2.0",
       id: 1,
       method: "tools/call",
@@ -179,11 +673,7 @@ describe("HTTP MCP server", () => {
       },
     });
 
-    const second = await request(app)
-      .post("/mcp")
-      .set("content-type", "application/json")
-      .set("accept", "application/json, text/event-stream")
-      .send({
+    const second = await mcpRequest(app, sessionId, {
       jsonrpc: "2.0",
       id: 2,
       method: "tools/call",
