@@ -48,7 +48,18 @@ jobs:
       - name: Validate release
         run: npm run prepublishOnly
 
+      - name: Check for existing npm version
+        id: npm_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "fdic-mcp-server@${VERSION}" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to npm
+        if: steps.npm_version.outputs.exists != 'true'
         run: npm publish
 
       - name: Install MCP Registry publisher
