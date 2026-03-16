@@ -1,3 +1,33 @@
+# Issue #142: Node Engine Minimum Matches Supported CI Matrix
+
+Reference: issue #142.
+
+## Goals
+
+- [x] Align the declared Node.js engine minimum with the lowest runtime version this repository actually validates in CI.
+- [x] Update user-facing documentation so local install prerequisites no longer imply unsupported Node 18 usage.
+- [x] Add regression coverage that fails if `package.json` and the CI Node matrix drift apart again.
+- [x] Validate the change with repo-standard commands and record the result.
+
+## Acceptance Criteria
+
+- [x] `package.json` declares a Node engine minimum that matches the lowest version in `.github/workflows/ci.yml`'s `validate` job.
+- [x] Docs that describe local install prerequisites or troubleshooting minimums say Node.js 20 or later.
+- [x] Automated tests fail if the declared engine minimum and CI-supported minimum diverge in the future.
+- [x] `npm run typecheck`, `npm test`, and `npm run build` pass after the change.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/issue-142-node-engine-minimum`.
+- [x] Updated [package.json](/Users/jlamb/Projects/bankfind-mcp/package.json) and the install/troubleshooting docs to state Node.js 20 or later consistently with the current CI support policy.
+- [x] Added [runtime-policy.test.ts](/Users/jlamb/Projects/bankfind-mcp/tests/runtime-policy.test.ts) to compare `package.json.engines.node` against the lowest Node version in the CI `validate` matrix so future policy drift fails under `npm test`.
+
 # Issue #148: Peer Group extra_fields Validation
 
 Reference: issue #148.
