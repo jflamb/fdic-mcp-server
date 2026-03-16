@@ -44,6 +44,7 @@ Operationally, this means the public MCP endpoint is a stateless Cloud Run revis
 
 - `TRANSPORT=http`
 - `PORT=8080`
+- `HOST=0.0.0.0`
 - a non-root container user for the production runtime
 
 ## Expected Google Cloud Resources
