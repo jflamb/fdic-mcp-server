@@ -294,7 +294,7 @@ Reference: issue #48.
 - [x] Extract duplicated query and batching helpers from `analysis.ts` and `peerGroup.ts`.
 - [x] Keep the refactor limited to the clearly shared mechanics.
 - [x] Validate the affected analysis and peer-group behavior after the extraction.
-- [ ] Open a PR for the refactor.
+- [x] Open a PR for the refactor.
 
 ## Acceptance Criteria
 
@@ -306,6 +306,7 @@ Reference: issue #48.
 ## Review / Results
 
 - [x] Used existing issue #48 for the tracked work.
+- [x] Opened PR #73.
 - [x] Left older local branches intact because they are not merged and still diverge from `main`.
 - [x] Verified `npm test -- tests/analysis.test.ts tests/peerGroup.test.ts tests/mcp-http.test.ts`.
 - [x] Verified `npm run typecheck`.
