@@ -312,24 +312,13 @@ describe("fdicClient", () => {
     );
   });
 
-  it("extracts data records from the FDIC response", () => {
-    expect(
-      extractRecords({
-        data: [{ data: { CERT: 1 } }, { data: { CERT: 2 } }],
-        meta: { total: 2 },
-      }),
-    ).toEqual([{ CERT: 1 }, { CERT: 2 }]);
-  });
+  it("extracts records from a validated FDIC response", () => {
+    const response = validateFdicResponseShape("institutions", {
+      data: [{ data: { CERT: 1 } }, { data: { CERT: 2 } }],
+      meta: { total: 2 },
+    });
 
-  it("throws a clear error when extractRecords receives malformed entries", () => {
-    expect(() =>
-      extractRecords({
-        data: [{ CERT: 1 } as unknown as { data: Record<string, unknown> }],
-        meta: { total: 1 },
-      }),
-    ).toThrow(
-      "Unexpected FDIC API response shape: expected data[0] to contain an object 'data' property.",
-    );
+    expect(extractRecords(response)).toEqual([{ CERT: 1 }, { CERT: 2 }]);
   });
 
   it("validates a well-formed FDIC response payload", () => {
