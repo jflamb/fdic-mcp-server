@@ -468,3 +468,27 @@ Reference: issue #82.
 ## Review / Results
 
 - [x] Opened issue #82.
+
+# Semantic Release Automation
+
+Reference: issue #105.
+
+## Goals
+
+- [x] Replace the manual tag-driven release flow with semantic-release automation triggered from validated `main` commits.
+- [x] Keep npm, GitHub Packages, GitHub Releases, and MCP registry publication working after the migration.
+- [x] Document the commit and merge conventions required for automatic semantic versioning.
+
+## Acceptance Criteria
+
+- [x] A successful CI run for `main` can trigger release automation without manual version bumps or manual tagging.
+- [x] Semantic version calculation is driven by conventional commits.
+- [x] Release automation still updates package/version metadata used by the runtime and registry publication.
+- [x] Documentation explains the new automated release policy and the expected commit hygiene.
+
+## Review / Results
+
+- [x] Added semantic-release configuration, changelog generation, and a helper script that exposes release results to GitHub Actions.
+- [x] Replaced the manual tag-triggered publish workflow with an automated release workflow that runs after successful CI on the latest `main` commit.
+- [x] Added commit-message linting in CI so semantic versioning stays reliable under the current merge workflow.
+- [x] Removed the one-off backfill workflow and updated contributor and deployment docs to describe the automated release process.
