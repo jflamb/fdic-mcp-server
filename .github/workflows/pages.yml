@@ -48,7 +48,12 @@ jobs:
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./docs
-          destination: ./_site
+          destination: ./_site_raw
+
+      - name: Prepare writable Pages artifact
+        run: |
+          mkdir -p ./_site
+          cp -R ./_site_raw/. ./_site/
 
       - name: Build Pagefind search index
         run: npm run docs:search

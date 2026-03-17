@@ -1011,3 +1011,34 @@ Reference: issue #160 and the March 2026 documentation design review feedback.
 - [x] Follow-up validation fix: quoted the colon-containing frontmatter summary in [specification.md](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/technical/specification.md) after the first Jekyll build exposed invalid YAML that predated this branch.
 - [x] Verified `npm run typecheck`, `npm test`, `npm run build`, `/Users/jlamb/.gem/ruby/2.6.0/bin/jekyll build --source docs --destination _site`, and `npm run docs:search`.
 - [x] Verified the rendered site over a local HTTP server, including search, mobile navigation, and long-page navigation, and captured a Lighthouse snapshot score of 100 for accessibility, best practices, and SEO on the troubleshooting page.
+
+# Issue #163: GitHub Pages Deploy Failure After Pagefind Integration
+
+Reference: issue #163 and failed Pages run `23176706983` for merge commit `f4b31d19caf48b812ec4f6680e8bca60314afba1`.
+
+## Goals
+
+- [x] Fix the Pages workflow so Pagefind indexing no longer writes directly into the protected Pages output path during the GitHub Actions build.
+- [x] Preserve the generated `pagefind/` assets in the final uploaded Pages artifact so the live docs search still works.
+- [ ] Validate the workflow logic locally as far as possible, then carry the fix through PR checks and merged redeploy.
+
+## Acceptance Criteria
+
+- [x] The Pages workflow generates the Jekyll site, builds the Pagefind index in a writable staging location, and copies it into the final `_site` artifact.
+- [ ] The merged fix produces a successful `Deploy Docs` workflow run on `main`.
+- [ ] The live GitHub Pages site reflects the redesigned docs after the successful deploy.
+
+## Validation
+
+- [x] Workflow YAML parses successfully.
+- [x] Local docs build and Pagefind generation succeed with the staged output path.
+- [ ] PR checks pass.
+- [ ] Post-merge `Deploy Docs` run succeeds on `main`.
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/issue-163-pages-pagefind-deploy`.
+- [x] Issue opened for this work: #163.
+- [x] Updated [pages.yml](/Users/jlamb/Projects/bankfind-mcp-issue-163/.github/workflows/pages.yml) so the Jekyll Docker action writes to `_site_raw`, then a shell step copies those files into a writable `_site` staging directory before `npm run docs:search`.
+- [x] Verified the staged workflow path locally with `/Users/jlamb/.gem/ruby/2.6.0/bin/jekyll build --source docs --destination _site_raw && mkdir -p _site && cp -R ./_site_raw/. ./_site/ && npm run docs:search`.
+- [x] Verified `ruby -e "require 'yaml'; YAML.load_file('.github/workflows/pages.yml')"`, `npm run typecheck`, `npm test`, and `npm run build`.
