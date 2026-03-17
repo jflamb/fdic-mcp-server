@@ -1,0 +1,94 @@
+primary:
+  - key: overview
+    title: Overview
+    url: /
+  - key: user
+    title: User Docs
+    url: /user-guide/
+  - key: technical
+    title: Technical Docs
+    url: /technical/
+  - key: project
+    title: Project Info
+    url: /project-information/
+
+sections:
+  overview:
+    title: Overview
+    description: Documentation home and first-run paths.
+    items:
+      - title: Documentation Overview
+        short_title: Home
+        url: /
+  user:
+    title: User Docs
+    description: Setup, prompting, examples, and troubleshooting.
+    items:
+      - title: User Docs
+        short_title: Overview
+        url: /user-guide/
+      - title: Getting Started
+        url: /getting-started/
+      - title: Client Setup
+        url: /clients/
+      - title: Prompting Guide
+        url: /prompting-guide/
+      - title: Usage Examples
+        url: /usage-examples/
+      - title: Troubleshooting And FAQ
+        short_title: Troubleshooting
+        url: /troubleshooting/
+  technical:
+    title: Technical Docs
+    description: Contracts, architecture, implementation details, and operations.
+    items:
+      - title: Technical Docs
+        short_title: Overview
+        url: /technical/
+      - title: Technical Specification
+        short_title: Specification
+        url: /technical/specification/
+      - title: Architecture
+        url: /technical/architecture/
+      - title: Key Decisions
+        short_title: Decisions
+        url: /technical/decisions/
+      - title: Tool Reference
+        url: /tool-reference/
+      - title: Cloud Run Deployment
+        short_title: Deployment
+        url: /technical/cloud-run-deployment/
+  project:
+    title: Project Info
+    description: Operational context, support posture, and contribution workflows.
+    items:
+      - title: Project Info
+        short_title: Overview
+        url: /project-information/
+      - title: MCP Host Compatibility Matrix
+        short_title: Compatibility
+        url: /compatibility-matrix/
+      - title: Support
+        url: /support/
+      - title: Contributing
+        url: /contributing/
+      - title: Security
+        url: /security/
+      - title: Release Notes
+        url: /release-notes/
+  release_notes:
+    title: Release Notes
+    description: Published releases and historical version notes.
+    parent: project
+    items:
+      - title: Release Notes
+        short_title: Overview
+        url: /release-notes/
+      - title: Version 1.1.3
+        url: /release-notes/v1.1.3/
+      - title: Version 1.1.2
+        url: /release-notes/v1.1.2/
+      - title: Version 1.1.1
+        url: /release-notes/v1.1.1/
+      - title: Version 1.1.0
+        url: /release-notes/v1.1.0/

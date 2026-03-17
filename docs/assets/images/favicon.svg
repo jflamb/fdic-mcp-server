@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">FDIC BankFind MCP Server</title>
+  <desc id="desc">Stylized shield icon for the FDIC BankFind MCP Server documentation.</desc>
+  <defs>
+    <linearGradient id="shield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d7a66" />
+      <stop offset="100%" stop-color="#0b5c4e" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#eef6f2" />
+  <path d="M64 18L97 29V57c0 25-17 42-33 53C48 99 31 82 31 57V29l33-11Z" fill="url(#shield)" />
+  <path d="M64 35c9 0 17 7 17 16 0 7-4 12-10 15l8 18h-11l-6-14h-8v14H44V35Zm-10 26h9c5 0 8-3 8-8s-3-8-8-8h-9Z" fill="#f4fbf8" />
+  <path d="M46 95h36" stroke="#cf9a35" stroke-width="6" stroke-linecap="round" />
+</svg>

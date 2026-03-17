@@ -1,0 +1,21 @@
+{% assign latest_release = site.data.latest_release %}
+
+<footer class="site-footer">
+  <div class="site-footer__meta">
+    <p class="site-footer__title">FDIC BankFind MCP Server</p>
+    <p class="site-footer__summary">Public FDIC datasets, MCP-native tools, and analysis guidance for hosted and local MCP clients.</p>
+  </div>
+
+  <div class="site-footer__links">
+    <a href="https://github.com/jflamb/fdic-mcp-server">GitHub</a>
+    <a href="https://www.npmjs.com/package/fdic-mcp-server">npm</a>
+    <a href="{{ '/release-notes/' | relative_url }}">Release Notes</a>
+    <a href="{{ '/support/' | relative_url }}">Support</a>
+    <a href="https://github.com/jflamb/fdic-mcp-server/blob/main/LICENSE">MIT License</a>
+  </div>
+
+  <div class="site-footer__status">
+    <span>Latest release: <a href="{{ latest_release.url }}">{{ latest_release.display_name | default: latest_release.tag_name }}</a></span>
+    <span>Built with Jekyll and Pagefind</span>
+  </div>
+</footer>
