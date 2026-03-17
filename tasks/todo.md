@@ -1071,3 +1071,49 @@ Reference: issue #165 and the `Deploy Docs` warning emitted on 2026-03-17 for No
 - [x] Added workflow-level `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"` in [pages.yml](/Users/jlamb/Projects/bankfind-mcp-pagesfix/.github/workflows/pages.yml) so the existing Pages action chain runs on Node 24 without changing action contracts.
 - [x] Reopened issue #165 after confirming the previous merged fix did not clear the warning on the next `Deploy Docs` run.
 - [x] Added explicit job-level Node 24 opt-in env blocks to both jobs in [pages.yml](/Users/jlamb/Projects/bankfind-mcp-pagesfix/.github/workflows/pages.yml).
+
+# Issue #168: Docs-Site Review V2 Follow-Up
+
+Reference: issue #168 and the findings captured in `docs-site-review-v2.html`.
+
+## Goals
+
+- [x] Fix the docs front-end accessibility and semantics gaps called out in the v2 review.
+- [x] Apply the remaining UX polish items without regressing the existing docs-site navigation system.
+- [x] Validate with repo-standard commands plus a local docs-site build and search index generation.
+- [ ] Carry the change through PR, merge, and GitHub Pages deployment verification.
+
+## Acceptance Criteria
+
+- [x] Inner pages no longer render a section-nav `<h2>` ahead of the page `<h1>`.
+- [x] Desktop and mobile TOC components expose explicit `On this page` navigation landmarks.
+- [x] The mobile nav toggle has a stable explicit accessible label.
+- [x] The search dialog traps focus while open and retains Escape-to-close behavior.
+- [x] Redundant manual `What To Read Next` content is removed where auto-generated prev/next navigation already exists.
+- [x] Section-nav pills stay compact and horizontally scrollable on narrow desktop and tablet widths.
+- [x] Search shows an in-dialog loading state while results are being resolved.
+- [x] Print styles hide docs chrome and render the page content cleanly.
+- [x] `npm run typecheck`, `npm test`, `npm run build`, local Jekyll build, and `npm run docs:search` succeed.
+- [ ] The merged branch produces a successful `Deploy Docs` run on `main`.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] `~/.gem/ruby/2.6.0/bin/jekyll build --source docs --destination _site`
+- [x] `npm run docs:search`
+- [ ] PR checks pass
+- [ ] Post-merge `Deploy Docs` run succeeds
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/docs-site-review-v2`.
+- [x] Issue opened for this work: #168.
+- [x] Reworked [section-nav.html](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/docs/_includes/section-nav.html), [page-toc.html](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/docs/_includes/page-toc.html), [mobile-page-toc.html](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/docs/_includes/mobile-page-toc.html), and [default.html](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/docs/_layouts/default.html) so the docs shell now uses cleaner heading order, explicit TOC navigation landmarks, and a labeled mobile nav toggle.
+- [x] Updated [docs.js](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/docs/assets/js/docs.js) and [search-dialog.html](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/docs/_includes/search-dialog.html) to add an in-dialog loading state, focus trapping, and focus restoration for the search modal.
+- [x] Extended [docs.css](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/docs/assets/css/docs.css) with narrow-width section-nav overflow handling and print-only cleanup for docs chrome.
+- [x] Removed the redundant manual read-next block from [getting-started.md](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/docs/getting-started.md).
+- [x] Added lightweight docs-shell regression coverage in [docs-site.test.ts](/Users/jlamb/Projects/bankfind-mcp-docs-review-v2/tests/docs-site.test.ts).
+- [x] Verified `npm run typecheck`, `npm test`, `npm run build`, `~/.gem/ruby/2.6.0/bin/jekyll build --source docs --destination _site`, and `npm run docs:search`.
+- [x] Verified locally in a browser against the built `_site` that the section nav no longer precedes the page H1 semantically, the TOC landmarks render correctly, the search dialog traps Tab focus, Escape closes it, and focus returns to the opener.

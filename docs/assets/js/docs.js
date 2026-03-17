@@ -241,24 +241,41 @@ const getSectionLabel = (meta) => {
 
 const initSearch = () => {
   const dialog = document.querySelector("[data-search-dialog]");
+  const panel = dialog?.querySelector(".search-dialog__panel");
   const input = document.querySelector("[data-search-input]");
   const status = document.querySelector("[data-search-status]");
   const results = document.querySelector("[data-search-results]");
   const openButtons = document.querySelectorAll("[data-search-open]");
   const closeButtons = document.querySelectorAll("[data-search-close]");
 
-  if (!dialog || !input || !status || !results) {
+  if (!dialog || !panel || !input || !status || !results) {
     return;
   }
 
   let currentQuery = "";
+  let activeTrigger = null;
+
+  const getFocusableElements = () =>
+    Array.from(
+      panel.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((element) => !element.hasAttribute("hidden") && element.getAttribute("aria-hidden") !== "true");
+
+  const setSearchLoading = (isLoading) => {
+    results.dataset.loading = isLoading ? "true" : "false";
+    results.setAttribute("aria-busy", String(isLoading));
+  };
 
   const close = () => {
     dialog.hidden = true;
     document.body.style.overflow = "";
+    setSearchLoading(false);
+    activeTrigger?.focus();
   };
 
-  const open = async () => {
+  const open = async (trigger = null) => {
+    activeTrigger = trigger;
     const mobileNav = document.querySelector("[data-mobile-nav]");
     const navToggle = document.querySelector("[data-nav-toggle]");
     if (mobileNav && !mobileNav.hidden) {
@@ -288,13 +305,15 @@ const initSearch = () => {
     results.innerHTML = "";
 
     if (!query.trim()) {
+      setSearchLoading(false);
       status.textContent = "Start typing to search the documentation.";
       return;
     }
 
     try {
-      const pagefind = await loadPagefind();
       status.textContent = "Searching...";
+      setSearchLoading(true);
+      const pagefind = await loadPagefind();
       const response = await pagefind.search(query);
 
       if (query !== currentQuery) {
@@ -302,6 +321,7 @@ const initSearch = () => {
       }
 
       if (!response.results.length) {
+        setSearchLoading(false);
         status.textContent = `No results for "${query}".`;
         return;
       }
@@ -332,7 +352,10 @@ const initSearch = () => {
         link.append(meta, title, excerpt);
         results.appendChild(link);
       });
+
+      setSearchLoading(false);
     } catch {
+      setSearchLoading(false);
       status.textContent = "Search is unavailable in this build.";
     }
   };
@@ -342,12 +365,41 @@ const initSearch = () => {
   }, 120);
 
   input.addEventListener("input", debouncedSearch);
-  openButtons.forEach((button) => button.addEventListener("click", open));
+  openButtons.forEach((button) =>
+    button.addEventListener("click", () => {
+      open(button);
+    }),
+  );
   closeButtons.forEach((button) => button.addEventListener("click", close));
 
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) {
       close();
+    }
+  });
+
+  panel.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab" || dialog.hidden) {
+      return;
+    }
+
+    const focusable = getFocusableElements();
+    if (focusable.length === 0) {
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+      return;
+    }
+
+    if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   });
 
@@ -360,7 +412,7 @@ const initSearch = () => {
 
       if (!isTyping) {
         event.preventDefault();
-        open();
+        open(document.activeElement instanceof HTMLElement ? document.activeElement : null);
       }
     }
 
