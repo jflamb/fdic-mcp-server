@@ -1042,3 +1042,30 @@ Reference: issue #163 and failed Pages run `23176706983` for merge commit `f4b31
 - [x] Updated [pages.yml](/Users/jlamb/Projects/bankfind-mcp-issue-163/.github/workflows/pages.yml) so the Jekyll Docker action writes to `_site_raw`, then a shell step copies those files into a writable `_site` staging directory before `npm run docs:search`.
 - [x] Verified the staged workflow path locally with `/Users/jlamb/.gem/ruby/2.6.0/bin/jekyll build --source docs --destination _site_raw && mkdir -p _site && cp -R ./_site_raw/. ./_site/ && npm run docs:search`.
 - [x] Verified `ruby -e "require 'yaml'; YAML.load_file('.github/workflows/pages.yml')"`, `npm run typecheck`, `npm test`, and `npm run build`.
+
+# Issue #165: Pages Workflow Node 24 Hygiene
+
+Reference: issue #165 and the `Deploy Docs` warning emitted on 2026-03-17 for Node 20-based JavaScript actions.
+
+## Goals
+
+- [x] Remove the Node 20 deprecation warning from the Pages workflow without changing the existing docs build and deploy contract.
+- [x] Keep the fix scoped to the current Pages action chain rather than swapping action versions speculatively.
+- [x] Validate the workflow definition after the change and record the result.
+
+## Acceptance Criteria
+
+- [x] The workflow opts its JavaScript actions into Node 24 using the documented `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` environment variable.
+- [x] The existing Pages build flow still uses `actions/configure-pages@v5`, `actions/upload-pages-artifact@v4`, and `actions/deploy-pages@v4`.
+- [x] `.github/workflows/pages.yml` parses successfully after the change.
+
+## Validation
+
+- [x] `ruby -e "require 'yaml'; YAML.load_file('.github/workflows/pages.yml')"`
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/pages-node24-workflow-pr`.
+- [x] Issue opened for this work: #165.
+- [x] Confirmed from the latest successful Pages run log that the warning came from `actions/configure-pages@v5`, transitive `actions/upload-artifact` invoked by `actions/upload-pages-artifact@v4`, and `actions/deploy-pages@v4`.
+- [x] Added workflow-level `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"` in [pages.yml](/Users/jlamb/Projects/bankfind-mcp-pagesfix/.github/workflows/pages.yml) so the existing Pages action chain runs on Node 24 without changing action contracts.
