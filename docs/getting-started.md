@@ -126,9 +126,3 @@ Expected behavior:
 - the model should call `fdic_search_institutions`
 - filters should include `STNAME:"North Carolina"`, `ACTIVE:1`, and `ASSET:[1000000 TO *]`
 - results should come back with both human-readable output and machine-readable `structuredContent`
-
-## What To Read Next
-
-- [Prompting Guide]({{ '/prompting-guide/' | relative_url }})
-- [Usage Examples]({{ '/usage-examples/' | relative_url }})
-- [Technical Specification]({{ '/technical/specification/' | relative_url }})
