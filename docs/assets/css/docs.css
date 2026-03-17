@@ -299,6 +299,8 @@ img {
 
 .section-nav__links-wrap {
   position: relative;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .section-nav__links {
@@ -416,6 +418,8 @@ img {
   border-radius: 0.45rem;
   padding: 0.16rem 0.35rem;
   font-size: 0.93em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .doc-content pre,
@@ -435,6 +439,7 @@ img {
   color: inherit;
   padding: 0;
   white-space: pre;
+  overflow-wrap: normal;
   word-break: normal;
 }
 

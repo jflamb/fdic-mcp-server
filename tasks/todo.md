@@ -219,6 +219,39 @@ Reference: issue #35 and user request to update the docs around the live hosted 
 
 # Workflow Concurrency And Job Naming Cleanup
 
+# Docs Mobile Overflow
+
+Reference: user-reported GitHub Pages mobile viewport overflow on 2026-03-17.
+
+## Goals
+
+- [x] Reproduce the horizontal overflow shown on the deployed docs site in a mobile viewport.
+- [x] Fix the root-cause CSS so mobile pages do not expand wider than the viewport.
+- [x] Preserve intentional horizontal scrolling for wide tables and code blocks.
+- [x] Validate the fix with targeted mobile viewport checks and repo-standard validation commands.
+
+## Acceptance Criteria
+
+- [x] The deployed-style docs layout no longer produces page-level horizontal scrolling at approximately `390px` wide on the Cloud Run deployment page.
+- [x] The section navigation chip row can still scroll horizontally inside its own container on narrow screens.
+- [x] Long inline code values wrap instead of forcing the page wider than the viewport.
+- [x] `npm run typecheck`, `npm test`, and `npm run build` pass after the change.
+
+## Validation
+
+- [x] Mobile viewport check at `390x844` confirms `document.documentElement.scrollWidth === window.innerWidth`.
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/docs-mobile-overflow`.
+- [x] Reproduced the deployed mobile overflow on `https://jflamb.github.io/fdic-mcp-server/technical/cloud-run-deployment/`: the page expanded to `543px` wide in a `390px` viewport.
+- [x] Contained the mobile section-nav chip scroller in [docs.css](/Users/jlamb/Projects/bankfind-mcp/docs/assets/css/docs.css) so its horizontal overflow stays local to the control instead of expanding the whole page.
+- [x] Allowed inline code in [docs.css](/Users/jlamb/Projects/bankfind-mcp/docs/assets/css/docs.css) to wrap while preserving `pre` and syntax-highlighted code block scrolling behavior.
+- [x] Verified the patched CSS behavior in-browser: `document.documentElement.scrollWidth` dropped from `543` to `390` at `390x844`, while the section-nav still had internal horizontal overflow (`scrollWidth 729` vs. `clientWidth 300`).
+
 Reference: issue #41 and user request to continue with the next-tier workflow hygiene tasks after the workflow-name cleanup.
 
 ## Goals
