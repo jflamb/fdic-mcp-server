@@ -969,3 +969,45 @@ Reference: issue #136.
 - [x] Simplified [fdicClient.ts](/Users/jlamb/Projects/bankfind-mcp/src/services/fdicClient.ts) so `extractRecords()` now trusts the validated `FdicResponse` shape guaranteed by `validateFdicResponseShape()`.
 - [x] Updated [fdicClient.test.ts](/Users/jlamb/Projects/bankfind-mcp/tests/fdicClient.test.ts) to cover extracting records from a validated response instead of expecting unreachable dead-code errors from `extractRecords()`.
 - [x] Verified `npm run typecheck`, `npm test`, and `npm run build`.
+
+# Issue #160: Documentation Site UX And Design Remediation
+
+Reference: issue #160 and the March 2026 documentation design review feedback.
+
+## Goals
+
+- [x] Add the missing product-level documentation features: site search, page TOC, mobile navigation, footer, and section/page navigation.
+- [x] Strengthen homepage onboarding and page flow so the hosted endpoint and next steps are immediately discoverable.
+- [x] Close the highest-value accessibility, responsiveness, and presentation gaps without breaking the existing documentation content contracts.
+- [x] Validate the result with repo-standard checks plus docs-site build and UI review evidence.
+
+## Acceptance Criteria
+
+- [x] The docs site has site-wide search, a responsive page TOC, a usable mobile nav, and a footer with key project links and version context.
+- [x] Section-local navigation and prev/next page flows exist and clearly distinguish the current page from the current top-level section.
+- [x] The homepage hero elevates the hosted MCP URL and preserves a strong first-run path for new users.
+- [x] Code blocks and tables behave correctly on narrow screens, syntax highlighting is enabled, and dark mode is available.
+- [x] The site includes a skip link, favicon/social metadata, and improved heading hierarchy where needed.
+- [x] `npm run typecheck`, `npm test`, `npm run build`, and a docs build/search generation flow pass after the change.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] Docs build and search index generation
+- [x] Responsive and interaction smoke test
+
+## Review / Results
+
+- [x] Branch created for this work: `feat/issue-160-docs-site-polish`.
+- [x] Issue opened for this work: #160.
+- [x] Added shared docs navigation metadata in [navigation.yml](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/_data/navigation.yml) so the site can render top-level nav, section-local pills, and prev/next page flows from one source of truth.
+- [x] Reworked the docs shell in [default.html](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/_layouts/default.html) and new include partials to add a skip link, mobile nav drawer, responsive page TOC, search dialog, and footer.
+- [x] Replaced the site styling and interaction layer in [docs.css](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/assets/css/docs.css) and [docs.js](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/assets/js/docs.js) to support responsive navigation, TOC generation, table wrapping, copyable code blocks, dark mode, and Pagefind-powered search.
+- [x] Elevated the hosted endpoint CTA on [index.md](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/index.md) and corrected homepage heading hierarchy.
+- [x] Enabled Rouge syntax highlighting and added favicon/social-card assets via [docs/_config.yml](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/_config.yml) plus [favicon.svg](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/assets/images/favicon.svg) and [social-card.svg](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/assets/images/social-card.svg).
+- [x] Updated the Pages workflow in [pages.yml](/Users/jlamb/Projects/bankfind-mcp-issue-160/.github/workflows/pages.yml) to install npm dependencies and generate the Pagefind index after the Jekyll build.
+- [x] Follow-up validation fix: quoted the colon-containing frontmatter summary in [specification.md](/Users/jlamb/Projects/bankfind-mcp-issue-160/docs/technical/specification.md) after the first Jekyll build exposed invalid YAML that predated this branch.
+- [x] Verified `npm run typecheck`, `npm test`, `npm run build`, `/Users/jlamb/.gem/ruby/2.6.0/bin/jekyll build --source docs --destination _site`, and `npm run docs:search`.
+- [x] Verified the rendered site over a local HTTP server, including search, mobile navigation, and long-page navigation, and captured a Lighthouse snapshot score of 100 for accessibility, best practices, and SEO on the troubleshooting page.

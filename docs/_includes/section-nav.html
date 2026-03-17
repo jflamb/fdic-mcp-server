@@ -1,0 +1,31 @@
+{% assign current_section_key = nil %}
+{% assign current_section = nil %}
+{% for section_entry in site.data.navigation.sections %}
+  {% assign section_key = section_entry[0] %}
+  {% assign section_data = section_entry[1] %}
+  {% for item in section_data.items %}
+    {% if item.url == page.url %}
+      {% assign current_section_key = section_key %}
+      {% assign current_section = section_data %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+{% if current_section and current_section.items.size > 1 %}
+<section class="section-nav" aria-label="{{ current_section.title }}">
+  <div class="section-nav__header">
+    <p class="section-nav__eyebrow">In this section</p>
+    <h2>{{ current_section.title }}</h2>
+    {% if current_section.description %}
+    <p>{{ current_section.description }}</p>
+    {% endif %}
+  </div>
+  <div class="section-nav__links">
+    {% for item in current_section.items %}
+    <a href="{{ item.url | relative_url }}"{% if item.url == page.url %} class="is-active" aria-current="page"{% endif %}>
+      {{ item.short_title | default: item.title }}
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

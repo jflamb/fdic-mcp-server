@@ -1,0 +1,27 @@
+<div class="search-dialog" data-search-dialog hidden>
+  <div class="search-dialog__backdrop" data-search-close></div>
+  <div class="search-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="search-dialog-title">
+    <div class="search-dialog__header">
+      <div>
+        <p class="search-dialog__eyebrow">Documentation Search</p>
+        <h2 id="search-dialog-title">Find anything across the docs</h2>
+      </div>
+      <button type="button" class="search-dialog__close" data-search-close aria-label="Close search">Close</button>
+    </div>
+
+    <label class="search-dialog__label" for="site-search-input">Search query</label>
+    <input
+      id="site-search-input"
+      class="search-dialog__input"
+      type="search"
+      name="q"
+      placeholder="Search for CERT, REPDTE, peer group, hosted endpoint..."
+      autocomplete="off"
+      spellcheck="false"
+      data-search-input
+    >
+
+    <p class="search-dialog__status" data-search-status>Start typing to search the documentation.</p>
+    <div class="search-results" data-search-results></div>
+  </div>
+</div>

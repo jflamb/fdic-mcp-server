@@ -1,0 +1,17 @@
+<div id="mobile-nav" class="mobile-nav" data-mobile-nav hidden>
+  <div class="mobile-nav__panel">
+    <div class="mobile-nav__header">
+      <p class="mobile-nav__eyebrow">Documentation</p>
+      <button type="button" class="mobile-nav__close" data-nav-close aria-label="Close navigation">Close</button>
+    </div>
+
+    {% include primary-nav.html %}
+
+    <div class="mobile-nav__actions">
+      <button type="button" class="search-button search-button--wide" data-search-open aria-label="Open documentation search">
+        <span aria-hidden="true">Search</span>
+        <span class="search-button__hint">/</span>
+      </button>
+    </div>
+  </div>
+</div>

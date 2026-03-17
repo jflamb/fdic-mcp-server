@@ -9,14 +9,14 @@ body_class: overview-page
 
 <div class="hero-grid">
   <section class="hero-panel hero-panel--accent">
-    <h2>What problem this project solves</h2>
+    <h3>What problem this project solves</h3>
     <p>
       The FDIC BankFind Suite API is public, but it is not packaged for MCP hosts in a way that is easy to use from prompts.
       This server turns those datasets into MCP tools with stable machine-readable output, then adds analysis helpers for multi-bank comparison and peer benchmarking.
     </p>
   </section>
   <section class="hero-panel">
-    <h2>What you can do with it</h2>
+    <h3>What you can do with it</h3>
     <ul>
       <li>Search institutions, failures, branches, and historical changes.</li>
       <li>Pull quarterly financial and demographics records with explicit report dates.</li>
@@ -46,8 +46,14 @@ body_class: overview-page
   </a>
 </div>
 
-<div class="hosted-url-block">
-  <p>Hosted MCP URL:</p>
+<div class="hosted-url-block doc-callout doc-callout--hero">
+  <p class="doc-callout__eyebrow">Fastest path</p>
+  <div class="doc-callout__title-row">
+    <div>
+      <h2>Use the live hosted MCP endpoint</h2>
+      <p>When your MCP host accepts remote HTTP servers, this is the lowest-friction way to get started. Copy the endpoint, connect it in your host, then move to client setup or prompting guidance.</p>
+    </div>
+  </div>
   <pre><code>https://bankfind.jflamb.com/mcp</code></pre>
 </div>
 

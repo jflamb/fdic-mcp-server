@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">FDIC BankFind MCP Server Documentation</title>
+  <desc id="desc">Social sharing card for the FDIC BankFind MCP Server documentation website.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f1d19" />
+      <stop offset="52%" stop-color="#12352c" />
+      <stop offset="100%" stop-color="#0b5c4e" />
+    </linearGradient>
+    <radialGradient id="glow" cx="20%" cy="15%" r="80%">
+      <stop offset="0%" stop-color="#6fd0b8" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#6fd0b8" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+  <circle cx="1040" cy="150" r="120" fill="#cf9a35" fill-opacity="0.16" />
+  <circle cx="950" cy="500" r="180" fill="#6fd0b8" fill-opacity="0.08" />
+
+  <g transform="translate(84 76)">
+    <rect width="126" height="126" rx="30" fill="#eef6f2" fill-opacity="0.96" />
+    <path d="M63 18L97 30v29c0 26-17 43-34 54C46 102 29 85 29 59V30l34-12Z" fill="#0d7a66" />
+    <path d="M63 37c9 0 17 7 17 16 0 7-4 12-10 15l8 17H67l-6-13h-7v13H43V37Zm-9 25h8c5 0 8-3 8-8s-3-8-8-8h-8Z" fill="#f4fbf8" />
+    <path d="M46 95h34" stroke="#cf9a35" stroke-width="6" stroke-linecap="round" />
+  </g>
+
+  <g fill="#eef8f4" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif">
+    <text x="84" y="278" font-size="18" font-weight="700" letter-spacing="4" fill="#8ce5cf">FDIC BANKFIND MCP SERVER</text>
+    <text x="84" y="352" font-size="60" font-weight="700">Documentation that feels</text>
+    <text x="84" y="420" font-size="60" font-weight="700">like a product, not a dump.</text>
+    <text x="84" y="494" font-size="28" fill="#d5e8e1">Hosted endpoint setup, client guidance, tool reference, and maintainer docs</text>
+    <text x="84" y="532" font-size="28" fill="#d5e8e1">for the FDIC BankFind Suite MCP server.</text>
+  </g>
+
+  <g transform="translate(84 564)">
+    <rect width="412" height="40" rx="20" fill="#eef8f4" fill-opacity="0.1" />
+    <text x="20" y="27" font-family="Menlo, Consolas, monospace" font-size="22" fill="#f8fcfa">https://bankfind.jflamb.com/mcp</text>
+  </g>
+</svg>

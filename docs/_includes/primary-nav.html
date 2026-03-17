@@ -1,0 +1,5 @@
+<nav class="top-nav" aria-label="Primary">
+  {% for item in site.data.navigation.primary %}
+  <a href="{{ item.url | relative_url }}"{% if page.nav_group == item.key %} class="is-active"{% endif %}>{{ item.title }}</a>
+  {% endfor %}
+</nav>

@@ -1,0 +1,35 @@
+{% assign current_section = nil %}
+{% assign current_index = nil %}
+{% for section_entry in site.data.navigation.sections %}
+  {% assign section_data = section_entry[1] %}
+  {% for item in section_data.items %}
+    {% if item.url == page.url %}
+      {% assign current_section = section_data %}
+      {% assign current_index = forloop.index0 %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+{% if current_section and current_section.items.size > 1 %}
+  {% assign previous_index = current_index | minus: 1 %}
+  {% assign next_index = current_index | plus: 1 %}
+  <nav class="prev-next" aria-label="Page">
+    {% for item in current_section.items %}
+      {% if forloop.index0 == previous_index %}
+      <a class="prev-next__link prev-next__link--previous" href="{{ item.url | relative_url }}">
+        <span class="prev-next__direction">Previous</span>
+        <strong>{{ item.title }}</strong>
+      </a>
+      {% endif %}
+    {% endfor %}
+
+    {% for item in current_section.items %}
+      {% if forloop.index0 == next_index %}
+      <a class="prev-next__link prev-next__link--next" href="{{ item.url | relative_url }}">
+        <span class="prev-next__direction">Next</span>
+        <strong>{{ item.title }}</strong>
+      </a>
+      {% endif %}
+    {% endfor %}
+  </nav>
+{% endif %}

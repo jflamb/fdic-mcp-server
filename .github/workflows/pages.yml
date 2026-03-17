@@ -33,6 +33,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "22"
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
 
       - name: Generate docs release data
         run: node scripts/generate-docs-release-data.mjs
@@ -45,6 +49,9 @@ jobs:
         with:
           source: ./docs
           destination: ./_site
+
+      - name: Build Pagefind search index
+        run: npm run docs:search
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
