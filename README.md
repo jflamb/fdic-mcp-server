@@ -32,22 +32,22 @@ The FDIC BankFind Suite API is public and useful, but it is not packaged for MCP
 
 ## Documentation
 
-- GitHub Pages docs entry point: [jflamb.github.io/fdic-mcp-server](https://jflamb.github.io/fdic-mcp-server/)
-- Hosted MCP endpoint: [bankfind.jflamb.com/mcp](https://bankfind.jflamb.com/mcp)
-- Local docs home: [docs/index.md](./docs/index.md)
-- Getting started: [docs/getting-started.md](./docs/getting-started.md)
-- Prompting guide: [docs/prompting-guide.md](./docs/prompting-guide.md)
-- Usage examples: [docs/usage-examples.md](./docs/usage-examples.md)
-- Tool reference: [docs/tool-reference.md](./docs/tool-reference.md)
-- Client setup: [docs/clients.md](./docs/clients.md)
-- Troubleshooting and FAQ: [docs/troubleshooting.md](./docs/troubleshooting.md)
-- Compatibility matrix: [docs/compatibility-matrix.md](./docs/compatibility-matrix.md)
-- Technical specification: [docs/technical/specification.md](./docs/technical/specification.md)
-- Architecture: [docs/technical/architecture.md](./docs/technical/architecture.md)
-- Key decisions: [docs/technical/decisions.md](./docs/technical/decisions.md)
-- Release history: [GitHub Releases](https://github.com/jflamb/fdic-mcp-server/releases)
-- Archived release notes: [docs/release-notes/index.md](./docs/release-notes/index.md)
-- Security policy: [SECURITY.md](./SECURITY.md)
+- [GitHub Pages docs entry point](https://jflamb.github.io/fdic-mcp-server/)
+- [Hosted MCP endpoint](https://bankfind.jflamb.com/mcp)
+- [Local docs home](./docs/index.md)
+- [Getting started](./docs/getting-started.md)
+- [Prompting guide](./docs/prompting-guide.md)
+- [Usage examples](./docs/usage-examples.md)
+- [Tool reference](./docs/tool-reference.md)
+- [Client setup](./docs/clients.md)
+- [Troubleshooting and FAQ](./docs/troubleshooting.md)
+- [Compatibility matrix](./docs/compatibility-matrix.md)
+- [Technical specification](./docs/technical/specification.md)
+- [Architecture](./docs/technical/architecture.md)
+- [Key decisions](./docs/technical/decisions.md)
+- [Release history](https://github.com/jflamb/fdic-mcp-server/releases)
+- [Archived release notes](./docs/release-notes/index.md)
+- [Security policy](./SECURITY.md)
 
 ## Installation
 
