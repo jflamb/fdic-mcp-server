@@ -1055,8 +1055,8 @@ Reference: issue #165 and the `Deploy Docs` warning emitted on 2026-03-17 for No
 
 ## Acceptance Criteria
 
-- [x] The workflow opts its JavaScript actions into Node 24 using the documented `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` environment variable.
-- [x] The existing Pages build flow still uses `actions/configure-pages@v5`, `actions/upload-pages-artifact@v4`, and `actions/deploy-pages@v4`.
+- [x] Both `build` and `deploy` jobs define `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"` explicitly.
+- [x] The workflow still uses `actions/configure-pages@v5`, `actions/upload-pages-artifact@v4`, and `actions/deploy-pages@v4`.
 - [x] `.github/workflows/pages.yml` parses successfully after the change.
 
 ## Validation
@@ -1069,3 +1069,5 @@ Reference: issue #165 and the `Deploy Docs` warning emitted on 2026-03-17 for No
 - [x] Issue opened for this work: #165.
 - [x] Confirmed from the latest successful Pages run log that the warning came from `actions/configure-pages@v5`, transitive `actions/upload-artifact` invoked by `actions/upload-pages-artifact@v4`, and `actions/deploy-pages@v4`.
 - [x] Added workflow-level `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"` in [pages.yml](/Users/jlamb/Projects/bankfind-mcp-pagesfix/.github/workflows/pages.yml) so the existing Pages action chain runs on Node 24 without changing action contracts.
+- [x] Reopened issue #165 after confirming the previous merged fix did not clear the warning on the next `Deploy Docs` run.
+- [x] Added explicit job-level Node 24 opt-in env blocks to both jobs in [pages.yml](/Users/jlamb/Projects/bankfind-mcp-pagesfix/.github/workflows/pages.yml).
