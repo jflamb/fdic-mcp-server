@@ -625,6 +625,7 @@ img {
 .chatbot-overlay__close {
   background: rgba(16, 34, 29, 0.08);
   color: var(--ink);
+  font-weight: 700;
   min-height: 2.6rem;
   padding: 0 0.9rem;
 }
