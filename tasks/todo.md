@@ -1,3 +1,39 @@
+# Docs IA Rewrite For Homepage And Navigation
+
+Reference: issue #177 and user request to make the GitHub Pages site identity and information architecture clearer.
+
+## Goals
+
+- [x] Make the homepage H1 explicitly identify the product as the FDIC BankFind MCP Server.
+- [x] Rewrite homepage routing copy so the main paths are task-first and audience-clear.
+- [x] Rename the top-level navigation and section landing pages to match the revised IA.
+- [x] Validate the available local build path after the content changes and record the result.
+
+## Acceptance Criteria
+
+- [x] [docs/index.md](/Users/jlamb/Projects/bankfind-mcp/docs/index.md) uses `FDIC BankFind MCP Server` as the page title and explains the product in the summary.
+- [x] [docs/_data/navigation.yml](/Users/jlamb/Projects/bankfind-mcp/docs/_data/navigation.yml) uses clear top-level labels instead of generic documentation taxonomy.
+- [x] The section landing pages for user, technical, and project/support content use titles that align with the new navigation labels.
+- [x] The available local validation commands complete successfully, with the missing local Jekyll toolchain noted explicitly.
+
+## Validation
+
+- [x] `npm run build`
+- [x] `node scripts/generate-docs-release-data.mjs`
+- [x] `/Users/jlamb/.gem/ruby/2.6.0/bin/jekyll build --source docs --destination _site_raw`
+- [x] `cp -R _site_raw/. _site/`
+- [x] `npm install`
+- [x] `npm run docs:search`
+
+## Review / Results
+
+- [x] Branch created for this work: `fix/docs-homepage-ia`.
+- [x] Rewrote the homepage in [docs/index.md](/Users/jlamb/Projects/bankfind-mcp/docs/index.md) so the H1 is the product name and the primary cards route readers by task.
+- [x] Renamed the global and section navigation labels in [docs/_data/navigation.yml](/Users/jlamb/Projects/bankfind-mcp/docs/_data/navigation.yml) to `Home`, `Use the Server`, `Technical Reference`, and `Project & Support`.
+- [x] Aligned the section landing page titles in [docs/user-guide.md](/Users/jlamb/Projects/bankfind-mcp/docs/user-guide.md), [docs/technical/index.md](/Users/jlamb/Projects/bankfind-mcp/docs/technical/index.md), and [docs/project-information.md](/Users/jlamb/Projects/bankfind-mcp/docs/project-information.md) with the revised IA.
+- [x] Updated the user-section breadcrumb in [docs/getting-started.md](/Users/jlamb/Projects/bankfind-mcp/docs/getting-started.md) to match the renamed section.
+- [x] Correction from user applied: both Docker and Jekyll were available locally but outside the inherited PATH, so validation used direct binary paths instead of assuming the tools were missing.
+
 # Issue #142: Node Engine Minimum Matches Supported CI Matrix
 
 Reference: issue #142.

@@ -1,30 +1,30 @@
 primary:
   - key: overview
-    title: Overview
+    title: Home
     url: /
   - key: user
-    title: User Docs
+    title: Use the Server
     url: /user-guide/
   - key: technical
-    title: Technical Docs
+    title: Technical Reference
     url: /technical/
   - key: project
-    title: Project Info
+    title: Project & Support
     url: /project-information/
 
 sections:
   overview:
-    title: Overview
-    description: Documentation home and first-run paths.
+    title: Home
+    description: What this server is, who it is for, and the fastest paths into the docs.
     items:
-      - title: Documentation Overview
+      - title: FDIC BankFind MCP Server
         short_title: Home
         url: /
   user:
-    title: User Docs
-    description: Setup, prompting, examples, and troubleshooting.
+    title: Use the Server
+    description: Setup, prompting, examples, and troubleshooting for people using the MCP server.
     items:
-      - title: User Docs
+      - title: Use the Server
         short_title: Overview
         url: /user-guide/
       - title: Getting Started
@@ -39,10 +39,10 @@ sections:
         short_title: Troubleshooting
         url: /troubleshooting/
   technical:
-    title: Technical Docs
-    description: Contracts, architecture, implementation details, and operations.
+    title: Technical Reference
+    description: Contracts, architecture, implementation details, and deployment operations.
     items:
-      - title: Technical Docs
+      - title: Technical Reference
         short_title: Overview
         url: /technical/
       - title: Technical Specification
@@ -59,10 +59,10 @@ sections:
         short_title: Deployment
         url: /technical/cloud-run-deployment/
   project:
-    title: Project Info
-    description: Operational context, support posture, and contribution workflows.
+    title: Project & Support
+    description: Release history, support posture, compatibility guidance, and contribution workflow.
     items:
-      - title: Project Info
+      - title: Project & Support
         short_title: Overview
         url: /project-information/
       - title: MCP Host Compatibility Matrix
