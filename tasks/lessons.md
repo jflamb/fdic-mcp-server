@@ -17,3 +17,4 @@
 - If a task requires temporary local scratch files for work that ultimately lives elsewhere, remove those files before closing the task and do not leave workspace-only artifacts behind.
 - When tool checks report a command as missing, verify common install locations before concluding the dependency is unavailable; this environment may have working binaries outside the inherited PATH.
 - For docs features meant to be discoverable across the site, do not hide the primary entry point inside a section page or secondary navigation when the user expectation is a global launcher or site-wide affordance.
+- When model output is presented directly in a docs UI, do not stop at plain-text transport success; verify that the rendered surface supports the markdown structures the model actually emits.

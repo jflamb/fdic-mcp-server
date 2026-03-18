@@ -54,5 +54,7 @@ describe("docs site review v2 follow-up", () => {
     expect(chatbotScript).toContain("data-chatbot-launcher");
     expect(chatbotScript).toContain("Open the FDIC BankFind chat demo");
     expect(chatbotScript).toContain("Rate limit reached");
+    expect(chatbotScript).toContain("sanitizeHref");
+    expect(chatbotScript).toContain("startsWith(\"```\")");
   });
 });

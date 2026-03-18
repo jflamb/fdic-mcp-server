@@ -16,13 +16,59 @@ const escapeHtml = (value) =>
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 
-const formatInline = (value) =>
-  escapeHtml(value)
+const sanitizeHref = (value) => {
+  const trimmed = value.trim();
+  if (/^(https?:|mailto:|\/|#)/i.test(trimmed)) {
+    return escapeHtml(trimmed);
+  }
+
+  return "#";
+};
+
+const preserveInlineTokens = (value, pattern, render) => {
+  const tokens = [];
+  const replaced = value.replace(pattern, (...args) => {
+    const token = `@@CHATBOTTOKEN${tokens.length}@@`;
+    tokens.push({ token, html: render(...args) });
+    return token;
+  });
+
+  return { replaced, tokens };
+};
+
+const restoreInlineTokens = (value, tokens) =>
+  tokens.reduce(
+    (result, entry) => result.replaceAll(entry.token, entry.html),
+    value,
+  );
+
+const formatInline = (value) => {
+  const escaped = escapeHtml(value);
+  const codeTokens = preserveInlineTokens(
+    escaped,
+    /`([^`]+)`/g,
+    (_match, content) => `<code>${content}</code>`,
+  );
+  const linkTokens = preserveInlineTokens(
+    codeTokens.replaced,
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    (_match, label, href) =>
+      `<a href="${sanitizeHref(href)}" target="_blank" rel="noreferrer">${label}</a>`,
+  );
+
+  const formatted = linkTokens.replaced
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>");
+    .replace(/(^|[^\*])\*(?!\s)(.+?)(?<!\s)\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/(^|[^_])_(?!\s)(.+?)(?<!\s)_(?!_)/g, "$1<em>$2</em>");
+
+  return restoreInlineTokens(restoreInlineTokens(formatted, linkTokens.tokens), codeTokens.tokens);
+};
 
 const isTableSeparator = (line) =>
   /^\|?[\s:-]+\|[\s|:-]*$/.test(line.trim());
+
+const isListLine = (line) =>
+  /^([-*])\s+/.test(line.trim()) || /^\d+\.\s+/.test(line.trim());
 
 const parseMarkdown = (source) => {
   const lines = source.replace(/\r\n/g, "\n").trim().split("\n");
@@ -32,6 +78,30 @@ const parseMarkdown = (source) => {
   while (index < lines.length) {
     const line = lines[index].trim();
     if (!line) {
+      index += 1;
+      continue;
+    }
+
+    if (line.startsWith("```")) {
+      const codeLines = [];
+      index += 1;
+      while (index < lines.length && !lines[index].trim().startsWith("```")) {
+        codeLines.push(lines[index]);
+        index += 1;
+      }
+      if (index < lines.length) {
+        index += 1;
+      }
+      blocks.push(
+        `<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`,
+      );
+      continue;
+    }
+
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      const level = Math.min(headingMatch[1].length + 1, 6);
+      blocks.push(`<h${level}>${formatInline(headingMatch[2])}</h${level}>`);
       index += 1;
       continue;
     }
@@ -75,20 +145,37 @@ const parseMarkdown = (source) => {
       continue;
     }
 
-    if (line.startsWith("- ")) {
+    if (isListLine(line)) {
       const items = [];
-      while (index < lines.length && lines[index].trim().startsWith("- ")) {
-        items.push(lines[index].trim().slice(2));
+      const isOrdered = /^\d+\.\s+/.test(line);
+      const listTag = isOrdered ? "ol" : "ul";
+      const listPattern = isOrdered ? /^\d+\.\s+/ : /^[-*]\s+/;
+
+      while (index < lines.length && listPattern.test(lines[index].trim())) {
+        items.push(lines[index].trim().replace(listPattern, ""));
         index += 1;
       }
       blocks.push(
-        `<ul>${items.map((item) => `<li>${formatInline(item)}</li>`).join("")}</ul>`,
+        `<${listTag}>${items
+          .map((item) => `<li>${formatInline(item)}</li>`)
+          .join("")}</${listTag}>`,
       );
       continue;
     }
 
     const paragraph = [];
-    while (index < lines.length && lines[index].trim()) {
+    while (
+      index < lines.length &&
+      lines[index].trim() &&
+      !lines[index].trim().startsWith("```") &&
+      !/^(#{1,6})\s+/.test(lines[index].trim()) &&
+      !isListLine(lines[index]) &&
+      !(
+        lines[index].includes("|") &&
+        index + 1 < lines.length &&
+        isTableSeparator(lines[index + 1])
+      )
+    ) {
       paragraph.push(lines[index].trim());
       index += 1;
     }

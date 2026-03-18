@@ -693,6 +693,7 @@ img {
   padding: 0.9rem 1rem;
   border-radius: 1.15rem;
   box-shadow: var(--shadow-sm);
+  line-height: 1.55;
 }
 
 .chatbot-demo__message--assistant .chatbot-demo__bubble {
@@ -715,8 +716,70 @@ img {
   margin-bottom: 0;
 }
 
+.chatbot-demo__bubble p,
+.chatbot-demo__bubble ul,
+.chatbot-demo__bubble ol,
+.chatbot-demo__bubble pre,
+.chatbot-demo__bubble table {
+  margin: 0 0 0.85rem;
+}
+
+.chatbot-demo__bubble h2,
+.chatbot-demo__bubble h3,
+.chatbot-demo__bubble h4,
+.chatbot-demo__bubble h5,
+.chatbot-demo__bubble h6 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.chatbot-demo__bubble ul,
+.chatbot-demo__bubble ol {
+  padding-left: 1.2rem;
+}
+
+.chatbot-demo__bubble li + li {
+  margin-top: 0.35rem;
+}
+
+.chatbot-demo__bubble a {
+  color: inherit;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.14em;
+}
+
+.chatbot-demo__bubble code {
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.35rem;
+  background: rgba(16, 34, 29, 0.08);
+  font-size: 0.95em;
+}
+
+.chatbot-demo__bubble pre {
+  overflow-x: auto;
+  padding: 0.8rem 0.9rem;
+  border-radius: 0.8rem;
+  background: rgba(16, 34, 29, 0.92);
+  color: #f5fbf7;
+}
+
+.chatbot-demo__bubble pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
 .chatbot-demo__bubble table {
   margin-bottom: 0;
+}
+
+.chatbot-demo__message--user .chatbot-demo__bubble code {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.chatbot-demo__message--assistant .chatbot-demo__bubble a {
+  color: var(--pine);
 }
 
 .chatbot-demo__composer {

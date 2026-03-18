@@ -52,9 +52,29 @@ app.get("/chat/status", (_req, res) => {
 app.post("/chat", (req, res) => {
   const prompt = req.body?.messages?.[0]?.content ?? "";
   const isPromptClick = prompt.includes("Texas");
+  const isRichMarkdown = prompt.includes("rich markdown");
   const reply = isPromptClick
     ? "**Texas results**\n\n- Bank A\n- Bank B"
-    : "| Bank | State |\n| --- | --- |\n| First Demo Bank | NC |";
+    : isRichMarkdown
+      ? [
+          "## Results summary",
+          "",
+          "Use the [Prompting Guide](/prompting-guide/) for more examples.",
+          "",
+          "1. First ranked bank",
+          "2. Second ranked bank",
+          "",
+          "- _Efficient_ operations",
+          "- `CERT 12345`",
+          "",
+          "Literal HTML: <b>safe</b>",
+          "",
+          "```text",
+          "Assets: 125000",
+          "Deposits: 91000",
+          "```",
+        ].join("\n")
+      : "| Bank | State |\n| --- | --- |\n| First Demo Bank | NC |";
 
   setTimeout(() => {
     res.json({

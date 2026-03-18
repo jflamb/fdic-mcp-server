@@ -54,6 +54,27 @@ test("manual input supports Enter and renders markdown tables", async ({ page })
   await expect(page.getByRole("cell", { name: "First Demo Bank" })).toBeVisible();
 });
 
+test("assistant replies render richer markdown structures", async ({ page }) => {
+  await page.goto("/");
+
+  await page.locator("[data-chatbot-launcher]").click();
+
+  const input = page.locator("[data-chatbot-input]");
+  await input.fill("Show rich markdown");
+  await input.press("Enter");
+
+  const bubble = page.locator(".chatbot-demo__message--assistant .chatbot-demo__bubble").last();
+  await expect(bubble.locator("h3")).toHaveText("Results summary");
+  await expect(bubble.locator("a")).toHaveAttribute("href", "/prompting-guide/");
+  await expect(bubble.locator("ol li")).toHaveCount(2);
+  await expect(bubble.locator("ul li")).toHaveCount(2);
+  await expect(bubble.locator("em")).toHaveText("Efficient");
+  await expect(bubble.locator("li code")).toHaveText("CERT 12345");
+  await expect(bubble.locator("pre code")).toContainText("Assets: 125000");
+  await expect(bubble).toContainText("Literal HTML: <b>safe</b>");
+  await expect(bubble.locator("b")).toHaveCount(0);
+});
+
 test("unavailable status hides prompts and the composer", async ({ page }) => {
   await page.goto("/unavailable/");
 
