@@ -12,7 +12,7 @@ body_class: overview-page
     <h3>What this server does</h3>
     <p>
       The FDIC BankFind Suite API is public, but it is not packaged for MCP hosts in a way that is easy to use from prompts.
-      This server turns those datasets into MCP tools with stable machine-readable output, then adds analysis helpers for multi-bank comparison and peer benchmarking.
+      This server turns those datasets into MCP tools, then adds built-in help for multi-bank comparison and peer benchmarking.
     </p>
   </section>
   <section class="hero-panel">
@@ -60,7 +60,7 @@ body_class: overview-page
 ## Browse by need
 
 <p class="section-intro">
-  The site is organized around the jobs people typically need to do: get connected, use the server effectively, inspect the technical contract, or find project and support information.
+  The site is organized around the jobs people typically need to do: get connected, use the server effectively, or find project and support information.
 </p>
 
 <div class="card-grid">
@@ -92,7 +92,7 @@ body_class: overview-page
   <a class="card" href="{{ '/usage-examples/' | relative_url }}">
     <span class="card__eyebrow">Examples</span>
     <h3>Usage Examples</h3>
-    <p>Use narrower prompts and expected tool shapes for search, comparisons, and peer benchmarking.</p>
+    <p>Use narrower prompts and clearer result expectations for search, comparisons, and peer benchmarking.</p>
   </a>
   <a class="card" href="{{ '/support/' | relative_url }}">
     <span class="card__eyebrow">Support</span>

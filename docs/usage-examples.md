@@ -2,7 +2,7 @@
 title: Usage Examples
 nav_group: user
 kicker: User Docs
-summary: Copyable prompts and expected tool behavior for institution search, financial retrieval, snapshot comparison, and peer analysis.
+summary: Copyable prompts for institution search, financial retrieval, snapshot comparison, and peer analysis, plus what a good answer should cover.
 breadcrumbs:
   - title: Overview
     url: /
@@ -10,7 +10,7 @@ breadcrumbs:
     url: /user-guide/
 ---
 
-The examples below are phrased as natural-language prompts, followed by the expected MCP tool direction.
+The examples below are phrased as natural-language prompts, followed by the kind of answer you should expect.
 
 ## Search Institutions
 
@@ -20,15 +20,9 @@ Prompt:
 Find active FDIC-insured banks in North Carolina with more than $1 billion in assets.
 ```
 
-Expected tool:
+What a good answer should do:
 
-- `fdic_search_institutions`
-
-Expected filter shape:
-
-```text
-STNAME:"North Carolina" AND ACTIVE:1 AND ASSET:[1000000 TO *]
-```
+- Focus on active North Carolina institutions above the requested asset threshold.
 
 ## Look Up A Known CERT
 
@@ -38,9 +32,9 @@ Prompt:
 Get institution details for CERT 3511.
 ```
 
-Expected tool:
+What a good answer should do:
 
-- `fdic_get_institution`
+- Return the institution record for the requested CERT.
 
 ## Review Bank Failures
 
@@ -50,18 +44,9 @@ Prompt:
 List the 10 costliest bank failures since January 1, 2000.
 ```
 
-Expected tool:
+What a good answer should do:
 
-- `fdic_search_failures`
-
-Expected parameters:
-
-```text
-filters: FAILDATE:[2000-01-01 TO *]
-sort_by: COST
-sort_order: DESC
-limit: 10
-```
+- Return the largest failure-cost examples since the requested date in descending order.
 
 ## Pull Quarterly Financials
 
@@ -71,16 +56,9 @@ Prompt:
 Show quarterly financials for CERT 3511 during 2023.
 ```
 
-Expected tool:
+What a good answer should do:
 
-- `fdic_search_financials`
-
-Expected parameters:
-
-```text
-cert: 3511
-filters: REPDTE:[20230101 TO 20231231]
-```
+- Return quarterly financial records for the requested bank over the requested year.
 
 ## Compare Growth Across Two Dates
 
@@ -90,19 +68,9 @@ Prompt:
 Compare North Carolina banks between 20211231 and 20250630 and rank them by asset growth.
 ```
 
-Expected tool:
+What a good answer should do:
 
-- `fdic_compare_bank_snapshots`
-
-Expected parameters:
-
-```text
-state: North Carolina
-start_repdte: 20211231
-end_repdte: 20250630
-sort_by: asset_growth
-sort_order: DESC
-```
+- Compare the same state-level bank roster across the two dates and rank by asset growth.
 
 ## Run A Time-Series Analysis
 
@@ -112,20 +80,9 @@ Prompt:
 Analyze North Carolina banks from 20211231 through 20250630 and identify sustained asset-growth streaks.
 ```
 
-Expected tool:
+What a good answer should do:
 
-- `fdic_compare_bank_snapshots`
-
-Expected parameters:
-
-```text
-state: North Carolina
-start_repdte: 20211231
-end_repdte: 20250630
-analysis_mode: timeseries
-sort_by: asset_growth_pct
-sort_order: DESC
-```
+- Look across the full date range and identify banks with repeated or sustained growth, not just a one-date change.
 
 ## Build A Peer Group
 
@@ -135,22 +92,8 @@ Prompt:
 Build a peer group for CERT 29846 at 20241231 and rank it against peers on ROA and efficiency ratio.
 ```
 
-Expected tool:
+What a good answer should do:
 
-- `fdic_peer_group_analysis`
+- Build a comparable peer set for the requested bank and report where it ranks on the requested metrics.
 
-Expected parameters:
-
-```text
-cert: 29846
-repdte: 20241231
-```
-
-## Response Model
-
-All tools return:
-
-- human-readable text in `content`
-- machine-readable data in `structuredContent`
-
-Use the machine-readable payload for follow-on automation or tool chaining.
+If your MCP host shows tool activity, you may also see the model choose one or more FDIC BankFind tools behind the scenes. The public docs focus on prompt wording and result quality rather than response-format details.

@@ -8,7 +8,7 @@ breadcrumbs:
     url: /
 ---
 
-This section is for people who want to get the server running quickly, choose the right MCP tool, and avoid common data-model mistakes.
+This section is for people who want to get the server running quickly, choose the right tool for the question, and avoid common FDIC data-basis mistakes.
 
 <div class="card-grid">
   <a class="card" href="{{ '/getting-started/' | relative_url }}">
@@ -24,12 +24,12 @@ This section is for people who want to get the server running quickly, choose th
   <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
     <span class="card__eyebrow">Prompting</span>
     <h3>Prompting Guide</h3>
-    <p>Prompt patterns that work well with FDIC data, dates, and the server’s analysis tools.</p>
+    <p>Prompt patterns that work well with FDIC data, dates, and comparison questions.</p>
   </a>
   <a class="card" href="{{ '/usage-examples/' | relative_url }}">
     <span class="card__eyebrow">Examples</span>
     <h3>Usage Examples</h3>
-    <p>Copyable prompts and parameter shapes for institution search, comparisons, and peer analysis.</p>
+    <p>Copyable prompts and expected answer shapes for institution search, comparisons, and peer analysis.</p>
   </a>
   <a class="card" href="{{ '/troubleshooting/' | relative_url }}">
     <span class="card__eyebrow">Support</span>

@@ -19,8 +19,8 @@ breadcrumbs:
 ## What To Include In An Issue
 
 - the MCP host you used
-- whether you ran the server over stdio or HTTP
-- the exact prompt or tool arguments involved
+- whether you used the hosted URL or a local setup
+- the exact prompt and any relevant setup details
 - the expected behavior
 - the actual behavior
 - relevant logs or error messages

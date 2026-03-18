@@ -49,6 +49,14 @@ All tools return:
 
 Contract stability matters because MCP clients may automate against either or both shapes.
 
+## HTTP Transport Notes
+
+- The streamable HTTP MCP endpoint is served at `/mcp`.
+- HTTP MCP sessions are initialized once and then resumed by reusing the returned `MCP-Session-Id` header.
+- Local HTTP runs bind to `127.0.0.1` by default unless `HOST` is set.
+- Browser-origin access can be restricted with `ALLOWED_ORIGINS`.
+- `FDIC_MAX_RESPONSE_BYTES` controls the upstream FDIC response-size guard.
+
 ## FDIC Data Constraints
 
 - Financial and demographics datasets are quarterly and use `REPDTE` in `YYYYMMDD`.

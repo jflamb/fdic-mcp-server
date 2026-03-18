@@ -86,3 +86,34 @@ Reference: issue #185 and the 2026-03-18 user report that Gemini responses are s
 - [x] Confirmed the existing renderer only handles a narrow markdown subset and misses common Gemini output patterns.
 - [x] Added richer safe markdown rendering for headings, ordered lists, emphasis, links, inline code, and fenced code blocks.
 - [x] Updated bubble styling and e2e coverage, including an escaped raw HTML assertion.
+
+# User Docs Internal-Detail Cleanup
+
+Reference: 2026-03-18 request to remove implementation-facing MCP server details from the public `docs/` site and either rewrite them in user terms or relocate them to `reference/`.
+
+## Goals
+
+- [x] Audit the public docs for implementation-facing language, especially endpoint-specific, payload-shape, and transport-internal details.
+- [x] Rewrite user-facing pages so they explain limits and recovery steps in user terms rather than MCP or FDIC implementation terms.
+- [x] Move any detail that still belongs in the repo docs into `reference/` rather than leaving it on the GitHub Pages site.
+- [x] Validate the resulting docs with the repo-standard checks.
+
+## Acceptance Criteria
+
+- [x] Public pages under `docs/` stay focused on setup, prompting, tool selection, examples, and troubleshooting from a user perspective.
+- [x] User docs no longer explain issues in terms of FDIC endpoint membership, MCP response payload fields, or low-level HTTP session mechanics unless that detail is essential for setup.
+- [x] Any technical detail that remains useful for maintainers or advanced integrators is captured under `reference/`.
+- [x] Cross-links remain accurate after the rewrite.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Branch created for this work: `docs/remove-internal-user-doc-details`.
+- [x] Rewrote public docs to explain dataset mismatches, setup paths, and expected results in user terms rather than endpoint or payload-contract terms.
+- [x] Removed public references to `structuredContent`, `REPDTE` search hints, endpoint-specific `fields` and `sort_by` guidance, and low-level HTTP session/header details from the user-doc path.
+- [x] Expanded [reference/specification.md](../reference/specification.md) with the HTTP transport details that were removed from public onboarding pages.
