@@ -91,6 +91,78 @@ const ensureHeadingIds = (headings) => {
   });
 };
 
+const initPrimaryNavIndicator = () => {
+  const navs = Array.from(document.querySelectorAll(".top-nav")).filter(
+    (nav) => !nav.closest(".mobile-nav__panel"),
+  );
+
+  navs.forEach((nav) => {
+    const links = Array.from(nav.querySelectorAll("a"));
+    const activeLink = links.find((link) => link.classList.contains("is-active"));
+
+    if (!activeLink) {
+      return;
+    }
+
+    nav.classList.add("top-nav--animated");
+
+    const indicator = document.createElement("span");
+    indicator.className = "top-nav__indicator";
+    indicator.setAttribute("aria-hidden", "true");
+    nav.appendChild(indicator);
+
+    let pinnedLink = activeLink;
+
+    const moveIndicator = (link, immediate = false) => {
+      if (!link) {
+        return;
+      }
+
+      const navRect = nav.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+
+      if (immediate) {
+        indicator.style.transition = "none";
+      }
+
+      indicator.style.width = `${linkRect.width}px`;
+      indicator.style.height = `${linkRect.height}px`;
+      indicator.style.transform = `translate(${linkRect.left - navRect.left}px, ${linkRect.top - navRect.top}px)`;
+      indicator.style.opacity = "1";
+
+      if (immediate) {
+        window.requestAnimationFrame(() => {
+          indicator.style.transition = "";
+        });
+      }
+    };
+
+    moveIndicator(pinnedLink, true);
+
+    links.forEach((link) => {
+      link.addEventListener("pointerenter", () => moveIndicator(link));
+      link.addEventListener("focus", () => moveIndicator(link));
+      link.addEventListener("click", () => {
+        pinnedLink = link;
+        links.forEach((item) => {
+          item.classList.toggle("is-active", item === link);
+        });
+        moveIndicator(link);
+      });
+    });
+
+    nav.addEventListener("pointerleave", () => moveIndicator(pinnedLink));
+    nav.addEventListener("focusout", (event) => {
+      if (!nav.contains(event.relatedTarget)) {
+        moveIndicator(pinnedLink);
+      }
+    });
+
+    window.addEventListener("resize", () => moveIndicator(pinnedLink, true));
+    window.addEventListener("load", () => moveIndicator(pinnedLink, true), { once: true });
+  });
+};
+
 const renderToc = (target, headings) => {
   target.innerHTML = "";
 
@@ -425,6 +497,7 @@ const initSearch = () => {
 document.addEventListener("DOMContentLoaded", () => {
   enhanceCodeBlocks();
   enhanceTables();
+  initPrimaryNavIndicator();
   initPageToc();
   initMobileNav();
   initSearch();
