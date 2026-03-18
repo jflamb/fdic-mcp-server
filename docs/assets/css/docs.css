@@ -582,7 +582,7 @@ img {
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;
   gap: 1rem;
-  padding: 1.25rem;
+  padding: 1.25rem 1.25rem 1.2rem;
   background: rgba(255, 255, 255, 0.96);
   border-left: 1px solid rgba(13, 122, 102, 0.12);
   box-shadow: var(--shadow-lg);
@@ -777,9 +777,12 @@ img {
 }
 
 .chatbot-demo__composer-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 700;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 .chatbot-demo__composer-row {
