@@ -326,4 +326,54 @@ describe("chat routes", () => {
     expect(response.body.error).toContain("limit");
     expect(callToolMock).toHaveBeenCalledTimes(5);
   });
+
+  it("retries transient generateContent failures before succeeding", async () => {
+    const { app } = createTestApp();
+    generateContentMock
+      .mockRejectedValueOnce(
+        Object.assign(new Error("Service temporarily unavailable"), {
+          status: 503,
+        }),
+      )
+      .mockResolvedValueOnce({
+        text: "Recovered reply",
+        candidates: [{ content: { parts: [{ text: "Recovered reply" }] } }],
+      });
+
+    const response = await request(app)
+      .post("/chat")
+      .set("Origin", ALLOWED_ORIGIN)
+      .send({ messages: [{ role: "user", content: "Retry please" }] });
+
+    expect(response.status).toBe(200);
+    expect(response.body.reply).toBe("Recovered reply");
+    expect(generateContentMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("logs and returns 500 when a non-transient chat failure persists", async () => {
+    const { app } = createTestApp();
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    generateContentMock.mockRejectedValue(new Error("Unexpected chat failure"));
+
+    const response = await request(app)
+      .post("/chat")
+      .set("Origin", ALLOWED_ORIGIN)
+      .set("X-Forwarded-For", "5.6.7.8")
+      .send({ messages: [{ role: "user", content: "Break please" }] });
+
+    expect(response.status).toBe(500);
+    expect(response.body.error).toContain("Unexpected chat failure");
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy.mock.calls[0]?.[0]).toContain(
+      "\"event\":\"chat_request_failed\"",
+    );
+    expect(consoleErrorSpy.mock.calls[0]?.[0]).toContain("\"requestIp\":\"5.6.7.8\"");
+    expect(consoleErrorSpy.mock.calls[0]?.[0]).toContain(
+      "\"errorMessage\":\"Unexpected chat failure\"",
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
 });

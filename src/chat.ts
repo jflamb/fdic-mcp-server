@@ -26,6 +26,7 @@ export const DEFAULT_CHAT_RATE_LIMIT_WINDOW_MS = 60_000;
 export const DEFAULT_CHAT_MAX_MESSAGES = 20;
 export const DEFAULT_CHAT_MAX_MESSAGE_LENGTH = 500;
 export const DEFAULT_CHAT_MAX_TOOL_ROUNDS = 5;
+export const DEFAULT_CHAT_GENERATE_RETRIES = 2;
 
 export interface ChatContent {
   role: string;
@@ -234,6 +235,106 @@ function getResponseText(
   return response.text?.trim() || undefined;
 }
 
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function getErrorCode(error: unknown): number | string | undefined {
+  if (!error || typeof error !== "object") {
+    return undefined;
+  }
+
+  const record = error as Record<string, unknown>;
+  const candidate = record.status ?? record.statusCode ?? record.code;
+  return typeof candidate === "number" || typeof candidate === "string"
+    ? candidate
+    : undefined;
+}
+
+function isTransientChatError(error: unknown): boolean {
+  const code = getErrorCode(error);
+  if (
+    code === 408 ||
+    code === 409 ||
+    code === 425 ||
+    code === 429 ||
+    code === 500 ||
+    code === 502 ||
+    code === 503 ||
+    code === 504
+  ) {
+    return true;
+  }
+
+  if (
+    code === "ABORTED" ||
+    code === "DEADLINE_EXCEEDED" ||
+    code === "INTERNAL" ||
+    code === "RESOURCE_EXHAUSTED" ||
+    code === "UNAVAILABLE"
+  ) {
+    return true;
+  }
+
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /timeout|temporar|unavailable|overloaded|internal|deadline/i.test(
+    message,
+  );
+}
+
+function logChatFailure(context: {
+  sessionId: string;
+  requestIp: string;
+  messageCount: number;
+  model: string;
+  error: unknown;
+}): void {
+  const { error } = context;
+  console.error(
+    JSON.stringify({
+      event: "chat_request_failed",
+      sessionId: context.sessionId,
+      requestIp: context.requestIp,
+      messageCount: context.messageCount,
+      model: context.model,
+      errorName: error instanceof Error ? error.name : undefined,
+      errorMessage:
+        error instanceof Error ? error.message : String(error ?? "unknown"),
+      errorCode: getErrorCode(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    }),
+  );
+}
+
+async function generateContentWithRetry(
+  ai: {
+    models: {
+      generateContent: (request: any) => Promise<ChatGenerateContentResponse>;
+    };
+  },
+  request: Record<string, unknown>,
+): Promise<ChatGenerateContentResponse> {
+  let attempt = 0;
+
+  while (true) {
+    try {
+      return await ai.models.generateContent(request);
+    } catch (error) {
+      if (
+        attempt >= DEFAULT_CHAT_GENERATE_RETRIES ||
+        !isTransientChatError(error)
+      ) {
+        throw error;
+      }
+
+      attempt += 1;
+      await wait(150 * attempt);
+    }
+  }
+}
+
 async function executeToolCall(
   server: McpServer,
   name: string,
@@ -286,7 +387,7 @@ async function runConversation(
   const contents = [...history];
 
   for (let round = 0; round < DEFAULT_CHAT_MAX_TOOL_ROUNDS; round += 1) {
-    const response = await ai.models.generateContent({
+    const response = await generateContentWithRetry(ai, {
       model,
       contents,
       config: {
@@ -452,6 +553,13 @@ export function createChatRouter(options: ChatRouterOptions): Router {
         reply: conversation.reply,
       });
     } catch (error) {
+      logChatFailure({
+        sessionId,
+        requestIp,
+        messageCount: validationResult.length,
+        model,
+        error,
+      });
       const message =
         error instanceof Error ? error.message : "Failed to process chat request";
       const status = message === "Chat tool-call limit exceeded" ? 502 : 500;
