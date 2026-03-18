@@ -29,6 +29,8 @@ env:
   CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT: ${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}
   PUBLIC_MCP_URL: https://bankfind.jflamb.com/mcp
   PUBLIC_HEALTH_URL: https://bankfind.jflamb.com/health
+  PUBLIC_CHAT_STATUS_URL: https://bankfind.jflamb.com/chat/status
+  CHAT_ALLOWED_ORIGIN: https://jflamb.github.io
 
 jobs:
   deploy:
@@ -108,6 +110,9 @@ jobs:
           image: ${{ steps.image.outputs.uri }}
           env_vars: |-
             HOST=0.0.0.0
+            CHAT_ALLOWED_ORIGINS=${{ env.CHAT_ALLOWED_ORIGIN }}
+          secrets: |-
+            GEMINI_API_KEY=gemini-api-key:latest
           flags: >-
             --allow-unauthenticated
             --port=8080
@@ -118,11 +123,12 @@ jobs:
           set -euo pipefail
 
           health_response="$(mktemp)"
+          chat_status_response="$(mktemp)"
           init_headers="$(mktemp)"
           init_response="$(mktemp)"
           initialized_response="$(mktemp)"
           mcp_response="$(mktemp)"
-          trap 'rm -f "$health_response" "$init_headers" "$init_response" "$initialized_response" "$mcp_response"' EXIT
+          trap 'rm -f "$health_response" "$chat_status_response" "$init_headers" "$init_response" "$initialized_response" "$mcp_response"' EXIT
 
           curl --fail --silent --show-error \
             "$PUBLIC_HEALTH_URL" \
@@ -138,6 +144,22 @@ jobs:
           assert payload["status"] == "ok", payload
           assert payload["server"] == "fdic-mcp-server", payload
           assert isinstance(payload["version"], str) and payload["version"], payload
+          PY
+
+          curl --fail --silent --show-error \
+            "$PUBLIC_CHAT_STATUS_URL" \
+            -H "Origin: $CHAT_ALLOWED_ORIGIN" \
+            --output "$chat_status_response"
+
+          python3 - "$chat_status_response" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          payload = json.loads(pathlib.Path(sys.argv[1]).read_text())
+
+          assert "available" in payload, payload
+          assert isinstance(payload["available"], bool), payload
           PY
 
           curl --fail --silent --show-error \

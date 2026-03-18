@@ -103,6 +103,48 @@ jobs:
           test "$healthcheck" != "null"
           echo "$healthcheck"
 
+  e2e:
+    name: Chatbot e2e
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Check changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            chatbot:
+              - 'docs/**'
+              - 'src/chat.ts'
+              - 'src/chatRateLimit.ts'
+              - 'src/index.ts'
+              - 'tests/chat*.ts'
+              - 'tests/e2e/**'
+              - 'playwright.config.ts'
+
+      - name: Set up Node.js
+        if: steps.filter.outputs.chatbot == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.filter.outputs.chatbot == 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers
+        if: steps.filter.outputs.chatbot == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run chatbot e2e tests
+        if: steps.filter.outputs.chatbot == 'true'
+        run: npm run test:e2e
+
   ci-required:
     name: CI required
     runs-on: ubuntu-latest
@@ -111,6 +153,7 @@ jobs:
       - commitlint
       - validate
       - docker-build
+      - e2e
     if: ${{ always() }}
 
     steps:
@@ -128,6 +171,11 @@ jobs:
 
           if [ "${{ needs.docker-build.result }}" != "success" ]; then
             echo "docker-build result: ${{ needs.docker-build.result }}"
+            exit 1
+          fi
+
+          if [ "${{ needs.e2e.result }}" != "success" ] && [ "${{ needs.e2e.result }}" != "skipped" ]; then
+            echo "e2e result: ${{ needs.e2e.result }}"
             exit 1
           fi
 

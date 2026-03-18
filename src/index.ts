@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { ChatContent } from "./chat.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -7,6 +8,11 @@ import express from "express";
 import type { Express } from "express";
 
 import { VERSION } from "./constants.js";
+import {
+  createChatRouter,
+  parseChatAllowedOrigins,
+  sweepIdleChatSessions,
+} from "./chat.js";
 import { registerInstitutionTools } from "./tools/institutions.js";
 import { registerFailureTools } from "./tools/failures.js";
 import { registerLocationTools } from "./tools/locations.js";
@@ -84,6 +90,9 @@ interface HttpAppOptions {
   allowedOrigins?: string[];
   sessionIdleTimeoutMs?: number;
   sessionSweepIntervalMs?: number;
+  chatAllowedOrigins?: string[];
+  geminiApiKey?: string;
+  serverFactory?: () => McpServer;
 }
 
 interface SessionContext {
@@ -144,10 +153,15 @@ function sendInvalidSessionResponse(res: express.Response): void {
 
 export function createApp(options: HttpAppOptions = {}): Express {
   const app = express();
+  const serverFactory = options.serverFactory ?? createServer;
   const port = options.port ?? 3000;
   const allowedOrigins =
     options.allowedOrigins ?? parseAllowedOrigins(undefined, port);
   const sessions = new Map<string, SessionContext>();
+  const chatSessions = new Map<
+    string,
+    { history: ChatContent[]; lastActivityAt: number }
+  >();
   const sessionIdleTimeoutMs =
     options.sessionIdleTimeoutMs ?? DEFAULT_SESSION_IDLE_TIMEOUT_MS;
   const sessionSweepIntervalMs =
@@ -156,6 +170,7 @@ export function createApp(options: HttpAppOptions = {}): Express {
 
   const sessionSweepTimer = setInterval(() => {
     void sweepIdleSessions(sessions, sessionIdleTimeoutMs, Date.now());
+    sweepIdleChatSessions(chatSessions, sessionIdleTimeoutMs, Date.now());
   }, sessionSweepIntervalMs);
   sessionSweepTimer.unref?.();
 
@@ -196,7 +211,7 @@ export function createApp(options: HttpAppOptions = {}): Express {
         return;
       }
 
-      const server = createServer();
+      const server = serverFactory();
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         enableJsonResponse: true,
@@ -238,6 +253,18 @@ export function createApp(options: HttpAppOptions = {}): Express {
     }
   });
 
+  app.use(
+    "/chat",
+    createChatRouter({
+      allowedOrigins:
+        options.chatAllowedOrigins ??
+        parseChatAllowedOrigins(process.env.CHAT_ALLOWED_ORIGINS),
+      geminiApiKey: options.geminiApiKey ?? process.env.GEMINI_API_KEY,
+      sessions: chatSessions,
+      serverFactory,
+    }),
+  );
+
   return app;
 }
 
@@ -247,6 +274,10 @@ async function runHTTP(): Promise<void> {
   const app = createApp({
     port,
     allowedOrigins: parseAllowedOrigins(process.env.ALLOWED_ORIGINS, port),
+    chatAllowedOrigins: parseChatAllowedOrigins(
+      process.env.CHAT_ALLOWED_ORIGINS,
+    ),
+    geminiApiKey: process.env.GEMINI_API_KEY,
   });
 
   app.listen(port, host, () => {
