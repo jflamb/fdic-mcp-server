@@ -593,7 +593,10 @@ const initChatbot = async () => {
       return;
     }
 
-    if (overlay.hidden === true && event.key === "?") {
+    if (
+      overlay.hidden === true &&
+      (event.key === "?" || (event.key === "/" && event.shiftKey))
+    ) {
       if (isEditableTarget(event.target)) {
         return;
       }
