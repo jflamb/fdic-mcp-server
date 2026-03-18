@@ -104,6 +104,7 @@ img {
   position: sticky;
   top: 0;
   z-index: 30;
+  -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
   background: rgba(244, 247, 241, 0.8);
   border-bottom: 1px solid rgba(16, 34, 29, 0.08);
@@ -574,6 +575,7 @@ img {
   position: absolute;
   inset: 0;
   background: rgba(10, 19, 17, 0.42);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 
@@ -910,6 +912,55 @@ img {
   color: #ffffff;
 }
 
+.copy-button:focus,
+.search-button:focus,
+.nav-toggle:focus,
+.mobile-nav__close:focus,
+.search-dialog__close:focus,
+.search-dialog__input:focus,
+.section-nav__links a:focus,
+.top-nav a:focus,
+.prev-next__link:focus,
+.search-result:focus,
+.mobile-page-toc summary:focus,
+.page-toc a:focus,
+.mobile-page-toc a:focus,
+.chatbot-launcher:focus,
+.chatbot-overlay__close:focus,
+.chatbot-demo__prompt:focus,
+.chatbot-demo__send:focus,
+.chatbot-demo__composer textarea:focus,
+.chatbot-inline-open:focus,
+.card:focus,
+.brand:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.copy-button:focus:not(:focus-visible),
+.search-button:focus:not(:focus-visible),
+.nav-toggle:focus:not(:focus-visible),
+.mobile-nav__close:focus:not(:focus-visible),
+.search-dialog__close:focus:not(:focus-visible),
+.search-dialog__input:focus:not(:focus-visible),
+.section-nav__links a:focus:not(:focus-visible),
+.top-nav a:focus:not(:focus-visible),
+.prev-next__link:focus:not(:focus-visible),
+.search-result:focus:not(:focus-visible),
+.mobile-page-toc summary:focus:not(:focus-visible),
+.page-toc a:focus:not(:focus-visible),
+.mobile-page-toc a:focus:not(:focus-visible),
+.chatbot-launcher:focus:not(:focus-visible),
+.chatbot-overlay__close:focus:not(:focus-visible),
+.chatbot-demo__prompt:focus:not(:focus-visible),
+.chatbot-demo__send:focus:not(:focus-visible),
+.chatbot-demo__composer textarea:focus:not(:focus-visible),
+.chatbot-inline-open:focus:not(:focus-visible),
+.card:focus:not(:focus-visible),
+.brand:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .copy-button:focus-visible,
 .search-button:focus-visible,
 .nav-toggle:focus-visible,
@@ -922,7 +973,15 @@ img {
 .search-result:focus-visible,
 .mobile-page-toc summary:focus-visible,
 .page-toc a:focus-visible,
-.mobile-page-toc a:focus-visible {
+.mobile-page-toc a:focus-visible,
+.chatbot-launcher:focus-visible,
+.chatbot-overlay__close:focus-visible,
+.chatbot-demo__prompt:focus-visible,
+.chatbot-demo__send:focus-visible,
+.chatbot-demo__composer textarea:focus-visible,
+.chatbot-inline-open:focus-visible,
+.card:focus-visible,
+.brand:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
@@ -1599,6 +1658,7 @@ img {
     inset: 0;
     z-index: 40;
     background: rgba(10, 19, 17, 0.32);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     padding: 5rem 1rem 1rem;
   }
