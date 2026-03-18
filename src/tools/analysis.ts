@@ -95,7 +95,7 @@ const SnapshotAnalysisSchema = z.object({
       .default(10)
       .describe("Maximum number of ranked comparisons to return."),
     sort_by: SortFieldSchema.default("asset_growth").describe(
-      "Comparison field used to rank institutions.",
+      "Comparison field used to rank institutions. Valid options: asset_growth, asset_growth_pct, dep_growth, dep_growth_pct, netinc_change, netinc_change_pct, roa_change, roe_change, offices_change, assets_per_office_change, deposits_per_office_change, deposits_to_assets_change.",
     ),
     sort_order: z
       .enum(["ASC", "DESC"])
@@ -892,7 +892,7 @@ Inputs:
   - institution_filters: optional extra institution filter when building the roster
   - active_only: default true
   - include_demographics: default true, adds office-count comparisons when available
-  - sort_by: ranking field such as asset_growth, dep_growth_pct, roa_change, assets_per_office_change
+  - sort_by: ranking field (default: asset_growth). All options: asset_growth, asset_growth_pct, dep_growth, dep_growth_pct, netinc_change, netinc_change_pct, roa_change, roe_change, offices_change, assets_per_office_change, deposits_per_office_change, deposits_to_assets_change
   - sort_order: ASC or DESC
   - limit: maximum ranked results to return
 
