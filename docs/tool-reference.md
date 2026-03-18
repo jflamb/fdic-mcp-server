@@ -1,13 +1,13 @@
 ---
 title: Tool Reference
-nav_group: technical
-kicker: Technical Docs
+nav_group: user
+kicker: User Guide
 summary: Decide which MCP tool to use based on whether you need raw records, direct lookups, cross-period comparisons, or peer benchmarking.
 breadcrumbs:
   - title: Overview
     url: /
-  - title: Technical Docs
-    url: /technical/
+  - title: Use the Server
+    url: /user-guide/
 ---
 
 This page summarizes what each MCP tool is for and when to use it.

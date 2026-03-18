@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, Zod (input validation), vitest (testing), existing MCP SDK registration pattern.
 
-**Design doc:** `docs/plans/2026-03-15-peer-group-analysis-design.md`
+**Design doc:** `reference/plans/2026-03-15-peer-group-analysis-design.md`
 
 ---
 

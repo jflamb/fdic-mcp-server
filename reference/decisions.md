@@ -1,14 +1,6 @@
----
-title: Key Decisions
-nav_group: technical
-kicker: Technical Docs
-summary: The main design decisions that shape tool contracts, centralized FDIC access, and the published documentation strategy.
-breadcrumbs:
-  - title: Overview
-    url: /
-  - title: Technical Docs
-    url: /technical/
----
+# Key Decisions
+
+Repository reference for the design choices that shape tool contracts, centralized FDIC access, and the documentation split between the public site and repo docs.
 
 ## Decision 1: Use MCP Tool Contracts With Dual Output Shapes
 
@@ -38,10 +30,10 @@ Rationale:
 - Quarterly financial data and annual SOD data answer different questions.
 - Clear documentation and explicit parameter naming reduce analysis mistakes caused by mixing incompatible time bases.
 
-## Decision 5: Publish End-User And Maintainer Docs Together
+## Decision 5: Split Public User Docs From Repo Reference Docs
 
 Rationale:
 
-- Users need setup, prompting, and examples.
-- Maintainers need architecture and decision records.
-- A single `docs/` site keeps those materials versioned with the codebase and available through GitHub Pages.
+- Users need setup, prompting, examples, and troubleshooting without maintainer-focused distractions.
+- Maintainers still need versioned architecture notes, decision records, deployment context, and plans close to the code.
+- Keeping user docs in `docs/` and maintainer docs in `reference/` preserves versioning while simplifying the public Pages site.

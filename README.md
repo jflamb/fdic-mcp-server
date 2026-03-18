@@ -32,6 +32,8 @@ The FDIC BankFind Suite API is public and useful, but it is not packaged for MCP
 
 ## Documentation
 
+Public user docs:
+
 - [GitHub Pages docs entry point](https://jflamb.github.io/fdic-mcp-server/)
 - [Hosted MCP endpoint](https://bankfind.jflamb.com/mcp)
 - [Local docs home](./docs/index.md)
@@ -42,9 +44,18 @@ The FDIC BankFind Suite API is public and useful, but it is not packaged for MCP
 - [Client setup](./docs/clients.md)
 - [Troubleshooting and FAQ](./docs/troubleshooting.md)
 - [Compatibility matrix](./docs/compatibility-matrix.md)
-- [Technical specification](./docs/technical/specification.md)
-- [Architecture](./docs/technical/architecture.md)
-- [Key decisions](./docs/technical/decisions.md)
+
+Repo reference docs:
+
+- [Reference home](./reference/README.md)
+- [Technical specification](./reference/specification.md)
+- [Architecture](./reference/architecture.md)
+- [Key decisions](./reference/decisions.md)
+- [Cloud Run deployment](./reference/cloud-run-deployment.md)
+- [Plans and design notes](./reference/plans/README.md)
+
+Project and release info:
+
 - [Release history](https://github.com/jflamb/fdic-mcp-server/releases)
 - [Archived release notes](./docs/release-notes/index.md)
 - [Security policy](./SECURITY.md)

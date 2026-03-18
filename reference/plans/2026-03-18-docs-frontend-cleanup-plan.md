@@ -8,7 +8,7 @@
 
 **Tech Stack:** Vanilla CSS, vanilla JS (ES6+), Jekyll static site
 
-**Design doc:** `docs/plans/2026-03-18-docs-frontend-cleanup-design.md`
+**Design doc:** `reference/plans/2026-03-18-docs-frontend-cleanup-design.md`
 
 ---
 

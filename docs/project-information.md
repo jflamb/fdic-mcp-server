@@ -10,6 +10,8 @@ breadcrumbs:
 
 This section is for maintainers, evaluators, and contributors who need the operational context around the software rather than the API usage alone.
 
+Detailed architecture, specification, deployment, and planning notes now live in the repository-rendered `reference/` directory rather than on the public docs site.
+
 <div class="card-grid">
   <a class="card" href="{{ '/release-notes/' | relative_url }}">
     <span class="card__eyebrow">Changes</span>
