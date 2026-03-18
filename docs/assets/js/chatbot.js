@@ -70,6 +70,55 @@ const isTableSeparator = (line) =>
 const isListLine = (line) =>
   /^([-*])\s+/.test(line.trim()) || /^\d+\.\s+/.test(line.trim());
 
+const getListIndent = (line) => {
+  const match = line.match(/^(\s*)/);
+  return match ? match[1].length : 0;
+};
+
+const isRawListLine = (line) =>
+  /^\s*([-*])\s+/.test(line) || /^\s*\d+\.\s+/.test(line);
+
+const parseListItems = (lines, startIndex) => {
+  const items = [];
+  let index = startIndex;
+  const baseIndent = getListIndent(lines[index]);
+  const firstTrimmed = lines[index].trim();
+  const isOrdered = /^\d+\.\s+/.test(firstTrimmed);
+  const listTag = isOrdered ? "ol" : "ul";
+  const listPattern = isOrdered ? /^\d+\.\s+/ : /^[-*]\s+/;
+
+  while (index < lines.length && isRawListLine(lines[index])) {
+    const indent = getListIndent(lines[index]);
+    const trimmed = lines[index].trim();
+
+    if (indent < baseIndent) {
+      break;
+    }
+
+    if (indent > baseIndent) {
+      const nested = parseListItems(lines, index);
+      if (items.length > 0) {
+        items[items.length - 1].children = nested.html;
+      }
+      index = nested.endIndex;
+      continue;
+    }
+
+    if (!listPattern.test(trimmed)) {
+      break;
+    }
+
+    items.push({ text: trimmed.replace(listPattern, ""), children: "" });
+    index += 1;
+  }
+
+  const html = `<${listTag}>${items
+    .map((item) => `<li>${formatInline(item.text)}${item.children}</li>`)
+    .join("")}</${listTag}>`;
+
+  return { html, endIndex: index };
+};
+
 const parseMarkdown = (source) => {
   const lines = source.replace(/\r\n/g, "\n").trim().split("\n");
   const blocks = [];
@@ -147,20 +196,9 @@ const parseMarkdown = (source) => {
     }
 
     if (isListLine(line)) {
-      const items = [];
-      const isOrdered = /^\d+\.\s+/.test(line);
-      const listTag = isOrdered ? "ol" : "ul";
-      const listPattern = isOrdered ? /^\d+\.\s+/ : /^[-*]\s+/;
-
-      while (index < lines.length && listPattern.test(lines[index].trim())) {
-        items.push(lines[index].trim().replace(listPattern, ""));
-        index += 1;
-      }
-      blocks.push(
-        `<${listTag}>${items
-          .map((item) => `<li>${formatInline(item)}</li>`)
-          .join("")}</${listTag}>`,
-      );
+      const result = parseListItems(lines, index);
+      blocks.push(result.html);
+      index = result.endIndex;
       continue;
     }
 
@@ -375,20 +413,18 @@ const initChatbot = async () => {
   ).join("");
   const prompts = Array.from(promptsRoot.querySelectorAll("[data-prompt]"));
 
+  const GREETING = {
+    role: "assistant",
+    content:
+      "Ask about active banks, failures, quarterly financials, annual branch deposits, demographics, or peer groups.",
+  };
+
   const renderThread = () => {
     thread.innerHTML = "";
 
-    if (messages.length === 0) {
-      messages = [
-        {
-          role: "assistant",
-          content:
-            "Ask about active banks, failures, quarterly financials, annual branch deposits, demographics, or peer groups.",
-        },
-      ];
-    }
+    const display = messages.length === 0 ? [GREETING] : messages;
 
-    messages.forEach((message) => {
+    display.forEach((message) => {
       thread.appendChild(createMessageElement(message));
     });
 
@@ -443,7 +479,11 @@ const initChatbot = async () => {
     );
 
   const closeOverlay = () => {
-    overlay.hidden = true;
+    overlay.classList.remove("is-visible");
+    overlay.addEventListener("transitionend", function onEnd() {
+      overlay.removeEventListener("transitionend", onEnd);
+      overlay.hidden = true;
+    });
     document.body.classList.remove("chatbot-open");
     document.body.style.overflow = "";
     lastActiveElement?.focus?.();
@@ -457,6 +497,7 @@ const initChatbot = async () => {
     renderThread();
     await loadAvailability();
     window.requestAnimationFrame(() => {
+      overlay.classList.add("is-visible");
       (available ? input : panel.querySelector("[data-chatbot-close]"))?.focus();
     });
   };
@@ -547,6 +588,7 @@ const initChatbot = async () => {
 
     if (overlay.hidden !== true && event.key === "Escape") {
       event.preventDefault();
+      event.stopImmediatePropagation();
       closeOverlay();
       return;
     }
@@ -617,6 +659,10 @@ const initChatbot = async () => {
   });
 };
 
-window.addEventListener("DOMContentLoaded", () => {
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", () => {
+    void initChatbot();
+  });
+} else {
   void initChatbot();
-});
+}
