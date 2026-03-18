@@ -1725,7 +1725,8 @@ img {
   .mobile-page-toc,
   .prev-next,
   .site-footer,
-  .search-dialog {
+  .search-dialog,
+  .chatbot-shell {
     display: none !important;
   }
 
