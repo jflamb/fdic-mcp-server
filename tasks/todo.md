@@ -1,24 +1,20 @@
-# Docs Chatbot Global Launcher
+# Docs Chatbot Live Runtime Failure
 
-Reference: issue #181, the merged docs chatbot demo work from PR #180, and the 2026-03-18 user correction that the chat entry point should be a site-wide floating launcher rather than a page-first destination.
+Reference: issue #183 and the 2026-03-18 live docs report that the launcher sometimes responds with "The demo could not process that request right now."
 
 ## Goals
 
-- [x] Replace the docs chatbot's primary entry point with a site-wide floating launcher.
-- [x] Support opening the chat via the launcher and the `?` key without hijacking keyboard input inside editable fields.
-- [x] Make the chat surface work across desktop and mobile with accessible focus and dismissal behavior.
-- [x] Update the backend chat model to a currently supported Gemini model so the live demo works again.
-- [x] Add or update automated coverage for the launcher UX, keyboard shortcut, and live-chat fallback behavior.
-- [x] Validate the change with repo-standard commands plus chatbot e2e coverage.
+- [x] Reproduce or otherwise confirm the live failure mode against the deployed docs and chat service.
+- [x] Identify the root cause in the backend or launcher integration without relying on a speculative UI-only workaround.
+- [x] Add or update automated coverage for the failing path.
+- [ ] Validate the fix with the repo-standard commands and merge it through the normal workflow.
 
 ## Acceptance Criteria
 
-- [x] The docs layout renders a floating action button in the lower-right across the site with a chat icon, an accessible label, and `Try it!` text on hover/focus.
-- [x] Pressing `?` opens the chat only when focus is not inside a text input, textarea, select, or editable surface.
-- [x] The chat opens in an accessible modal or drawer that traps focus appropriately, supports explicit close controls, and scales to mobile viewports.
-- [x] The old dedicated page is no longer the primary entry path; the launcher is available site-wide.
-- [x] The backend chat route uses a currently supported Gemini model and returns successful live responses again.
-- [x] Automated tests verify launcher visibility, modal opening, keyboard shortcut behavior, and the existing chat request/response flows.
+- [x] Investigation captures evidence from the live deployment, not only local assumptions.
+- [x] The chat backend is more resilient to transient upstream failures that would otherwise surface as a generic demo error.
+- [x] Server-side failures emit enough structured information to diagnose future incidents from Cloud Run logs.
+- [x] Automated tests cover the retry or failure-handling path that caused the user-visible break.
 
 ## Validation
 
@@ -29,8 +25,7 @@ Reference: issue #181, the merged docs chatbot demo work from PR #180, and the 2
 
 ## Review / Results
 
-- [x] Branch created for this work: `feat/docs-chatbot-launcher`.
-- [x] Site-wide launcher and overlay UX implemented.
-- [x] Keyboard shortcut and accessibility details implemented and tested.
-- [x] Backend model updated to restore live chat functionality.
-- [x] Validation results recorded here before closeout.
+- [x] Branch created for this work: `fix/chatbot-live-runtime-failure`.
+- [x] Confirmed the live service logged a real browser-side `POST /chat` 500 on revision `cc96580a3521c3856f5b135cae63934eda909623`.
+- [x] Added transient retry handling around Gemini generation calls and structured server-side failure logging.
+- [x] Local validation passed for typecheck, unit/integration tests, build, and e2e coverage.
