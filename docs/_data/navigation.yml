@@ -33,6 +33,8 @@ sections:
         url: /clients/
       - title: Prompting Guide
         url: /prompting-guide/
+      - title: Try It
+        url: /try-it/
       - title: Usage Examples
         url: /usage-examples/
       - title: Troubleshooting And FAQ
