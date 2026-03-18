@@ -234,7 +234,6 @@ const createLauncherMarkup = (promptingGuideUrl) => {
           <path d="M4 5.5C4 4.12 5.12 3 6.5 3h11C18.88 3 20 4.12 20 5.5v7C20 13.88 18.88 15 17.5 15H10l-4.4 4.12A.75.75 0 0 1 4.35 18.6V15.1A2.5 2.5 0 0 1 4 13.82V5.5Z"></path>
         </svg>
       </span>
-      <span class="chatbot-launcher__label">Try it!</span>
     </button>
 
     <div class="chatbot-overlay" data-chatbot-overlay hidden>
@@ -270,7 +269,11 @@ const createLauncherMarkup = (promptingGuideUrl) => {
               placeholder="Type a question about banks, failures, deposits, financials, or peer groups..."
               data-chatbot-input
             ></textarea>
-            <button type="submit" class="chatbot-demo__send" data-chatbot-send>Send</button>
+            <button type="submit" class="chatbot-demo__send" data-chatbot-send aria-label="Send message">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                <path d="M3.4 20.4l17.45-7.48a1 1 0 0 0 0-1.84L3.4 3.6a.993.993 0 0 0-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"/>
+              </svg>
+            </button>
           </div>
         </form>
 
