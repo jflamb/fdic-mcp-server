@@ -247,7 +247,7 @@ const createLauncherMarkup = (promptingGuideUrl) => {
       >
         <header class="chatbot-overlay__header">
           <div>
-            <p class="chatbot-overlay__eyebrow">Hosted Demo</p>
+            <p class="chatbot-overlay__eyebrow">Try it!</p>
             <h2 id="chatbot-title">FDIC BankFind chat</h2>
             <p class="chatbot-overlay__summary">Ask about institutions, failures, financials, deposits, demographics, and peer groups.</p>
           </div>
