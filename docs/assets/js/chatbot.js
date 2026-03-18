@@ -100,6 +100,7 @@ const parseMarkdown = (source) => {
 
     const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
+      // Shift heading level down by 1 (h1→h2, etc.) to preserve semantic hierarchy inside chat bubbles
       const level = Math.min(headingMatch[1].length + 1, 6);
       blocks.push(`<h${level}>${formatInline(headingMatch[2])}</h${level}>`);
       index += 1;
@@ -195,7 +196,11 @@ const readStoredThread = () => {
 };
 
 const storeThread = (messages) => {
-  window.sessionStorage.setItem(CHATBOT_THREAD_KEY, JSON.stringify(messages));
+  try {
+    window.sessionStorage.setItem(CHATBOT_THREAD_KEY, JSON.stringify(messages));
+  } catch {
+    // sessionStorage may be unavailable or full in private browsing
+  }
 };
 
 const clearSessionOnReload = () => {
