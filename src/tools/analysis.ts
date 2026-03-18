@@ -14,6 +14,8 @@ import {
   MAX_CONCURRENCY,
   asNumber,
   buildCertFilters,
+  getDefaultReportDate,
+  getReportDateOneYearPrior,
   mapWithConcurrency,
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
@@ -65,11 +67,17 @@ const SnapshotAnalysisSchema = z.object({
     start_repdte: z
       .string()
       .regex(/^\d{8}$/)
-      .describe("Starting report date in YYYYMMDD format."),
+      .optional()
+      .describe(
+        "Starting Report Date (REPDTE) in YYYYMMDD format. Must be a quarter-end date: March 31 (0331), June 30 (0630), September 30 (0930), or December 31 (1231). Example: 20210331 for Q1 2021. If omitted, defaults to the same quarter one year before end_repdte.",
+      ),
     end_repdte: z
       .string()
       .regex(/^\d{8}$/)
-      .describe("Ending report date in YYYYMMDD format."),
+      .optional()
+      .describe(
+        "Ending Report Date (REPDTE) in YYYYMMDD format. Must be a quarter-end date: March 31 (0331), June 30 (0630), September 30 (0930), or December 31 (1231). Must be later than start_repdte. Example: 20251231 for Q4 2025. If omitted, defaults to the most recent quarter-end date with published data (~90-day lag).",
+      ),
     analysis_mode: AnalysisModeSchema.default("snapshot").describe(
       "Use snapshot for two-point comparison or timeseries for quarterly trend analysis across the date range.",
     ),
@@ -97,8 +105,22 @@ const SnapshotAnalysisSchema = z.object({
 
 type SnapshotAnalysisParams = z.infer<typeof SnapshotAnalysisSchema>;
 
+/** Params after defaults have been applied (dates are always present). */
+type ResolvedSnapshotParams = SnapshotAnalysisParams & {
+  start_repdte: string;
+  end_repdte: string;
+};
+
+export function resolveSnapshotDefaults(
+  params: SnapshotAnalysisParams,
+): ResolvedSnapshotParams {
+  const end_repdte = params.end_repdte ?? getDefaultReportDate();
+  const start_repdte = params.start_repdte ?? getReportDateOneYearPrior(end_repdte);
+  return { ...params, start_repdte, end_repdte };
+}
+
 function validateSnapshotAnalysisParams(
-  value: SnapshotAnalysisParams,
+  value: ResolvedSnapshotParams,
 ): string | null {
   if (!value.state && (!value.certs || value.certs.length === 0)) {
     return "Provide either state or certs.";
@@ -865,7 +887,7 @@ Good uses:
 
 Inputs:
   - state or certs: choose a geographic roster or provide a direct comparison set
-  - start_repdte, end_repdte: report dates in YYYYMMDD format
+  - start_repdte, end_repdte: Report Dates (REPDTE) in YYYYMMDD format — must be quarter-end dates (0331, 0630, 0930, 1231)
   - analysis_mode: snapshot or timeseries
   - institution_filters: optional extra institution filter when building the roster
   - active_only: default true
@@ -883,8 +905,8 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         openWorldHint: true,
       },
     },
-    async (
-      {
+    async (rawParams, extra) => {
+      const {
         state,
         certs,
         institution_filters,
@@ -896,9 +918,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         limit,
         sort_by,
         sort_order,
-      },
-      extra,
-    ) => {
+      } = resolveSnapshotDefaults(rawParams);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
       const progressToken = extra._meta?.progressToken;
