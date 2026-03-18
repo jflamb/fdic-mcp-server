@@ -31,7 +31,7 @@ const FinancialQuerySchema = CommonQuerySchema.extend({
     .string()
     .optional()
     .describe(
-      "Filter by report date in YYYYMMDD format (quarterly call report dates). Example: 20231231 for Q4 2023",
+      "Filter by Report Date (REPDTE) in YYYYMMDD format. FDIC data is published quarterly on call report dates: March 31, June 30, September 30, and December 31. Example: 20231231 for Q4 2023. If omitted, returns all available dates (sorted most recent first by default).",
     ),
 });
 
@@ -68,7 +68,7 @@ Common filter examples:
 
 Key returned fields:
   - CERT: FDIC Certificate Number
-  - REPDTE: Report date (YYYYMMDD)
+  - REPDTE: Report Date — the last day of the quarterly reporting period (YYYYMMDD)
   - ASSET: Total assets ($thousands)
   - DEP: Total deposits ($thousands)
   - DEPDOM: Domestic deposits ($thousands)
@@ -81,7 +81,7 @@ Key returned fields:
 
 Args:
   - cert (number, optional): Filter by institution CERT number
-  - repdte (string, optional): Report date in YYYYMMDD format
+  - repdte (string, optional): Report Date in YYYYMMDD format (quarter-end dates: 0331, 0630, 0930, 1231)
   - filters (string, optional): Additional ElasticSearch query filters
   - fields (string, optional): Comma-separated field names (the full set has 1,100+ fields)
   - limit (number): Records to return (default: 20)
@@ -162,7 +162,7 @@ Key returned fields:
   - ROA: Return on assets (%)
   - ROE: Return on equity (%)
   - OFFICES: Number of branch offices
-  - REPDTE: Report date
+  - REPDTE: Report Date — the last day of the reporting period (YYYYMMDD)
 
 Args:
   - cert (number, optional): Filter by institution CERT number

@@ -186,9 +186,9 @@ describe("PeerGroupInputSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects when repdte is missing", () => {
+  it("accepts when repdte is missing (defaults to most recent quarter)", () => {
     const result = PeerGroupInputSchema.safeParse({ cert: 29846 });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("accepts schema-level parsing when no peer-group constructor is provided", () => {

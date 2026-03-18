@@ -34,23 +34,34 @@ Returns branch/office data including address, city, state, coordinates, branch t
 
 Common filter examples:
   - All branches of a bank: CERT:3511
-  - By state: STALP:TX
+  - By state: STALP:TX (two-letter state code)
   - By city: CITY:"Austin"
   - Main offices only: BRNUM:0
   - By county: COUNTY:"Travis"
-  - Active branches: ENDEFYMD:[9999-01-01 TO *]
-  - By CBSA (metro area): CBSA_METRO_NAME:"New York-Newark-Jersey City"
+  - Active branches only: ENDEFYMD:[9999-01-01 TO *]  (sentinel date 9999-12-31 means still open)
+  - By metro area (CBSA): CBSA_METRO_NAME:"New York-Newark-Jersey City"
+
+Branch service types (BRSERTYP):
+  11 = Full service brick and mortar
+  12 = Full service retail
+  21 = Limited service administrative
+  22 = Limited service military
+  23 = Limited service drive-through
+  24 = Limited service loan production
+  25 = Limited service consumer/trust
+  26 = Limited service Internet/mobile
+  29 = Limited service other
 
 Key returned fields:
   - CERT: FDIC Certificate Number
   - UNINAME: Institution name
   - NAMEFULL: Full branch name
-  - ADDRESS, CITY, STALP, ZIP: Branch address
+  - ADDRESS, CITY, STALP (two-letter state code), ZIP: Branch address
   - COUNTY: County name
   - BRNUM: Branch number (0 = main office)
-  - BRSERTYP: Branch service type
+  - BRSERTYP: Branch service type code (see above)
   - LATITUDE, LONGITUDE: Geographic coordinates
-  - ESTYMD: Branch established date
+  - ESTYMD: Branch established date (YYYY-MM-DD)
   - ENDEFYMD: Branch end date (9999-12-31 if still active)
 
 Args:

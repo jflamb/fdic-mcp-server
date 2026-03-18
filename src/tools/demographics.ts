@@ -23,7 +23,7 @@ const DemographicsQuerySchema = CommonQuerySchema.extend({
     .string()
     .optional()
     .describe(
-      "Filter by report date in YYYYMMDD format. Example: 20251231",
+      "Filter by Report Date (REPDTE) in YYYYMMDD format. FDIC data is published quarterly on: March 31, June 30, September 30, and December 31. Example: 20251231 for Q4 2025. If omitted, returns all available dates.",
     ),
 });
 
@@ -45,7 +45,7 @@ Common filter examples:
 
 Key returned fields:
   - CERT: FDIC Certificate Number
-  - REPDTE: Report date (YYYYMMDD)
+  - REPDTE: Report Date — the last day of the quarterly reporting period (YYYYMMDD)
   - QTRNO: Quarter number
   - OFFTOT: Total offices
   - OFFSTATE: Offices in other states
@@ -59,7 +59,7 @@ Key returned fields:
 
 Args:
   - cert (number, optional): Filter by institution CERT number
-  - repdte (string, optional): Report date in YYYYMMDD format
+  - repdte (string, optional): Report Date in YYYYMMDD format (quarter-end dates: 0331, 0630, 0930, 1231)
   - filters (string, optional): Additional ElasticSearch query filters
   - fields (string, optional): Comma-separated field names
   - limit (number): Records to return (default: 20)

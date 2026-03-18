@@ -5,13 +5,19 @@ export const CommonQuerySchema = z.object({
     .string()
     .optional()
     .describe(
-      'ElasticSearch query string filter. Examples: STNAME:"California", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:"Chase"',
+      'FDIC API filter using ElasticSearch query string syntax. ' +
+        'Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). ' +
+        'Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), ' +
+        'CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). ' +
+        'Examples: STNAME:"California", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:"Chase"',
     ),
   fields: z
     .string()
     .optional()
     .describe(
-      "Comma-separated list of fields to return. Leave empty to return all fields. Example: NAME,CERT,ASSET,DEP,STALP",
+      "Comma-separated list of FDIC field names to return. Leave empty to return all fields. " +
+        "Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). " +
+        "Example: NAME,CERT,ASSET,DEP,STALP",
     ),
   limit: z
     .number()

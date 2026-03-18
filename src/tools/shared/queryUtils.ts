@@ -2,6 +2,53 @@ export const CHUNK_SIZE = 25;
 export const MAX_CONCURRENCY = 4;
 export const ANALYSIS_TIMEOUT_MS = 90_000;
 
+/**
+ * Returns the most recent FDIC quarter-end report date (YYYYMMDD) likely to
+ * have published data, accounting for the ~90-day FDIC publishing lag.
+ *
+ * Quarter-end dates: March 31, June 30, September 30, December 31.
+ */
+export function getDefaultReportDate(): string {
+  const target = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+  const year = target.getFullYear();
+  const month = target.getMonth() + 1;
+  if (month >= 10) return `${year}0930`;
+  if (month >= 7) return `${year}0630`;
+  if (month >= 4) return `${year}0331`;
+  return `${year - 1}1231`;
+}
+
+/**
+ * Returns the quarter-end report date exactly one year before the given
+ * YYYYMMDD report date. Preserves the same quarter (month/day suffix).
+ */
+export function getReportDateOneYearPrior(repdte: string): string {
+  const year = Number.parseInt(repdte.slice(0, 4), 10);
+  return `${year - 1}${repdte.slice(4)}`;
+}
+
+const VALID_QUARTER_END_SUFFIXES = new Set(["0331", "0630", "0930", "1231"]);
+
+/**
+ * Returns an error message if the YYYYMMDD string is not a valid quarter-end
+ * report date (March 31, June 30, September 30, December 31). Returns null
+ * if valid.
+ */
+export function validateQuarterEndDate(
+  repdte: string,
+  label: string,
+): string | null {
+  const suffix = repdte.slice(4);
+  if (!VALID_QUARTER_END_SUFFIXES.has(suffix)) {
+    return (
+      `${label} "${repdte}" is not a valid quarter-end date. ` +
+      `FDIC data is published quarterly — use a date ending in 0331 (Q1), 0630 (Q2), 0930 (Q3), or 1231 (Q4). ` +
+      `Example: ${repdte.slice(0, 4)}1231 for Q4 ${repdte.slice(0, 4)}.`
+    );
+  }
+  return null;
+}
+
 export function asNumber(value: unknown): number | null {
   return typeof value === "number" ? value : null;
 }

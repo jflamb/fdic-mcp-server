@@ -4,6 +4,7 @@ import {
   cagr,
   getQuarterIndex,
   maxOrNull,
+  resolveSnapshotDefaults,
   yearsBetween,
 } from "../src/tools/analysis.js";
 
@@ -66,5 +67,52 @@ describe("maxOrNull", () => {
 
   it("returns null when all values are null", () => {
     expect(maxOrNull([null, null, null])).toBeNull();
+  });
+});
+
+describe("resolveSnapshotDefaults", () => {
+  it("preserves explicitly provided dates", () => {
+    const result = resolveSnapshotDefaults({
+      state: "North Carolina",
+      start_repdte: "20210331",
+      end_repdte: "20250331",
+      analysis_mode: "snapshot",
+      active_only: true,
+      include_demographics: true,
+      limit: 10,
+      sort_by: "asset_growth",
+      sort_order: "DESC",
+    });
+    expect(result.start_repdte).toBe("20210331");
+    expect(result.end_repdte).toBe("20250331");
+  });
+
+  it("defaults end_repdte to a valid quarter-end date", () => {
+    const result = resolveSnapshotDefaults({
+      state: "Texas",
+      analysis_mode: "snapshot",
+      active_only: true,
+      include_demographics: true,
+      limit: 10,
+      sort_by: "asset_growth",
+      sort_order: "DESC",
+    });
+    expect(result.end_repdte).toMatch(/^\d{8}$/);
+    expect(["0331", "0630", "0930", "1231"]).toContain(result.end_repdte.slice(4));
+  });
+
+  it("defaults start_repdte to one year before end_repdte", () => {
+    const result = resolveSnapshotDefaults({
+      state: "Texas",
+      end_repdte: "20251231",
+      analysis_mode: "snapshot",
+      active_only: true,
+      include_demographics: true,
+      limit: 10,
+      sort_by: "asset_growth",
+      sort_order: "DESC",
+    });
+    expect(result.start_repdte).toBe("20241231");
+    expect(result.end_repdte).toBe("20251231");
   });
 });

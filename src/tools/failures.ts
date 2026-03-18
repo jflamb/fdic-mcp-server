@@ -21,22 +21,27 @@ export function registerFailureTools(server: McpServer): void {
 Returns data on bank failures including failure date, resolution type, estimated cost to the FDIC Deposit Insurance Fund, and acquiring institution info.
 
 Common filter examples:
-  - By state: STALP:CA
+  - By state: STALP:CA (two-letter state code)
   - By year range: FAILDATE:[2008-01-01 TO 2010-12-31]
   - Recent failures: FAILDATE:[2020-01-01 TO *]
-  - By resolution type: RESTYPE:PAYOFF or RESTYPE:MERGER
+  - By resolution type: RESTYPE:PAYOFF or RESTYPE:"PURCHASE AND ASSUMPTION"
   - Large failures by cost: COST:[100000 TO *]  (cost in $thousands)
   - By name: NAME:"Washington Mutual"
+
+Resolution types (RESTYPE):
+  PAYOFF = depositors paid directly, no acquirer
+  PURCHASE AND ASSUMPTION = acquirer buys assets and assumes deposits
+  PAYOUT = variant of payoff with insured-deposit transfer
 
 Key returned fields:
   - CERT: FDIC Certificate Number
   - NAME: Institution name
-  - CITY, STALP, STNAME: Location
+  - CITY, STALP (two-letter state code), STNAME (full state name): Location
   - FAILDATE: Date of failure (YYYY-MM-DD)
-  - SAVR: Savings rate at failure
-  - RESTYPE: Resolution type (PAYOFF, MERGER, PURCHASE & ASSUMPTION, etc.)
+  - SAVR: Savings association flag (SA) or bank (BK)
+  - RESTYPE: Resolution type (see above)
   - QBFASSET: Total assets at failure ($thousands)
-  - COST: Estimated cost to FDIC DIF ($thousands)
+  - COST: Estimated cost to FDIC Deposit Insurance Fund ($thousands)
 
 Args:
   - filters (string, optional): ElasticSearch query filter
