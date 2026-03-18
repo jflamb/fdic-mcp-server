@@ -466,7 +466,7 @@ img {
 
 .doc-content pre,
 .doc-content .highlight pre {
-  overflow-x: hidden;
+  overflow-x: auto;
   padding: 1rem 1.1rem;
   border-radius: var(--radius-md);
   background: var(--code-bg);
@@ -769,7 +769,7 @@ img {
 }
 
 .chatbot-demo__message--assistant .chatbot-demo__bubble a {
-  color: var(--pine);
+  color: var(--accent-deep);
 }
 
 .chatbot-demo__composer {
@@ -881,9 +881,9 @@ img {
 
 .code-block pre {
   margin-bottom: 0;
-  padding-right: 6.8rem;
+  padding-right: 7.5rem;
   box-shadow: none;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .copy-button {
