@@ -1,14 +1,6 @@
----
-title: Cloud Run Deployment
-nav_group: technical
-kicker: Technical Docs
-summary: Container, GitHub Actions, and Google Cloud configuration for deploying the HTTP MCP server to Cloud Run.
-breadcrumbs:
-  - title: Overview
-    url: /
-  - title: Technical Docs
-    url: /technical/
----
+# Cloud Run Deployment
+
+Repository reference for the container, GitHub Actions, and Google Cloud configuration used to deploy the HTTP MCP server to Cloud Run.
 
 This project serves its public HTTP MCP endpoint from Google Cloud Run and deploys that service from GitHub Actions using Workload Identity Federation rather than a long-lived Google service account key.
 

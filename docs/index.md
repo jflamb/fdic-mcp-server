@@ -69,10 +69,10 @@ body_class: overview-page
     <h3>Setup, prompting, and examples</h3>
     <p>Installation, client setup, prompting guidance, practical examples, and troubleshooting.</p>
   </a>
-  <a class="card" href="{{ '/technical/' | relative_url }}">
-    <span class="card__eyebrow">Technical Reference</span>
-    <h3>Architecture, contracts, and tools</h3>
-    <p>Architecture, contracts, implementation boundaries, and the reasoning behind key design decisions.</p>
+  <a class="card" href="{{ '/tool-reference/' | relative_url }}">
+    <span class="card__eyebrow">Choose Tools</span>
+    <h3>Find the right MCP tool</h3>
+    <p>Pick the right search, lookup, comparison, or peer-analysis tool before you start prompting.</p>
   </a>
   <a class="card" href="{{ '/project-information/' | relative_url }}">
     <span class="card__eyebrow">Project &amp; Support</span>
@@ -94,10 +94,10 @@ body_class: overview-page
     <h3>Usage Examples</h3>
     <p>Use narrower prompts and expected tool shapes for search, comparisons, and peer benchmarking.</p>
   </a>
-  <a class="card" href="{{ '/technical/specification/' | relative_url }}">
-    <span class="card__eyebrow">Contract</span>
-    <h3>Technical Specification</h3>
-    <p>Understand the supported transports, tool surface, and output expectations.</p>
+  <a class="card" href="{{ '/support/' | relative_url }}">
+    <span class="card__eyebrow">Support</span>
+    <h3>Get Help</h3>
+    <p>Find the issue-reporting path, the troubleshooting checklist, and the information to gather before escalating.</p>
   </a>
   <a class="card" href="{{ '/compatibility-matrix/' | relative_url }}">
     <span class="card__eyebrow">Hosts</span>

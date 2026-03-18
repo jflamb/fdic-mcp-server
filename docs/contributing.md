@@ -12,6 +12,8 @@ breadcrumbs:
 
 The full contributor workflow lives in the repository root at `CONTRIBUTING.md`.
 
+Repository reference docs for architecture, specifications, deployment, and historical plans live under `reference/`.
+
 ## Summary
 
 - Create a focused branch from `main`.
@@ -25,3 +27,4 @@ The full contributor workflow lives in the repository root at `CONTRIBUTING.md`.
 
 - GitHub view: <https://github.com/jflamb/fdic-mcp-server/blob/main/CONTRIBUTING.md>
 - Local file: `CONTRIBUTING.md`
+- Repo reference docs: `reference/`

@@ -5,9 +5,6 @@ primary:
   - key: user
     title: Use the Server
     url: /user-guide/
-  - key: technical
-    title: Technical Reference
-    url: /technical/
   - key: project
     title: Project & Support
     url: /project-information/
@@ -40,26 +37,6 @@ sections:
         url: /troubleshooting/
       - title: Try It
         url: /try-it/
-  technical:
-    title: Technical Reference
-    description: Contracts, architecture, implementation details, and deployment operations.
-    items:
-      - title: Technical Reference
-        short_title: Overview
-        url: /technical/
-      - title: Technical Specification
-        short_title: Specification
-        url: /technical/specification/
-      - title: Architecture
-        url: /technical/architecture/
-      - title: Key Decisions
-        short_title: Decisions
-        url: /technical/decisions/
-      - title: Tool Reference
-        url: /tool-reference/
-      - title: Cloud Run Deployment
-        short_title: Deployment
-        url: /technical/cloud-run-deployment/
   project:
     title: Project & Support
     description: Release history, support posture, compatibility guidance, and contribution workflow.
