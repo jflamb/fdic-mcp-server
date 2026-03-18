@@ -1,27 +1,27 @@
-# Docs Chatbot Demo
+# Docs Chatbot Global Launcher
 
-Reference: approved design in [docs/plans/2026-03-18-docs-chatbot-demo-design.md](/Users/jlamb/Projects/bankfind-mcp/docs/plans/2026-03-18-docs-chatbot-demo-design.md), implementation plan in [docs/plans/2026-03-18-docs-chatbot-demo-plan.md](/Users/jlamb/Projects/bankfind-mcp/docs/plans/2026-03-18-docs-chatbot-demo-plan.md), and the 2026-03-18 user request to implement the feature under the repo workflow.
+Reference: issue #181, the merged docs chatbot demo work from PR #180, and the 2026-03-18 user correction that the chat entry point should be a site-wide floating launcher rather than a page-first destination.
 
 ## Goals
 
-- [x] Add a Gemini-backed `/chat` demo endpoint to the existing HTTP app without changing MCP tool contracts.
-- [x] Add a protected `/chat/status` endpoint, origin checks, per-IP rate limiting, request validation, and in-memory chat session handling.
-- [x] Add a docs "Try It" page with suggested prompts, conversational UI, loading/error states, and graceful degradation when chat is unavailable.
-- [x] Add regression coverage for the server endpoint, rate limiter, docs integration, and chatbot UI behavior.
-- [x] Validate the feature with repo-standard commands plus targeted docs/e2e checks.
+- [x] Replace the docs chatbot's primary entry point with a site-wide floating launcher.
+- [x] Support opening the chat via the launcher and the `?` key without hijacking keyboard input inside editable fields.
+- [x] Make the chat surface work across desktop and mobile with accessible focus and dismissal behavior.
+- [x] Update the backend chat model to a currently supported Gemini model so the live demo works again.
+- [x] Add or update automated coverage for the launcher UX, keyboard shortcut, and live-chat fallback behavior.
+- [x] Validate the change with repo-standard commands plus chatbot e2e coverage.
 
 ## Acceptance Criteria
 
-- [x] [src/chat.ts](/Users/jlamb/Projects/bankfind-mcp/src/chat.ts) provides `POST /chat` and `GET /chat/status` behavior matching the approved design, including request/response shapes, origin validation, rate limiting, size limits, and bounded Gemini tool-call rounds.
-- [x] [src/index.ts](/Users/jlamb/Projects/bankfind-mcp/src/index.ts) wires the chat routes into `createApp()` while preserving existing `/health` and `/mcp` behavior.
-- [x] [docs/try-it.md](/Users/jlamb/Projects/bankfind-mcp/docs/try-it.md), [docs/assets/js/chatbot.js](/Users/jlamb/Projects/bankfind-mcp/docs/assets/js/chatbot.js), and [docs/assets/css/docs.css](/Users/jlamb/Projects/bankfind-mcp/docs/assets/css/docs.css) deliver the chatbot experience and unavailable-state fallback described in the design.
-- [x] [docs/_data/navigation.yml](/Users/jlamb/Projects/bankfind-mcp/docs/_data/navigation.yml) exposes the new Try It page in site navigation.
-- [x] Automated coverage verifies the chat rate limiter, the `/chat` endpoint contract, and the docs chatbot behavior, including markdown rendering and rate-limit feedback.
-- [x] CI/deploy workflow updates cover the new chat tests and post-deploy `/chat/status` smoke check.
+- [x] The docs layout renders a floating action button in the lower-right across the site with a chat icon, an accessible label, and `Try it!` text on hover/focus.
+- [x] Pressing `?` opens the chat only when focus is not inside a text input, textarea, select, or editable surface.
+- [x] The chat opens in an accessible modal or drawer that traps focus appropriately, supports explicit close controls, and scales to mobile viewports.
+- [x] The old dedicated page is no longer the primary entry path; the launcher is available site-wide.
+- [x] The backend chat route uses a currently supported Gemini model and returns successful live responses again.
+- [x] Automated tests verify launcher visibility, modal opening, keyboard shortcut behavior, and the existing chat request/response flows.
 
 ## Validation
 
-- [x] `npm install`
 - [x] `npm run typecheck`
 - [x] `npm test`
 - [x] `npm run build`
@@ -29,11 +29,8 @@ Reference: approved design in [docs/plans/2026-03-18-docs-chatbot-demo-design.md
 
 ## Review / Results
 
-- [x] Branch created for this work: `feat/docs-chatbot-demo`.
-- [x] Server-side chat endpoint, protection layers, and Gemini tool execution integrated without breaking existing MCP routes.
-- [x] Docs Try It experience added with suggested prompts, conversation rendering, and unavailable-state handling.
-- [x] Test coverage added for backend, frontend, and workflow integration.
+- [x] Branch created for this work: `feat/docs-chatbot-launcher`.
+- [x] Site-wide launcher and overlay UX implemented.
+- [x] Keyboard shortcut and accessibility details implemented and tested.
+- [x] Backend model updated to restore live chat functionality.
 - [x] Validation results recorded here before closeout.
-
-Notes:
-- Implemented the Gemini integration with `@google/genai` instead of the deprecated `@google/generative-ai` package named in the original plan. The endpoint contract and deployment model remain the same, but the dependency is the current supported SDK.
