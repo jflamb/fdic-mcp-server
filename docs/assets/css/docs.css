@@ -214,7 +214,8 @@ img {
 .search-button,
 .nav-toggle,
 .mobile-nav__close,
-.search-dialog__close {
+.search-dialog__close,
+.chatbot-overlay__close {
   appearance: none;
   border: 0;
   border-radius: var(--radius-pill);
@@ -230,7 +231,8 @@ img {
 .search-button:hover,
 .nav-toggle:hover,
 .mobile-nav__close:hover,
-.search-dialog__close:hover {
+.search-dialog__close:hover,
+.chatbot-overlay__close:hover {
   transform: translateY(-1px);
   box-shadow: inset 0 0 0 1px rgba(13, 122, 102, 0.18), 0 10px 20px rgba(10, 37, 31, 0.08);
 }
@@ -326,7 +328,8 @@ img {
 .page-toc__eyebrow,
 .search-dialog__eyebrow,
 .mobile-nav__eyebrow,
-.doc-callout__eyebrow {
+.doc-callout__eyebrow,
+.chatbot-overlay__eyebrow {
   margin: 0 0 0.3rem;
   font-size: 0.76rem;
   font-weight: 700;
@@ -607,11 +610,6 @@ img {
 
 .chatbot-overlay__eyebrow {
   margin: 0 0 0.2rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
 }
 
 .chatbot-overlay__header h2 {
@@ -625,16 +623,10 @@ img {
 }
 
 .chatbot-overlay__close {
-  appearance: none;
-  border: 0;
-  border-radius: var(--radius-pill);
   background: rgba(16, 34, 29, 0.08);
   color: var(--ink);
   min-height: 2.6rem;
   padding: 0 0.9rem;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
 }
 
 .chatbot-overlay__prompts {
