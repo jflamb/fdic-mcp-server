@@ -30,18 +30,26 @@ Common filter examples:
   - Savings institutions: MUTUAL:1
   - Recently established: ESTYMD:[2010-01-01 TO *]
 
+Charter class codes (BKCLASS):
+  N = National commercial bank (OCC-supervised)
+  SM = State-chartered, Federal Reserve member
+  NM = State-chartered, non-member (FDIC-supervised)
+  SB = Federal savings bank (OCC-supervised)
+  SA = State savings association
+  OI = Insured branch of foreign bank
+
 Key returned fields:
   - CERT: FDIC Certificate Number (unique ID)
   - NAME: Institution name
-  - CITY, STALP, STNAME: Location
+  - CITY, STALP (two-letter state code), STNAME (full state name): Location
   - ASSET: Total assets ($thousands)
   - DEP: Total deposits ($thousands)
-  - BKCLASS: Charter class code
+  - BKCLASS: Charter class code (see above)
   - ACTIVE: 1 if currently active, 0 if inactive
   - ROA, ROE: Profitability ratios
   - OFFICES: Number of branch offices
-  - ESTYMD: Establishment date
-  - REGAGNT: Primary federal regulator
+  - ESTYMD: Establishment date (YYYY-MM-DD)
+  - REGAGNT: Primary federal regulator (OCC, FRS, FDIC)
 
 Args:
   - filters (string, optional): ElasticSearch query filter

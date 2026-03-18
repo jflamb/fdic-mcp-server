@@ -36,22 +36,36 @@ Common filter examples:
   - History for a specific bank: CERT:3511
   - Mergers: TYPE:merger
   - Failures: TYPE:failure
-  - Name changes: CHANGECODE:CO (name change code)
+  - Name changes: CHANGECODE:CO
   - By date range: PROCDATE:[2008-01-01 TO 2009-12-31]
-  - By state: PSTALP:CA
+  - By state: PSTALP:CA (two-letter state code)
+
+Event types (TYPE):
+  merger = institution was merged into another
+  failure = institution failed
+  assistance = received FDIC assistance transaction
+  insurance = insurance-related event (new coverage, termination)
+
+Common change codes (CHANGECODE):
+  CO = name change
+  CR = charter conversion
+  DC = deposit assumption change
+  MA = merger/acquisition (absorbed by another institution)
+  NI = new institution insured
+  TC = trust company conversion
 
 Key returned fields:
   - CERT: FDIC Certificate Number
   - INSTNAME: Institution name
   - CLASS: Charter class at time of change
-  - PCITY, PSTALP: Location (city, state abbreviation)
-  - PROCDATE: Processing date of the change
-  - EFFDATE: Effective date of the change
+  - PCITY, PSTALP: Location (city, two-letter state code)
+  - PROCDATE: Processing date of the change (YYYY-MM-DD)
+  - EFFDATE: Effective date of the change (YYYY-MM-DD)
   - ENDEFYMD: End effective date
   - PCERT: Predecessor/successor CERT (for mergers)
-  - TYPE: Type of structural change
-  - CHANGECODE: Code for type of change
-  - CHANGECODE_DESC: Description of change code
+  - TYPE: Type of structural change (see above)
+  - CHANGECODE: Code for type of change (see above)
+  - CHANGECODE_DESC: Human-readable description of the change code
   - INSDATE: Insurance date
 
 Args:
