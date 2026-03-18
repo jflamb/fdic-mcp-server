@@ -789,6 +789,10 @@ img {
   text-align: right;
 }
 
+.prev-next > .prev-next__link--next:only-child {
+  grid-column: 2;
+}
+
 .prev-next__direction {
   font-size: 0.76rem;
   text-transform: uppercase;
