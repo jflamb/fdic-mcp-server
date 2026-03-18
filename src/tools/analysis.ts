@@ -17,6 +17,7 @@ import {
   getDefaultReportDate,
   getReportDateOneYearPrior,
   mapWithConcurrency,
+  validateQuarterEndDate,
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
 
@@ -125,6 +126,12 @@ function validateSnapshotAnalysisParams(
   if (!value.state && (!value.certs || value.certs.length === 0)) {
     return "Provide either state or certs.";
   }
+
+  const startDateError = validateQuarterEndDate(value.start_repdte, "start_repdte");
+  if (startDateError) return startDateError;
+
+  const endDateError = validateQuarterEndDate(value.end_repdte, "end_repdte");
+  if (endDateError) return endDateError;
 
   if (value.start_repdte >= value.end_repdte) {
     return "start_repdte must be earlier than end_repdte.";

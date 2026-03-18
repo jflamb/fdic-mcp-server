@@ -27,6 +27,28 @@ export function getReportDateOneYearPrior(repdte: string): string {
   return `${year - 1}${repdte.slice(4)}`;
 }
 
+const VALID_QUARTER_END_SUFFIXES = new Set(["0331", "0630", "0930", "1231"]);
+
+/**
+ * Returns an error message if the YYYYMMDD string is not a valid quarter-end
+ * report date (March 31, June 30, September 30, December 31). Returns null
+ * if valid.
+ */
+export function validateQuarterEndDate(
+  repdte: string,
+  label: string,
+): string | null {
+  const suffix = repdte.slice(4);
+  if (!VALID_QUARTER_END_SUFFIXES.has(suffix)) {
+    return (
+      `${label} "${repdte}" is not a valid quarter-end date. ` +
+      `FDIC data is published quarterly — use a date ending in 0331 (Q1), 0630 (Q2), 0930 (Q3), or 1231 (Q4). ` +
+      `Example: ${repdte.slice(0, 4)}1231 for Q4 ${repdte.slice(0, 4)}.`
+    );
+  }
+  return null;
+}
+
 export function asNumber(value: unknown): number | null {
   return typeof value === "number" ? value : null;
 }

@@ -24,6 +24,7 @@ import {
   buildCertFilters,
   getDefaultReportDate,
   mapWithConcurrency,
+  validateQuarterEndDate,
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
 
@@ -430,6 +431,11 @@ Override precedence: cert derives defaults, then explicit params override them.`
         const validationError = validatePeerGroupParams(params);
         if (validationError) {
           return formatToolError(new Error(validationError));
+        }
+
+        const dateError = validateQuarterEndDate(params.repdte, "repdte");
+        if (dateError) {
+          return formatToolError(new Error(dateError));
         }
 
         const extraFieldsError = validateExtraFields(params.extra_fields);

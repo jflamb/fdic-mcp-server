@@ -5,6 +5,7 @@ import {
   getDefaultReportDate,
   getReportDateOneYearPrior,
   mapWithConcurrency,
+  validateQuarterEndDate,
 } from "../src/tools/shared/queryUtils.js";
 
 describe("buildFilterString", () => {
@@ -77,6 +78,27 @@ describe("getReportDateOneYearPrior", () => {
     expect(getReportDateOneYearPrior("20251231")).toBe("20241231");
     expect(getReportDateOneYearPrior("20240630")).toBe("20230630");
     expect(getReportDateOneYearPrior("20230331")).toBe("20220331");
+  });
+});
+
+describe("validateQuarterEndDate", () => {
+  it("returns null for valid quarter-end dates", () => {
+    expect(validateQuarterEndDate("20240331", "repdte")).toBeNull();
+    expect(validateQuarterEndDate("20240630", "repdte")).toBeNull();
+    expect(validateQuarterEndDate("20240930", "repdte")).toBeNull();
+    expect(validateQuarterEndDate("20241231", "repdte")).toBeNull();
+  });
+
+  it("returns an error for non-quarter-end dates", () => {
+    const result = validateQuarterEndDate("20240115", "repdte");
+    expect(result).toContain("not a valid quarter-end date");
+    expect(result).toContain("0331");
+    expect(result).toContain("0630");
+  });
+
+  it("includes the label in the error message", () => {
+    const result = validateQuarterEndDate("20240515", "start_repdte");
+    expect(result).toContain("start_repdte");
   });
 });
 
