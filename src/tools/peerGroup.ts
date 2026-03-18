@@ -22,6 +22,7 @@ import {
   MAX_CONCURRENCY,
   asNumber,
   buildCertFilters,
+  getDefaultReportDate,
   mapWithConcurrency,
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
@@ -169,7 +170,10 @@ export const PeerGroupInputSchema = z
     repdte: z
       .string()
       .regex(/^\d{8}$/)
-      .describe("Report date in YYYYMMDD format."),
+      .optional()
+      .describe(
+        "Report Date (REPDTE) in YYYYMMDD format. FDIC data is published quarterly on: March 31, June 30, September 30, and December 31. Example: 20231231 for Q4 2023. If omitted, defaults to the most recent quarter-end date likely to have published data (~90-day lag).",
+      ),
     asset_min: z
       .number()
       .positive()
@@ -416,7 +420,8 @@ Override precedence: cert derives defaults, then explicit params override them.`
         openWorldHint: true,
       },
     },
-    async (params, extra) => {
+    async (rawParams, extra) => {
+      const params = { ...rawParams, repdte: rawParams.repdte ?? getDefaultReportDate() };
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
       const progressToken = extra._meta?.progressToken;
@@ -481,7 +486,8 @@ Override precedence: cert derives defaults, then explicit params override them.`
             return formatToolError(
               new Error(
                 `No financial data for CERT ${params.cert} at report date ${params.repdte}. ` +
-                  `Auto-derivation of peer criteria requires asset data at the specified report date.`,
+                  `FDIC quarterly data is published ~90 days after each quarter-end (March 31, June 30, September 30, December 31). ` +
+                  `Try an earlier quarter-end date, or verify the institution was active at that date.`,
               ),
             );
           }
@@ -812,7 +818,7 @@ Override precedence: cert derives defaults, then explicit params override them.`
           return formatToolError(
             new Error(
               `Peer group analysis timed out after ${Math.floor(ANALYSIS_TIMEOUT_MS / 1000)} seconds. ` +
-                `Narrow the peer group criteria and try again.`,
+                `Try narrowing the peer group: add a state filter, tighten the asset_min/asset_max range, or specify charter_classes.`,
             ),
           );
         }

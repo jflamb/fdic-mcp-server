@@ -1190,7 +1190,8 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         if (controller.signal.aborted) {
           return formatToolError(
             new Error(
-              `Analysis timed out after ${Math.floor(ANALYSIS_TIMEOUT_MS / 1000)} seconds. Narrow the comparison set with certs or institution_filters and try again.`,
+              `Analysis timed out after ${Math.floor(ANALYSIS_TIMEOUT_MS / 1000)} seconds. ` +
+                `Try reducing the comparison set: use certs (max 100) instead of a state-wide roster, add institution_filters (e.g., BKCLASS:N), or shorten the date range for timeseries mode.`,
             ),
           );
         }
