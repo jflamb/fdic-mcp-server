@@ -6,7 +6,7 @@ summary: Start with a hosted MCP URL when your host supports it, or use the loca
 breadcrumbs:
   - title: Overview
     url: /
-  - title: User Docs
+  - title: Use the Server
     url: /user-guide/
 ---
 

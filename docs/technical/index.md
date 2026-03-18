@@ -1,14 +1,14 @@
 ---
-title: Technical Docs
+title: Technical Reference
 nav_group: technical
-kicker: Maintainer Guide
-summary: Architecture, tool contracts, and design decisions for contributors working inside the codebase.
+kicker: Technical Guide
+summary: Architecture, tool contracts, implementation details, and design decisions for contributors working inside the codebase.
 breadcrumbs:
   - title: Overview
     url: /
 ---
 
-The technical docs are aimed at maintainers and advanced contributors who need to understand how the server is wired, where responsibilities live, and which design choices are deliberate.
+This section is aimed at maintainers and advanced contributors who need to understand how the server is wired, where responsibilities live, and which design choices are deliberate.
 
 <div class="card-grid">
   <a class="card" href="{{ '/technical/specification/' | relative_url }}">

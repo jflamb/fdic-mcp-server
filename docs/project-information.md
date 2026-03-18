@@ -1,5 +1,5 @@
 ---
-title: Project Info
+title: Project & Support
 nav_group: project
 kicker: Project Guide
 summary: Release notes, support policies, contribution workflow, compatibility guidance, and security reporting.

@@ -1,14 +1,14 @@
 ---
-title: User Docs
+title: Use the Server
 nav_group: user
-kicker: Audience Guide
+kicker: User Guide
 summary: Installation, client setup, prompting, examples, and troubleshooting for people using the server through an MCP host.
 breadcrumbs:
   - title: Overview
     url: /
 ---
 
-The user docs are for people who want to get the server running quickly, choose the right MCP tool, and avoid common data-model mistakes.
+This section is for people who want to get the server running quickly, choose the right MCP tool, and avoid common data-model mistakes.
 
 <div class="card-grid">
   <a class="card" href="{{ '/getting-started/' | relative_url }}">

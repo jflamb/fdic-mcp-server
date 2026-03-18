@@ -1,15 +1,15 @@
 ---
-title: Documentation Overview
+title: FDIC BankFind MCP Server
 nav_group: overview
-kicker: Documentation Home
-summary: A starting point for users, maintainers, and evaluators who need to understand what the project solves and where to go next.
+kicker: MCP Documentation
+summary: Connect to the FDIC BankFind MCP Server, use its search and analysis tools, and find the right setup, reference, or support docs.
 body_class: overview-page
 ---
 {% assign latest_release = site.data.latest_release %}
 
 <div class="hero-grid">
   <section class="hero-panel hero-panel--accent">
-    <h3>What problem this project solves</h3>
+    <h3>What this server does</h3>
     <p>
       The FDIC BankFind Suite API is public, but it is not packaged for MCP hosts in a way that is easy to use from prompts.
       This server turns those datasets into MCP tools with stable machine-readable output, then adds analysis helpers for multi-bank comparison and peer benchmarking.
@@ -30,19 +30,19 @@ body_class: overview-page
 
 <div class="card-grid">
   <a class="card" href="{{ '/getting-started/' | relative_url }}">
-    <span class="card__eyebrow">First Step</span>
-    <h3>Connect to the live endpoint</h3>
+    <span class="card__eyebrow">Get Started</span>
+    <h3>Choose the fastest setup path</h3>
     <p>Start with the hosted MCP URL when your host accepts remote servers. Use the local install path only when your host requires stdio.</p>
   </a>
-  <a class="card" href="{{ latest_release.url }}">
-    <span class="card__eyebrow">Latest Release</span>
-    <h3>{{ latest_release.display_name }}</h3>
-    <p>{{ latest_release.summary }}</p>
+  <a class="card" href="{{ '/clients/' | relative_url }}">
+    <span class="card__eyebrow">Connect</span>
+    <h3>Find your MCP host instructions</h3>
+    <p>Use the right setup steps for Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI.</p>
   </a>
   <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
-    <span class="card__eyebrow">Best Next Read</span>
-    <h3>Prompting Guide</h3>
-    <p>Use copy-pasteable prompt patterns that are explicit about dates, metrics, and dataset boundaries.</p>
+    <span class="card__eyebrow">Use It Well</span>
+    <h3>Learn the prompting patterns</h3>
+    <p>Use copy-pasteable prompt patterns that stay explicit about dates, metrics, and dataset boundaries.</p>
   </a>
 </div>
 
@@ -57,37 +57,37 @@ body_class: overview-page
   <pre><code>https://bankfind.jflamb.com/mcp</code></pre>
 </div>
 
-## Choose your path
+## Browse by need
 
 <p class="section-intro">
-  The docs are organized by audience so you can start from the right level of detail instead of scanning every page.
+  The site is organized around the jobs people typically need to do: get connected, use the server effectively, inspect the technical contract, or find project and support information.
 </p>
 
 <div class="card-grid">
   <a class="card" href="{{ '/user-guide/' | relative_url }}">
-    <span class="card__eyebrow">For Users</span>
-    <h3>User Docs</h3>
+    <span class="card__eyebrow">Use the Server</span>
+    <h3>Setup, prompting, and examples</h3>
     <p>Installation, client setup, prompting guidance, practical examples, and troubleshooting.</p>
   </a>
   <a class="card" href="{{ '/technical/' | relative_url }}">
-    <span class="card__eyebrow">For Maintainers</span>
-    <h3>Technical Docs</h3>
+    <span class="card__eyebrow">Technical Reference</span>
+    <h3>Architecture, contracts, and tools</h3>
     <p>Architecture, contracts, implementation boundaries, and the reasoning behind key design decisions.</p>
   </a>
   <a class="card" href="{{ '/project-information/' | relative_url }}">
-    <span class="card__eyebrow">For Evaluators</span>
-    <h3>Project Info</h3>
+    <span class="card__eyebrow">Project &amp; Support</span>
+    <h3>Compatibility, releases, and support</h3>
     <p>Release notes, support expectations, compatibility guidance, contribution workflow, and security reporting.</p>
   </a>
 </div>
 
-## Recommended starting points
+## Common next steps
 
 <div class="card-grid">
-  <a class="card" href="{{ '/clients/' | relative_url }}">
-    <span class="card__eyebrow">Connect</span>
-    <h3>Client Setup</h3>
-    <p>Find the right MCP host setup for Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI.</p>
+  <a class="card" href="{{ latest_release.url }}">
+    <span class="card__eyebrow">Latest Release</span>
+    <h3>{{ latest_release.display_name }}</h3>
+    <p>{{ latest_release.summary }}</p>
   </a>
   <a class="card" href="{{ '/usage-examples/' | relative_url }}">
     <span class="card__eyebrow">Examples</span>
