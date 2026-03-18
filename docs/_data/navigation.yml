@@ -38,6 +38,8 @@ sections:
       - title: Troubleshooting And FAQ
         short_title: Troubleshooting
         url: /troubleshooting/
+      - title: Try It
+        url: /try-it/
   technical:
     title: Technical Reference
     description: Contracts, architecture, implementation details, and deployment operations.

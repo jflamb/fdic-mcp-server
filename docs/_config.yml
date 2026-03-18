@@ -4,7 +4,7 @@ theme: minima
 markdown: kramdown
 highlighter: rouge
 logo: /assets/images/favicon.svg
-image: /assets/images/social-card.svg
+image: /assets/images/social-card.png
 permalink: pretty
 exclude:
   - plans

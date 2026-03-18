@@ -39,6 +39,16 @@ const enhanceCodeBlocks = () => {
     block.parentNode.insertBefore(wrapper, block);
     wrapper.appendChild(block);
 
+    const langClass = Array.from(code.classList).find((cls) => cls.startsWith("language-"));
+    const lang = langClass ? langClass.replace("language-", "") : "";
+    if (lang) {
+      const label = document.createElement("span");
+      label.className = "code-block__lang";
+      label.textContent = lang;
+      label.setAttribute("aria-hidden", "true");
+      wrapper.appendChild(label);
+    }
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = "copy-button";
@@ -296,22 +306,19 @@ const loadPagefind = async () => {
   return pagefindModulePromise;
 };
 
+const SECTION_LABELS = {
+  overview: "Home",
+  user: "User",
+  technical: "Technical",
+  project: "Project",
+};
+
 const getSectionLabel = (meta) => {
-  const path = meta?.url || meta?.meta?.page_url;
-
-  if (!path) {
-    return "Docs";
+  const group = meta?.meta?.nav_group;
+  if (group && SECTION_LABELS[group]) {
+    return SECTION_LABELS[group];
   }
 
-  if (path.startsWith("/technical")) {
-    return "Technical";
-  }
-  if (path.startsWith("/user") || path.startsWith("/getting-started") || path.startsWith("/clients") || path.startsWith("/prompting") || path.startsWith("/usage-examples") || path.startsWith("/troubleshooting")) {
-    return "User";
-  }
-  if (path.startsWith("/project") || path.startsWith("/release-notes") || path.startsWith("/support") || path.startsWith("/security") || path.startsWith("/contributing") || path.startsWith("/compatibility")) {
-    return "Project";
-  }
   return "Docs";
 };
 
@@ -502,6 +509,30 @@ const initSearch = () => {
   });
 };
 
+const initThemeToggle = () => {
+  const toggle = document.querySelector("[data-theme-toggle]");
+  if (!toggle) {
+    return;
+  }
+
+  const getEffectiveTheme = () => {
+    const stored = document.documentElement.dataset.theme;
+    if (stored) {
+      return stored;
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  };
+
+  toggle.addEventListener("click", () => {
+    const next = getEffectiveTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem("theme", next);
+  });
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   enhanceCodeBlocks();
   enhanceTables();
@@ -509,4 +540,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initPageToc();
   initMobileNav();
   initSearch();
+  initThemeToggle();
 });
