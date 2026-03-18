@@ -1,4 +1,8 @@
 const SEARCH_SCRIPT_PATH = document.body?.dataset.pagefindScript ?? "/pagefind/pagefind.js";
+const COPY_FEEDBACK_MS = 1800;
+const SEARCH_DEBOUNCE_MS = 120;
+const RESIZE_DEBOUNCE_MS = 100;
+const MOBILE_BREAKPOINT = 760;
 
 const slugify = (value) =>
   value
@@ -54,7 +58,7 @@ const enhanceCodeBlocks = () => {
 
       window.setTimeout(() => {
         button.textContent = "Copy";
-      }, 1800);
+      }, COPY_FEEDBACK_MS);
     });
   });
 };
@@ -158,7 +162,7 @@ const initPrimaryNavIndicator = () => {
       }
     });
 
-    window.addEventListener("resize", () => moveIndicator(pinnedLink, true));
+    window.addEventListener("resize", debounce(() => moveIndicator(pinnedLink, true), RESIZE_DEBOUNCE_MS));
     window.addEventListener("load", () => moveIndicator(pinnedLink, true), { once: true });
   });
 };
@@ -275,11 +279,11 @@ const initMobileNav = () => {
     }
   });
 
-  window.addEventListener("resize", () => {
-    if (window.innerWidth > 760) {
+  window.addEventListener("resize", debounce(() => {
+    if (window.innerWidth > MOBILE_BREAKPOINT) {
       setOpen(false);
     }
-  });
+  }, RESIZE_DEBOUNCE_MS));
 };
 
 let pagefindModulePromise;
@@ -343,6 +347,8 @@ const initSearch = () => {
     dialog.hidden = true;
     document.body.style.overflow = "";
     setSearchLoading(false);
+    status.textContent = "Start typing to search the documentation.";
+    results.innerHTML = "";
     activeTrigger?.focus();
   };
 
@@ -416,7 +422,7 @@ const initSearch = () => {
         meta.textContent = getSectionLabel(item);
 
         const title = document.createElement("h3");
-        title.innerHTML = item.meta.title || item.url;
+        title.textContent = item.meta.title || item.url;
 
         const excerpt = document.createElement("p");
         excerpt.innerHTML = item.excerpt;
@@ -434,7 +440,7 @@ const initSearch = () => {
 
   const debouncedSearch = debounce((event) => {
     renderResults(event.target.value);
-  }, 120);
+  }, SEARCH_DEBOUNCE_MS);
 
   input.addEventListener("input", debouncedSearch);
   openButtons.forEach((button) =>
