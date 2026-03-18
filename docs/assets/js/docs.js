@@ -347,6 +347,8 @@ const initSearch = () => {
     dialog.hidden = true;
     document.body.style.overflow = "";
     setSearchLoading(false);
+    input.value = "";
+    currentQuery = "";
     status.textContent = "Start typing to search the documentation.";
     results.innerHTML = "";
     activeTrigger?.focus();
