@@ -42,17 +42,17 @@ describe("docs site review v2 follow-up", () => {
     expect(docsCss).toContain(".site-footer");
   });
 
-  it("adds the Try It docs page and navigation entry for the chatbot demo", () => {
-    const navigation = readRepoFile("docs/_data/navigation.yml");
+  it("loads the chatbot launcher from the shared layout and keeps the fallback page", () => {
+    const layout = readRepoFile("docs/_layouts/default.html");
     const tryItPage = readRepoFile("docs/try-it.md");
     const chatbotScript = readRepoFile("docs/assets/js/chatbot.js");
 
-    expect(navigation).toContain("title: Try It");
-    expect(navigation).toContain("url: /try-it/");
-    expect(tryItPage).toContain("data-chatbot-root");
-    expect(tryItPage).toContain("data-chat-endpoint=\"https://bankfind.jflamb.com/chat\"");
-    expect(tryItPage).toContain("data-prompt=");
-    expect(chatbotScript).toContain("CHATBOT_SESSION_KEY");
+    expect(layout).toContain("data-chat-endpoint=\"https://bankfind.jflamb.com/chat\"");
+    expect(layout).toContain("/assets/js/chatbot.js");
+    expect(tryItPage).toContain("data-chatbot-open");
+    expect(tryItPage).toContain("press <code>?</code>");
+    expect(chatbotScript).toContain("data-chatbot-launcher");
+    expect(chatbotScript).toContain("Open the FDIC BankFind chat demo");
     expect(chatbotScript).toContain("Rate limit reached");
   });
 });

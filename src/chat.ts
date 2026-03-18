@@ -20,7 +20,7 @@ Rules:
 - Do not make up data. If a tool returns no results, say so.`;
 
 export const DEFAULT_CHAT_ALLOWED_ORIGINS = ["https://jflamb.github.io"];
-export const DEFAULT_CHAT_MODEL = "gemini-2.0-flash";
+export const DEFAULT_CHAT_MODEL = "gemini-2.5-flash";
 export const DEFAULT_CHAT_RATE_LIMIT_MAX_REQUESTS = 10;
 export const DEFAULT_CHAT_RATE_LIMIT_WINDOW_MS = 60_000;
 export const DEFAULT_CHAT_MAX_MESSAGES = 20;

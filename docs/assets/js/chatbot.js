@@ -2,6 +2,14 @@ const CHATBOT_SESSION_KEY = "bankfind-chatbot-session-id";
 const CHATBOT_THREAD_KEY = "bankfind-chatbot-thread";
 const RELOAD_TYPE = "reload";
 
+const SUGGESTED_PROMPTS = [
+  "Find active banks in Texas with over $5 billion in assets",
+  "List the 10 costliest bank failures since 2000",
+  "Show quarterly financials for Bank of America during 2024",
+  "Compare North Carolina banks between 2021 and 2025 by deposit growth",
+  "Build a peer group for CERT 29846 and rank on ROA and efficiency ratio",
+];
+
 const escapeHtml = (value) =>
   value
     .replaceAll("&", "&amp;")
@@ -28,7 +36,11 @@ const parseMarkdown = (source) => {
       continue;
     }
 
-    if (line.includes("|") && index + 1 < lines.length && isTableSeparator(lines[index + 1])) {
+    if (
+      line.includes("|") &&
+      index + 1 < lines.length &&
+      isTableSeparator(lines[index + 1])
+    ) {
       const header = line
         .split("|")
         .map((cell) => cell.trim())
@@ -47,11 +59,15 @@ const parseMarkdown = (source) => {
 
       blocks.push(`
         <table>
-          <thead><tr>${header.map((cell) => `<th>${formatInline(cell)}</th>`).join("")}</tr></thead>
+          <thead><tr>${header
+            .map((cell) => `<th>${formatInline(cell)}</th>`)
+            .join("")}</tr></thead>
           <tbody>${rows
             .map(
               (row) =>
-                `<tr>${row.map((cell) => `<td>${formatInline(cell)}</td>`).join("")}</tr>`,
+                `<tr>${row
+                  .map((cell) => `<td>${formatInline(cell)}</td>`)
+                  .join("")}</tr>`,
             )
             .join("")}</tbody>
         </table>
@@ -65,7 +81,9 @@ const parseMarkdown = (source) => {
         items.push(lines[index].trim().slice(2));
         index += 1;
       }
-      blocks.push(`<ul>${items.map((item) => `<li>${formatInline(item)}</li>`).join("")}</ul>`);
+      blocks.push(
+        `<ul>${items.map((item) => `<li>${formatInline(item)}</li>`).join("")}</ul>`,
+      );
       continue;
     }
 
@@ -78,6 +96,107 @@ const parseMarkdown = (source) => {
   }
 
   return blocks.join("");
+};
+
+const readStoredThread = () => {
+  try {
+    const raw = window.sessionStorage.getItem(CHATBOT_THREAD_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const storeThread = (messages) => {
+  window.sessionStorage.setItem(CHATBOT_THREAD_KEY, JSON.stringify(messages));
+};
+
+const clearSessionOnReload = () => {
+  const navigation = performance.getEntriesByType?.("navigation")?.[0];
+  if (navigation && navigation.type === RELOAD_TYPE) {
+    window.sessionStorage.removeItem(CHATBOT_SESSION_KEY);
+    window.sessionStorage.removeItem(CHATBOT_THREAD_KEY);
+  }
+};
+
+const isEditableTarget = (target) => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      "input, textarea, select, [contenteditable=''], [contenteditable='true']",
+    ),
+  );
+};
+
+const createLauncherMarkup = (promptingGuideUrl) => {
+  const shell = document.createElement("div");
+  shell.className = "chatbot-shell";
+  shell.innerHTML = `
+    <button
+      type="button"
+      class="chatbot-launcher"
+      data-chatbot-launcher
+      aria-label="Open the FDIC BankFind chat demo. Keyboard shortcut: question mark."
+      title="Try it!"
+    >
+      <span class="chatbot-launcher__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M4 5.5C4 4.12 5.12 3 6.5 3h11C18.88 3 20 4.12 20 5.5v7C20 13.88 18.88 15 17.5 15H10l-4.4 4.12A.75.75 0 0 1 4.35 18.6V15.1A2.5 2.5 0 0 1 4 13.82V5.5Z"></path>
+        </svg>
+      </span>
+      <span class="chatbot-launcher__label">Try it!</span>
+    </button>
+
+    <div class="chatbot-overlay" data-chatbot-overlay hidden>
+      <div class="chatbot-overlay__backdrop" data-chatbot-close></div>
+      <section
+        class="chatbot-overlay__panel"
+        data-chatbot-panel
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="chatbot-title"
+      >
+        <header class="chatbot-overlay__header">
+          <div>
+            <p class="chatbot-overlay__eyebrow">Hosted Demo</p>
+            <h2 id="chatbot-title">FDIC BankFind chat</h2>
+            <p class="chatbot-overlay__summary">Ask about institutions, failures, financials, deposits, demographics, and peer groups.</p>
+          </div>
+          <button type="button" class="chatbot-overlay__close" data-chatbot-close aria-label="Close chat demo">Close</button>
+        </header>
+
+        <section class="chatbot-overlay__prompts" aria-label="Suggested prompts" data-chatbot-prompts></section>
+
+        <div class="chatbot-demo__thread" data-chatbot-thread aria-live="polite" aria-busy="false"></div>
+
+        <form class="chatbot-demo__composer" data-chatbot-form>
+          <label class="chatbot-demo__composer-label" for="chatbot-input">Ask about FDIC bank data</label>
+          <div class="chatbot-demo__composer-row">
+            <textarea
+              id="chatbot-input"
+              name="message"
+              rows="3"
+              maxlength="500"
+              placeholder="Type a question about banks, failures, deposits, financials, or peer groups..."
+              data-chatbot-input
+            ></textarea>
+            <button type="submit" class="chatbot-demo__send" data-chatbot-send>Send</button>
+          </div>
+        </form>
+
+        <p class="chatbot-demo__fallback" data-chatbot-fallback hidden>
+          The interactive demo is currently unavailable. See the
+          <a href="${promptingGuideUrl}">Prompting Guide</a>
+          for example queries you can try in your own MCP client.
+        </p>
+      </section>
+    </div>
+  `;
+
+  return shell;
 };
 
 const createMessageElement = (message) => {
@@ -106,45 +225,41 @@ const createMessageElement = (message) => {
   return article;
 };
 
-const readStoredThread = () => {
-  try {
-    const raw = window.sessionStorage.getItem(CHATBOT_THREAD_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-
-const storeThread = (messages) => {
-  window.sessionStorage.setItem(CHATBOT_THREAD_KEY, JSON.stringify(messages));
-};
-
-const clearSessionOnReload = () => {
-  const navigation = performance.getEntriesByType?.("navigation")?.[0];
-  if (navigation && navigation.type === RELOAD_TYPE) {
-    window.sessionStorage.removeItem(CHATBOT_SESSION_KEY);
-    window.sessionStorage.removeItem(CHATBOT_THREAD_KEY);
-  }
-};
-
 const initChatbot = async () => {
-  const root = document.querySelector("[data-chatbot-root]");
-  if (!root) {
+  const endpoint = document.body?.dataset.chatEndpoint;
+  const promptingGuideUrl =
+    document.body?.dataset.chatPromptingGuideUrl || "/prompting-guide/";
+  if (!endpoint) {
     return;
   }
 
   clearSessionOnReload();
 
-  const thread = root.querySelector("[data-chatbot-thread]");
-  const prompts = Array.from(root.querySelectorAll("[data-prompt]"));
-  const form = root.querySelector("[data-chatbot-form]");
-  const input = root.querySelector("[data-chatbot-input]");
-  const sendButton = root.querySelector("[data-chatbot-send]");
-  const fallback = root.querySelector("[data-chatbot-fallback]");
-  const promptSection = root.querySelector("[data-chatbot-prompts]");
-  const endpoint = root.dataset.chatEndpoint;
+  const shell = createLauncherMarkup(promptingGuideUrl);
+  document.body.appendChild(shell);
 
-  if (!thread || !form || !input || !sendButton || !fallback || !promptSection || !endpoint) {
+  const launcher = shell.querySelector("[data-chatbot-launcher]");
+  const overlay = shell.querySelector("[data-chatbot-overlay]");
+  const panel = shell.querySelector("[data-chatbot-panel]");
+  const thread = shell.querySelector("[data-chatbot-thread]");
+  const promptsRoot = shell.querySelector("[data-chatbot-prompts]");
+  const form = shell.querySelector("[data-chatbot-form]");
+  const input = shell.querySelector("[data-chatbot-input]");
+  const sendButton = shell.querySelector("[data-chatbot-send]");
+  const fallback = shell.querySelector("[data-chatbot-fallback]");
+  const closeButtons = shell.querySelectorAll("[data-chatbot-close]");
+
+  if (
+    !launcher ||
+    !overlay ||
+    !panel ||
+    !thread ||
+    !promptsRoot ||
+    !form ||
+    !input ||
+    !sendButton ||
+    !fallback
+  ) {
     return;
   }
 
@@ -152,6 +267,18 @@ const initChatbot = async () => {
   const statusEndpoint = `${normalizeEndpoint}/status`;
   let sessionId = window.sessionStorage.getItem(CHATBOT_SESSION_KEY) || "";
   let messages = readStoredThread();
+  let statusLoaded = false;
+  let available = true;
+  let lastActiveElement = null;
+
+  promptsRoot.innerHTML = SUGGESTED_PROMPTS.map(
+    (prompt) => `
+      <button type="button" class="chatbot-demo__prompt" data-prompt="${prompt.replaceAll('"', "&quot;")}">
+        <strong>${prompt}</strong>
+      </button>
+    `,
+  ).join("");
+  const prompts = Array.from(promptsRoot.querySelectorAll("[data-prompt]"));
 
   const renderThread = () => {
     thread.innerHTML = "";
@@ -169,24 +296,43 @@ const initChatbot = async () => {
     messages.forEach((message) => {
       thread.appendChild(createMessageElement(message));
     });
+
     thread.scrollTop = thread.scrollHeight;
     thread.setAttribute("aria-busy", "false");
     storeThread(messages);
   };
 
   const setComposerState = (enabled) => {
-    input.disabled = !enabled;
-    sendButton.disabled = !enabled;
+    input.disabled = !enabled || !available;
+    sendButton.disabled = !enabled || !available;
     prompts.forEach((prompt) => {
-      prompt.disabled = !enabled;
+      prompt.disabled = !enabled || !available;
     });
   };
 
-  const setUnavailable = () => {
-    setComposerState(false);
-    promptSection.hidden = true;
-    form.hidden = true;
-    fallback.hidden = false;
+  const applyAvailabilityState = () => {
+    promptsRoot.hidden = !available;
+    form.hidden = !available;
+    fallback.hidden = available;
+    setComposerState(true);
+  };
+
+  const loadAvailability = async () => {
+    if (statusLoaded) {
+      return;
+    }
+
+    statusLoaded = true;
+
+    try {
+      const statusResponse = await fetch(statusEndpoint, { credentials: "omit" });
+      const statusPayload = await statusResponse.json();
+      available = Boolean(statusResponse.ok && statusPayload.available === true);
+    } catch {
+      available = false;
+    }
+
+    applyAvailabilityState();
   };
 
   const addMessage = (message) => {
@@ -194,19 +340,31 @@ const initChatbot = async () => {
     renderThread();
   };
 
-  renderThread();
+  const getFocusableElements = () =>
+    Array.from(
+      panel.querySelectorAll(
+        'button:not([disabled]), textarea:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    );
 
-  try {
-    const statusResponse = await fetch(statusEndpoint, { credentials: "omit" });
-    const statusPayload = await statusResponse.json();
-    if (!statusResponse.ok || statusPayload.available !== true) {
-      setUnavailable();
-      return;
-    }
-  } catch {
-    setUnavailable();
-    return;
-  }
+  const closeOverlay = () => {
+    overlay.hidden = true;
+    document.body.classList.remove("chatbot-open");
+    document.body.style.overflow = "";
+    lastActiveElement?.focus?.();
+  };
+
+  const openOverlay = async () => {
+    lastActiveElement = document.activeElement;
+    overlay.hidden = false;
+    document.body.classList.add("chatbot-open");
+    document.body.style.overflow = "hidden";
+    renderThread();
+    await loadAvailability();
+    window.requestAnimationFrame(() => {
+      (available ? input : panel.querySelector("[data-chatbot-close]"))?.focus();
+    });
+  };
 
   const sendMessage = async (content) => {
     addMessage({ role: "user", content });
@@ -253,7 +411,10 @@ const initChatbot = async () => {
         window.sessionStorage.setItem(CHATBOT_SESSION_KEY, sessionId);
       }
 
-      addMessage({ role: "assistant", content: payload.reply || "No reply returned." });
+      addMessage({
+        role: "assistant",
+        content: payload.reply || "No reply returned.",
+      });
     } catch {
       messages = messages.filter((message) => !message.loading);
       addMessage({
@@ -267,10 +428,73 @@ const initChatbot = async () => {
     }
   };
 
+  renderThread();
+  applyAvailabilityState();
+
+  launcher.addEventListener("click", () => {
+    void openOverlay();
+  });
+
+  document.querySelectorAll("[data-chatbot-open]").forEach((button) => {
+    button.addEventListener("click", () => {
+      void openOverlay();
+    });
+  });
+
+  closeButtons.forEach((button) => {
+    button.addEventListener("click", closeOverlay);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) {
+      return;
+    }
+
+    if (overlay.hidden !== true && event.key === "Escape") {
+      event.preventDefault();
+      closeOverlay();
+      return;
+    }
+
+    if (
+      overlay.hidden === true &&
+      (event.key === "?" || (event.key === "/" && event.shiftKey))
+    ) {
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      event.preventDefault();
+      void openOverlay();
+    }
+  });
+
+  panel.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusable = getFocusableElements();
+    if (focusable.length === 0) {
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const value = input.value.trim();
-    if (!value) {
+    if (!value || !available) {
       return;
     }
 
@@ -278,7 +502,7 @@ const initChatbot = async () => {
     await sendMessage(value);
   });
 
-  input.addEventListener("keydown", async (event) => {
+  input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       form.requestSubmit();
@@ -286,7 +510,7 @@ const initChatbot = async () => {
   });
 
   prompts.forEach((prompt) => {
-    prompt.addEventListener("click", async () => {
+    prompt.addEventListener("click", () => {
       const value = prompt.dataset.prompt;
       if (!value) {
         return;

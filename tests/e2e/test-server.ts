@@ -1,21 +1,10 @@
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import express from "express";
 
 const app = express();
 const repoRoot = process.cwd();
-const tryItPage = readFileSync(path.join(repoRoot, "docs/try-it.md"), "utf8");
-
-function stripFrontMatter(source: string): string {
-  return source.replace(/^---[\s\S]*?---\n/, "").trim();
-}
 
 function renderPage(endpoint: string): string {
-  const content = stripFrontMatter(tryItPage).replace(
-    'data-chat-endpoint="https://bankfind.jflamb.com/chat"',
-    `data-chat-endpoint="${endpoint}"`,
-  );
-
   return `<!doctype html>
   <html lang="en">
     <head>
@@ -23,14 +12,13 @@ function renderPage(endpoint: string): string {
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>Try It</title>
       <link rel="stylesheet" href="/assets/css/docs.css">
+      <script defer src="/assets/js/chatbot.js"></script>
     </head>
-    <body>
+    <body data-chat-endpoint="${endpoint}">
       <main class="page-shell">
         <div class="page-frame">
           <article class="doc-content">
-            ${content
-              .replaceAll("{{ '/prompting-guide/' | relative_url }}", "/prompting-guide/")
-              .replaceAll("{{ '/assets/js/chatbot.js' | relative_url }}", "/assets/js/chatbot.js")}
+            <p>Docs page content.</p>
           </article>
         </div>
       </main>
@@ -45,15 +33,15 @@ app.get("/prompting-guide/", (_req, res) => {
   res.type("html").send("<!doctype html><title>Prompting Guide</title>");
 });
 
-app.get("/try-it/", (_req, res) => {
+app.get("/", (_req, res) => {
   res.type("html").send(renderPage("/chat"));
 });
 
-app.get("/try-it-unavailable/", (_req, res) => {
+app.get("/unavailable/", (_req, res) => {
   res.type("html").send(renderPage("/chat-unavailable"));
 });
 
-app.get("/try-it-rate-limit/", (_req, res) => {
+app.get("/rate-limit/", (_req, res) => {
   res.type("html").send(renderPage("/chat-rate-limit"));
 });
 
