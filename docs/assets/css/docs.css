@@ -1193,6 +1193,18 @@ img {
   background: transparent;
 }
 
+.release-date {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.release-link {
+  font-size: 0.88rem;
+  color: var(--accent);
+}
+
 .doc-callout__title-row {
   display: flex;
   gap: 1rem;
