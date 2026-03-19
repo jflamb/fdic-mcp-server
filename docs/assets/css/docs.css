@@ -354,18 +354,9 @@ img {
 }
 
 .section-nav {
-  margin-bottom: 1.25rem;
-  padding: 1rem 1.1rem 1.15rem;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(13, 122, 102, 0.08), rgba(207, 154, 53, 0.1));
-  border: 1px solid rgba(13, 122, 102, 0.08);
+  margin-bottom: 0.75rem;
 }
 
-.section-nav__header {
-  margin-bottom: 0.9rem;
-}
-
-.section-nav__eyebrow,
 .page-toc__eyebrow,
 .search-dialog__eyebrow,
 .mobile-nav__eyebrow,
@@ -377,24 +368,6 @@ img {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent);
-}
-
-.section-nav__title {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.section-nav__header p:last-child {
-  margin: 0.35rem 0 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-.section-nav__links-wrap {
-  position: relative;
-  max-width: 100%;
-  overflow-x: clip;
 }
 
 .section-nav__links {
@@ -413,14 +386,15 @@ img {
   min-height: 2.5rem;
   padding: 0.55rem 0.85rem;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: inset 0 0 0 1px rgba(16, 34, 29, 0.08);
-  color: var(--ink-soft);
+  color: var(--muted);
   text-decoration: none;
-  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  transition: color var(--duration-fast) ease;
 }
 
-.section-nav__links a:hover,
+.section-nav__links a:hover {
+  color: var(--ink-soft);
+}
+
 .section-nav__links a.is-active {
   color: var(--surface-strong);
   background: var(--ink);
@@ -428,10 +402,12 @@ img {
 
 .section-nav--animated .section-nav__links a {
   background: transparent;
-  box-shadow: none;
 }
 
-.section-nav--animated .section-nav__links a:hover,
+.section-nav--animated .section-nav__links a:hover {
+  color: var(--ink-soft);
+}
+
 .section-nav--animated .section-nav__links a.is-active {
   color: var(--surface-strong);
 }
@@ -1621,17 +1597,6 @@ img {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .section-nav__links-wrap::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0.15rem;
-    width: 2.5rem;
-    pointer-events: none;
-    background: linear-gradient(90deg, rgba(244, 247, 241, 0), rgba(244, 247, 241, 0.96));
-  }
-
   .section-nav__links {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -1677,10 +1642,6 @@ img {
   .page-frame {
     padding: 1rem;
     border-radius: 24px;
-  }
-
-  .section-nav {
-    padding: 0.95rem;
   }
 
   .card-grid {
@@ -1815,16 +1776,6 @@ img {
   }
 }
 
-@media (prefers-color-scheme: dark) and (max-width: 960px) {
-  .section-nav__links-wrap::after {
-    background: linear-gradient(90deg, rgba(13, 24, 21, 0), rgba(13, 24, 21, 0.96));
-  }
-}
-
-[data-theme="dark"] .section-nav__links-wrap::after {
-  background: linear-gradient(90deg, rgba(13, 24, 21, 0), rgba(13, 24, 21, 0.96));
-}
-
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
@@ -1904,7 +1855,6 @@ img {
   :root:not([data-theme="light"]) .nav-toggle,
   :root:not([data-theme="light"]) .mobile-nav__close,
   :root:not([data-theme="light"]) .search-dialog__close,
-  :root:not([data-theme="light"]) .section-nav__links a,
   :root:not([data-theme="light"]) .prev-next__link,
   :root:not([data-theme="light"]) .search-result,
   :root:not([data-theme="light"]) .mobile-page-toc,
@@ -1912,7 +1862,6 @@ img {
     background: rgba(18, 33, 29, 0.92);
   }
 
-  :root:not([data-theme="light"]) .section-nav__links a:hover,
   :root:not([data-theme="light"]) .section-nav__links a.is-active {
     background: var(--ink);
     color: var(--surface-strong);
@@ -1997,7 +1946,6 @@ img {
 [data-theme="dark"] .nav-toggle,
 [data-theme="dark"] .mobile-nav__close,
 [data-theme="dark"] .search-dialog__close,
-[data-theme="dark"] .section-nav__links a,
 [data-theme="dark"] .prev-next__link,
 [data-theme="dark"] .search-result,
 [data-theme="dark"] .mobile-page-toc,
@@ -2005,7 +1953,6 @@ img {
   background: rgba(18, 33, 29, 0.92);
 }
 
-[data-theme="dark"] .section-nav__links a:hover,
 [data-theme="dark"] .section-nav__links a.is-active {
   background: var(--ink);
   color: var(--surface-strong);
