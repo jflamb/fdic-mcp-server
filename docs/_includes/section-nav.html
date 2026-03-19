@@ -12,22 +12,13 @@
 {% endfor %}
 
 {% if current_section and current_section.items.size > 1 %}
-<section class="section-nav" aria-label="{{ current_section.title }}">
-  <div class="section-nav__header">
-    <p class="section-nav__eyebrow">In this section</p>
-    <p class="section-nav__title">{{ current_section.title }}</p>
-    {% if current_section.description %}
-    <p>{{ current_section.description }}</p>
-    {% endif %}
+<nav class="section-nav" aria-label="{{ current_section.title }} pages">
+  <div class="section-nav__links">
+    {% for item in current_section.items %}
+    <a href="{{ item.url | relative_url }}"{% if item.url == page.url %} class="is-active" aria-current="page"{% endif %}>
+      {{ item.short_title | default: item.title }}
+    </a>
+    {% endfor %}
   </div>
-  <div class="section-nav__links-wrap">
-    <div class="section-nav__links">
-      {% for item in current_section.items %}
-      <a href="{{ item.url | relative_url }}"{% if item.url == page.url %} class="is-active" aria-current="page"{% endif %}>
-        {{ item.short_title | default: item.title }}
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-</section>
+</nav>
 {% endif %}
