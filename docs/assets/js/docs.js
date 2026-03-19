@@ -177,6 +177,72 @@ const initPrimaryNavIndicator = () => {
   });
 };
 
+const initSectionNavIndicator = () => {
+  document.querySelectorAll(".section-nav").forEach((section) => {
+    const linksContainer = section.querySelector(".section-nav__links");
+    if (!linksContainer) {
+      return;
+    }
+
+    const links = Array.from(linksContainer.querySelectorAll("a"));
+    const activeLink = links.find((link) => link.classList.contains("is-active"));
+
+    if (!activeLink) {
+      return;
+    }
+
+    section.classList.add("section-nav--animated");
+
+    const indicator = document.createElement("span");
+    indicator.className = "section-nav__indicator";
+    indicator.setAttribute("aria-hidden", "true");
+    linksContainer.appendChild(indicator);
+
+    let pinnedLink = activeLink;
+
+    const moveIndicator = (link, immediate = false) => {
+      if (!link) {
+        return;
+      }
+
+      const containerRect = linksContainer.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+
+      if (immediate) {
+        indicator.style.transition = "none";
+      }
+
+      indicator.style.width = `${linkRect.width}px`;
+      indicator.style.height = `${linkRect.height}px`;
+      indicator.style.transform = `translate(${linkRect.left - containerRect.left}px, ${linkRect.top - containerRect.top}px)`;
+      indicator.style.opacity = "1";
+
+      if (immediate) {
+        window.requestAnimationFrame(() => {
+          indicator.style.transition = "";
+        });
+      }
+    };
+
+    moveIndicator(pinnedLink, true);
+
+    links.forEach((link) => {
+      link.addEventListener("pointerenter", () => moveIndicator(link));
+      link.addEventListener("focus", () => moveIndicator(link));
+    });
+
+    linksContainer.addEventListener("pointerleave", () => moveIndicator(pinnedLink));
+    linksContainer.addEventListener("focusout", (event) => {
+      if (!linksContainer.contains(event.relatedTarget)) {
+        moveIndicator(pinnedLink);
+      }
+    });
+
+    window.addEventListener("resize", debounce(() => moveIndicator(pinnedLink, true), RESIZE_DEBOUNCE_MS));
+    window.addEventListener("load", () => moveIndicator(pinnedLink, true), { once: true });
+  });
+};
+
 const renderToc = (target, headings) => {
   target.innerHTML = "";
 
@@ -537,6 +603,7 @@ document.addEventListener("DOMContentLoaded", () => {
   enhanceCodeBlocks();
   enhanceTables();
   initPrimaryNavIndicator();
+  initSectionNavIndicator();
   initPageToc();
   initMobileNav();
   initSearch();
