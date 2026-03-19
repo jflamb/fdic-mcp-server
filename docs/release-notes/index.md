@@ -9,15 +9,24 @@ breadcrumbs:
   - title: Project Info
     url: /project-information/
 ---
-{% assign latest_release = site.data.latest_release %}
+{% assign releases = site.data.releases %}
+{% assign latest = site.data.latest_release %}
 
-Current releases are generated automatically by `semantic-release` and recorded on the GitHub Releases page.
+Releases are generated automatically by [semantic-release](https://github.com/semantic-release/semantic-release) from conventional commits. The current release is [{{ latest.tag_name }}]({{ latest.url }}).
 
-Latest published release: [{{ latest_release.tag_name }}]({{ latest_release.url }}){% if latest_release.published_at %}, published {{ latest_release.published_at | date: "%B %-d, %Y" }}{% endif %}.
+{% for release in releases %}
+## {{ release.display_name }}
 
-Historical manually curated notes remain here for earlier releases:
+<span class="release-date">{{ release.published_at | date: "%B %-d, %Y" }}</span>
 
-- [Version 1.1.3]({{ '/release-notes/v1.1.3/' | relative_url }})
-- [Version 1.1.2]({{ '/release-notes/v1.1.2/' | relative_url }})
-- [Version 1.1.1]({{ '/release-notes/v1.1.1/' | relative_url }})
-- [Version 1.1.0]({{ '/release-notes/v1.1.0/' | relative_url }})
+{{ release.body | markdownify }}
+
+[View on GitHub]({{ release.url }}){: .release-link }
+
+{% endfor %}
+
+{% if releases.size == 0 %}
+Release data was unavailable during the last docs build. See the [GitHub Releases page](https://github.com/jflamb/fdic-mcp-server/releases) for the full history.
+{% endif %}
+
+[View all releases on GitHub](https://github.com/jflamb/fdic-mcp-server/releases){: .release-link }
