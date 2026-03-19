@@ -29,7 +29,7 @@ body_class: overview-page
 ## Start here
 
 <div class="card-grid">
-  <a class="card" href="{{ '/getting-started/' | relative_url }}">
+  <a class="card" href="{{ '/setup/' | relative_url }}">
     <span class="card__eyebrow">Get Started</span>
     <h3>Choose the fastest setup path</h3>
     <p>Start with the hosted MCP URL when your host accepts remote servers. Use the local install path only when your host requires stdio.</p>
@@ -39,7 +39,7 @@ body_class: overview-page
     <h3>Find your MCP host instructions</h3>
     <p>Use the right setup steps for Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI.</p>
   </a>
-  <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
+  <a class="card" href="{{ '/prompting/' | relative_url }}">
     <span class="card__eyebrow">Use It Well</span>
     <h3>Learn the prompting patterns</h3>
     <p>Use copy-pasteable prompt patterns that stay explicit about dates, metrics, and dataset boundaries.</p>
@@ -64,10 +64,15 @@ body_class: overview-page
 </p>
 
 <div class="card-grid">
-  <a class="card" href="{{ '/user-guide/' | relative_url }}">
-    <span class="card__eyebrow">Use the Server</span>
-    <h3>Setup, prompting, and examples</h3>
-    <p>Installation, client setup, prompting guidance, practical examples, and troubleshooting.</p>
+  <a class="card" href="{{ '/setup/' | relative_url }}">
+    <span class="card__eyebrow">Setup</span>
+    <h3>Install and configure</h3>
+    <p>Installation, client setup for popular MCP hosts, and troubleshooting.</p>
+  </a>
+  <a class="card" href="{{ '/prompting/' | relative_url }}">
+    <span class="card__eyebrow">Prompting</span>
+    <h3>Write effective prompts</h3>
+    <p>Prompt patterns, copyable examples, and guidance on dates, metrics, and dataset boundaries.</p>
   </a>
   <a class="card" href="{{ '/tool-reference/' | relative_url }}">
     <span class="card__eyebrow">Choose Tools</span>
