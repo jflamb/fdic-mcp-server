@@ -38,7 +38,7 @@ sections:
   overview:
     title: Home
     items:
-      - title: FDIC BankFind MCP Server
+      - title: BankFind MCP Server
         short_title: Home
         url: /
   setup:
@@ -115,7 +115,7 @@ git commit -m "refactor: restructure navigation — split user section into setu
 title: Setup
 nav_group: setup
 kicker: Get Connected
-summary: Install, configure, and troubleshoot the FDIC BankFind MCP Server in your MCP host.
+summary: Install, configure, and troubleshoot the BankFind MCP Server in your MCP host.
 breadcrumbs:
   - title: Overview
     url: /

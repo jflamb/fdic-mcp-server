@@ -16,7 +16,7 @@ sections:
   overview:
     title: Home
     items:
-      - title: FDIC BankFind MCP Server
+      - title: BankFind MCP Server
         short_title: Home
         url: /
   setup:

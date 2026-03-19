@@ -2,7 +2,7 @@
 title: Setup
 nav_group: setup
 kicker: Get Connected
-summary: Install, configure, and troubleshoot the FDIC BankFind MCP Server in your MCP host.
+summary: Install, configure, and troubleshoot the BankFind MCP Server in your MCP host.
 breadcrumbs:
   - title: Overview
     url: /

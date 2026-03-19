@@ -1,8 +1,8 @@
 ---
-title: FDIC BankFind MCP Server
+title: BankFind MCP Server
 nav_group: overview
 kicker: MCP Documentation
-summary: Connect to the FDIC BankFind MCP Server, use its search and analysis tools, and find the right setup, reference, or support docs.
+summary: Connect to the BankFind MCP Server, use its search and analysis tools, and find the right setup, reference, or support docs.
 body_class: overview-page
 ---
 {% assign latest_release = site.data.latest_release %}
