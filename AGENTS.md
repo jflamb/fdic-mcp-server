@@ -84,6 +84,9 @@ Follow this sequence for substantive repo work unless the user explicitly asks f
 - Use sub-tasks when the work naturally splits into distinct deliverables or validation tracks.
 - Commit in logical chunks with clear, concise commit messages.
 - Use conventional commit messages for any commit that may land on `main`, because release automation derives versions from commit semantics. Use `fix:` for patch-level behavior fixes, `feat:` for new user-facing capability, and `!` or `BREAKING CHANGE:` for breaking changes. Do not hide behavior changes under `docs:` or `chore:` just to avoid a release bump.
+- Write commit subjects that describe the user-facing change, not the implementation detail. "feat: add peer group benchmarking tool" is better than "feat: add new tool." "fix: correct deposit ranking for tied institutions" is better than "fix: update sort logic."
+- Include a commit body when the subject alone is ambiguous or when the change has non-obvious implications. The body should explain why the change was made, not repeat what the diff shows.
+- These norms matter because semantic-release derives the published changelog from commit messages. Better commits produce better release notes without manual curation.
 - Ensure the final commit message that reaches `main` remains conventional. If the repo uses squash merges, make the PR title conventional as well so the squashed mainline commit keeps the correct release signal.
 - Do not manually bump `package.json` versions or create release tags by hand. `semantic-release` owns version calculation, tagging, GitHub Release publication, and downstream publishing.
 - When the work is ready for review, open a pull request that explains what changed, why it changed, how it was validated, and any follow-up risk or context.
