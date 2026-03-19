@@ -1,0 +1,40 @@
+---
+title: Prompting
+nav_group: prompting
+kicker: Use It Well
+summary: Write effective prompts for FDIC data queries, comparisons, and peer analysis.
+breadcrumbs:
+  - title: Overview
+    url: /
+---
+
+Learn the prompt patterns that produce reliable results, then use the examples as starting points for your own queries.
+
+<div class="card-grid">
+  <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
+    <span class="card__eyebrow">Patterns</span>
+    <h3>Prompting Guide</h3>
+    <p>Prompt patterns that work well with FDIC data, dates, and comparison questions.</p>
+  </a>
+  <a class="card" href="{{ '/usage-examples/' | relative_url }}">
+    <span class="card__eyebrow">Examples</span>
+    <h3>Usage Examples</h3>
+    <p>Copyable prompts and expected answer shapes for institution search, comparisons, and peer analysis.</p>
+  </a>
+  <a class="card" href="{{ '/tool-reference/' | relative_url }}">
+    <span class="card__eyebrow">Reference</span>
+    <h3>Tool Reference</h3>
+    <p>Pick the right search, lookup, comparison, or peer-analysis tool before you start prompting.</p>
+  </a>
+</div>
+
+<section class="doc-callout doc-callout--hero">
+  <p class="doc-callout__eyebrow">Try It</p>
+  <h2>Test prompts from the docs</h2>
+  <p>
+    Use the floating chat button in the lower-right corner or press <code>?</code> to open the hosted demo assistant without leaving this page.
+  </p>
+  <p>
+    <button type="button" class="chatbot-inline-open" data-chatbot-open>Open The Chat Launcher</button>
+  </p>
+</section>
