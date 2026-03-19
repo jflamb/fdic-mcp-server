@@ -405,7 +405,7 @@ img {
 }
 
 .section-nav--animated .section-nav__links a:hover {
-  color: var(--ink-soft);
+  color: var(--surface-strong);
 }
 
 .section-nav__indicator {
