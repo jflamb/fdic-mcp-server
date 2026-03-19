@@ -53,18 +53,3 @@ sections:
         url: /security/
       - title: Release Notes
         url: /release-notes/
-  release_notes:
-    title: Release Notes
-    parent: project
-    items:
-      - title: Release Notes
-        short_title: Overview
-        url: /release-notes/
-      - title: Version 1.1.3
-        url: /release-notes/v1.1.3/
-      - title: Version 1.1.2
-        url: /release-notes/v1.1.2/
-      - title: Version 1.1.1
-        url: /release-notes/v1.1.1/
-      - title: Version 1.1.0
-        url: /release-notes/v1.1.0/
