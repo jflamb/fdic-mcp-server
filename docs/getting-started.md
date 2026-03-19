@@ -10,7 +10,7 @@ breadcrumbs:
     url: /user-guide/
 ---
 
-This server gives MCP-compatible clients access to public FDIC BankFind datasets and a set of server-side analysis tools for comparing institutions and peer groups.
+This server gives MCP-compatible clients access to public FDIC BankFind datasets plus built-in comparison and peer-benchmarking tools.
 
 ## Easiest Option: Use The Hosted Endpoint
 
@@ -84,11 +84,7 @@ TRANSPORT=http PORT=3000 node dist/index.js
 
 The HTTP MCP endpoint is available at `http://127.0.0.1:3000/mcp` by default.
 
-- Set `HOST` if you need to bind somewhere other than localhost.
-- Set `ALLOWED_ORIGINS` to a comma-separated origin allowlist for browser-based access outside the localhost defaults.
-- HTTP clients should reuse the returned `MCP-Session-Id` after initialization.
-
-The Docker image and Cloud Run deployment use port `8080` by default; `3000` is the local shell example for direct runs outside the container.
+The Docker image and Cloud Run deployment use port `8080` by default; `3000` is the local shell example for direct runs outside the container. Advanced transport and deployment details live in the repository reference docs.
 
 ### Connect A Client
 
@@ -123,6 +119,5 @@ Find active FDIC-insured banks in North Carolina with more than $1 billion in as
 
 Expected behavior:
 
-- the model should call `fdic_search_institutions`
-- filters should include `STNAME:"North Carolina"`, `ACTIVE:1`, and `ASSET:[1000000 TO *]`
-- results should come back with both human-readable output and machine-readable `structuredContent`
+- the model should return matching North Carolina institutions
+- the results should focus on active banks above the requested asset threshold

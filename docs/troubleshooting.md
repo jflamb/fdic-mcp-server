@@ -26,13 +26,17 @@ Before debugging a client-specific issue, verify:
 
 ChatGPT Developer Mode expects a remotely reachable MCP server over HTTP or SSE. A local stdio command such as `/opt/homebrew/bin/fdic-mcp-server` is not enough by itself.
 
-Use the server's HTTP transport:
+Use the hosted URL when possible:
+
+```text
+https://bankfind.jflamb.com/mcp
+```
+
+If you are intentionally running your own local or self-hosted HTTP version, start it with:
 
 ```bash
 TRANSPORT=http PORT=3000 fdic-mcp-server
 ```
-
-Local HTTP runs bind to `127.0.0.1` by default. Set `HOST` to change the bind address, and set `ALLOWED_ORIGINS` if the browser origin is not one of the local defaults.
 
 Then expose it through a reachable HTTPS URL.
 
@@ -42,11 +46,10 @@ If you are running the Docker image or Cloud Run deployment instead of the local
 
 Common causes:
 
-- the filter field is wrong for that dataset
-- the `fields` or `sort_by` value belongs to a different FDIC endpoint
+- the filter or sort choice does not apply to the kind of records you asked for
 - the bank is inactive and you filtered on `ACTIVE:1`
 - the report date is outside the relevant range
-- you are using SOD-style branch questions against a quarterly dataset
+- you asked a branch question with a quarterly dataset instead of SOD or locations data
 
 ### Why do results look inconsistent across tools?
 
@@ -61,7 +64,7 @@ If you compare across datasets, state the date basis clearly.
 
 ### Why does a comparison return warnings?
 
-Warnings usually mean the server detected incomplete or potentially misleading analysis conditions, such as a truncated roster or missing values for some institutions.
+Warnings usually mean the comparison has limits you should read before drawing conclusions, such as partial peer coverage or missing values for some institutions.
 
 The tool still returns data, but you should read the warnings before drawing conclusions.
 
@@ -91,9 +94,9 @@ node dist/index.js
 Check:
 
 - that the server is running with `TRANSPORT=http`
-- that the MCP endpoint is `/mcp`
-- that the client sends `Content-Type: application/json`
-- that the client accepts both `application/json` and `text/event-stream`
+- that your client is pointed at the MCP URL rather than the site home page
+- that the URL ends in `/mcp`
+- that your MCP host supports remote HTTP MCP connections
 
 ### The model keeps choosing the wrong tool
 
@@ -108,7 +111,7 @@ See [Prompting Guide]({{ '/prompting-guide/' | relative_url }}) and [Tool Refere
 
 ### I asked about branches and got quarterly figures instead
 
-You likely needed SOD or demographics data instead of quarterly financials.
+You likely needed branch or office data instead of quarterly financials.
 
 - Use `fdic_search_sod` for branch deposit totals
 - Use `fdic_search_demographics` for office counts and market-structure fields
@@ -129,4 +132,4 @@ Then update the client configuration with the actual binary path.
 
 - Review [Client Setup]({{ '/clients/' | relative_url }})
 - Review [Support]({{ '/support/' | relative_url }})
-- Open an issue with the exact MCP host, transport, prompt, and observed error
+- Open an issue with the exact MCP host, setup path, prompt, and observed error
