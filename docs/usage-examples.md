@@ -1,13 +1,13 @@
 ---
 title: Usage Examples
-nav_group: user
-kicker: User Docs
+nav_group: prompting
+kicker: Prompting
 summary: Copyable prompts for institution search, financial retrieval, snapshot comparison, and peer analysis, plus what a good answer should cover.
 breadcrumbs:
   - title: Overview
     url: /
-  - title: User Docs
-    url: /user-guide/
+  - title: Prompting
+    url: /prompting/
 ---
 
 The examples below are phrased as natural-language prompts, followed by the kind of answer you should expect.

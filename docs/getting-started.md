@@ -1,13 +1,13 @@
 ---
 title: Getting Started
-nav_group: user
-kicker: User Docs
+nav_group: setup
+kicker: Setup
 summary: Start with a hosted MCP URL when your host supports it, or use the local install path when you need a stdio server on your own machine.
 breadcrumbs:
   - title: Overview
     url: /
-  - title: Use the Server
-    url: /user-guide/
+  - title: Setup
+    url: /setup/
 ---
 
 This server gives MCP-compatible clients access to public FDIC BankFind datasets plus built-in comparison and peer-benchmarking tools.

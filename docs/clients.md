@@ -1,13 +1,13 @@
 ---
 title: Client Setup
-nav_group: user
-kicker: User Docs
+nav_group: setup
+kicker: Setup
 summary: Configure the server in Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI, with transport-specific caveats called out.
 breadcrumbs:
   - title: Overview
     url: /
-  - title: User Docs
-    url: /user-guide/
+  - title: Setup
+    url: /setup/
 ---
 
 This page collects setup notes for common MCP clients.

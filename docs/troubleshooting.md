@@ -1,13 +1,13 @@
 ---
 title: Troubleshooting And FAQ
-nav_group: user
-kicker: User Docs
+nav_group: setup
+kicker: Setup
 summary: Common setup failures, transport mismatches, dataset confusion, and prompt issues, with fast checks before escalation.
 breadcrumbs:
   - title: Overview
     url: /
-  - title: User Docs
-    url: /user-guide/
+  - title: Setup
+    url: /setup/
 ---
 
 ## Quick Checks

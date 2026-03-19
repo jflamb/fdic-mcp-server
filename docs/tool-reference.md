@@ -1,13 +1,13 @@
 ---
 title: Tool Reference
-nav_group: user
-kicker: User Guide
+nav_group: prompting
+kicker: Reference
 summary: Decide which MCP tool to use based on whether you need raw records, direct lookups, cross-period comparisons, or peer benchmarking.
 breadcrumbs:
   - title: Overview
     url: /
-  - title: Use the Server
-    url: /user-guide/
+  - title: Prompting
+    url: /prompting/
 ---
 
 This page summarizes what each MCP tool is for and when to use it.

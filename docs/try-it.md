@@ -1,13 +1,10 @@
 ---
 title: Try It
-nav_group: user
 kicker: Interactive Demo
 summary: Open the site-wide chat launcher from the lower-right corner or by pressing `?` anywhere in the docs.
 breadcrumbs:
   - title: Overview
     url: /
-  - title: Use the Server
-    url: /user-guide/
 body_class: page-try-it
 ---
 

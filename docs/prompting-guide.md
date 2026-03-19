@@ -1,13 +1,13 @@
 ---
 title: Prompting Guide
-nav_group: user
-kicker: User Docs
+nav_group: prompting
+kicker: Prompting
 summary: Write prompts that state the right data type, date basis, geography, and comparison logic so the model can answer reliably.
 breadcrumbs:
   - title: Overview
     url: /
-  - title: User Docs
-    url: /user-guide/
+  - title: Prompting
+    url: /prompting/
 ---
 
 This server works best when prompts are explicit about the dataset, time basis, geography, and ranking criteria.
