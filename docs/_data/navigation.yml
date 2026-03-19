@@ -2,9 +2,12 @@ primary:
   - key: overview
     title: Home
     url: /
-  - key: user
-    title: Use the Server
-    url: /user-guide/
+  - key: setup
+    title: Setup
+    url: /setup/
+  - key: prompting
+    title: Prompting
+    url: /prompting/
   - key: project
     title: Project & Support
     url: /project-information/
@@ -12,34 +15,29 @@ primary:
 sections:
   overview:
     title: Home
-    description: What this server is, who it is for, and the fastest paths into the docs.
     items:
       - title: FDIC BankFind MCP Server
         short_title: Home
         url: /
-  user:
-    title: Use the Server
-    description: Setup, prompting, examples, and troubleshooting for people using the MCP server.
+  setup:
+    title: Setup
     items:
-      - title: Use the Server
-        short_title: Overview
-        url: /user-guide/
       - title: Getting Started
         url: /getting-started/
       - title: Client Setup
         url: /clients/
+      - title: Troubleshooting And FAQ
+        short_title: Troubleshooting
+        url: /troubleshooting/
+  prompting:
+    title: Prompting
+    items:
       - title: Prompting Guide
         url: /prompting-guide/
       - title: Usage Examples
         url: /usage-examples/
-      - title: Troubleshooting And FAQ
-        short_title: Troubleshooting
-        url: /troubleshooting/
-      - title: Try It
-        url: /try-it/
   project:
     title: Project & Support
-    description: Release history, support posture, compatibility guidance, and contribution workflow.
     items:
       - title: Project & Support
         short_title: Overview
@@ -57,7 +55,6 @@ sections:
         url: /release-notes/
   release_notes:
     title: Release Notes
-    description: Published releases and historical version notes.
     parent: project
     items:
       - title: Release Notes
