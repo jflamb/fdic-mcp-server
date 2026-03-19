@@ -1089,9 +1089,25 @@ img {
   margin-bottom: 0.5em;
 }
 
-.hero-panel p:last-child,
-.hero-panel ul:last-child {
+.hero-panel > :first-child,
+.card > :first-child,
+.doc-callout > :first-child {
+  margin-top: 0;
+}
+
+.hero-panel > :last-child,
+.card > :last-child,
+.doc-callout > :last-child {
   margin-bottom: 0;
+}
+
+.hero-panel h2,
+.hero-panel h3,
+.hero-panel h4,
+.doc-callout h2,
+.doc-callout h3,
+.doc-callout h4 {
+  margin-top: 0;
 }
 
 .card {
