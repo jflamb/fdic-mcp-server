@@ -9,3 +9,5 @@ docs/.jekyll-cache/
 .envrc
 .envrc.local
 .env
+docs/_data/latest_release.json
+docs/_data/releases.json
