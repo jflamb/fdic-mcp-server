@@ -645,7 +645,7 @@ img {
   bottom: 0;
   width: min(42rem, calc(100vw - 2rem));
   display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
+  grid-template-rows: auto auto 1fr auto;
   gap: 1rem;
   padding: 1.25rem 1.2rem 1.2rem;
   background: rgba(255, 255, 255, 0.96);
@@ -899,6 +899,10 @@ img {
 .chatbot-demo__fallback-noscript {
   margin: 0;
   color: var(--muted);
+}
+
+.chatbot-demo__fallback[hidden] {
+  display: none;
 }
 
 .chatbot-demo__loading {
