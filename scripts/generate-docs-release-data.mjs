@@ -10,6 +10,8 @@ const outputPath = process.env.DOCS_LATEST_RELEASE_OUTPUT
   ? path.resolve(process.env.DOCS_LATEST_RELEASE_OUTPUT)
   : path.join(repoRoot, "docs", "_data", "latest_release.json");
 
+const releasesPath = path.join(path.dirname(outputPath), "releases.json");
+
 async function main() {
   const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8"));
   const repo = getRepositorySlug(packageJson);
@@ -23,6 +25,12 @@ async function main() {
 
   console.log(
     `Wrote docs latest release data for ${latestRelease.tag_name} to ${outputPath}`,
+  );
+
+  const releases = await fetchReleases(repo);
+  await writeFile(releasesPath, `${JSON.stringify(releases, null, 2)}\n`);
+  console.log(
+    `Wrote ${releases.length} releases to ${releasesPath}`,
   );
 }
 
@@ -86,6 +94,45 @@ async function fetchLatestRelease(repo) {
   } catch (error) {
     console.warn(`Falling back from GitHub release API: ${error.message}`);
     return null;
+  }
+}
+
+async function fetchReleases(repo, count = 10) {
+  const apiBaseUrl = process.env.GITHUB_API_URL ?? "https://api.github.com";
+  const url = `${apiBaseUrl}/repos/${repo}/releases?per_page=${count}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "fdic-mcp-server-docs-release-data",
+        ...(process.env.GITHUB_TOKEN
+          ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+          : {}),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API responded with ${response.status}`);
+    }
+
+    const releases = await response.json();
+
+    return releases.map((release) => {
+      const version = release.tag_name.replace(/^v/, "");
+      return {
+        tag_name: release.tag_name,
+        version,
+        display_name: `Version ${version}`,
+        url: release.html_url,
+        published_at: release.published_at,
+        body: release.body || "",
+        summary: summarizeReleaseBody(release.body),
+      };
+    });
+  } catch (error) {
+    console.warn(`Failed to fetch releases list: ${error.message}`);
+    return [];
   }
 }
 
