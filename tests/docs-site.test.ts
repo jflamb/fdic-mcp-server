@@ -8,11 +8,13 @@ const readRepoFile = (relativePath: string) =>
   readFileSync(path.join(repoRoot, relativePath), "utf8");
 
 describe("docs site review v2 follow-up", () => {
-  it("keeps section navigation descriptive without introducing a heading before the page h1", () => {
+  it("keeps section navigation as a lightweight tab row without headings", () => {
     const sectionNav = readRepoFile("docs/_includes/section-nav.html");
 
-    expect(sectionNav).toContain('<p class="section-nav__title">');
+    expect(sectionNav).toContain('<nav class="section-nav"');
+    expect(sectionNav).toContain('class="section-nav__links"');
     expect(sectionNav).not.toContain("<h2>");
+    expect(sectionNav).not.toContain("<h3>");
   });
 
   it("marks desktop and mobile page toc containers as navigation landmarks", () => {
