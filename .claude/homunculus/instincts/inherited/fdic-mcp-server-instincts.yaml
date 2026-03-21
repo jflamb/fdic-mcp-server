@@ -1,0 +1,375 @@
+# Instincts generated from https://github.com/jflamb/fdic-mcp-server
+# Generated: 2026-03-21T22:46:14.303Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: fdic-mcp-server-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Commit Length
+
+## Action
+
+Keep commit messages concise (~49 characters)
+
+## Evidence
+
+- Average commit message length: 49 chars
+- Based on 165 commits
+
+---
+id: fdic-mcp-server-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: fdic-mcp-server-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: fdic-mcp-server-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: fdic-mcp-server-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: resources, schemas, services, tools
+
+---
+id: fdic-mcp-server-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: fdic-mcp-server-test-framework
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Test Framework
+
+## Action
+
+Use vitest as the test framework
+
+## Evidence
+
+- Test framework detected: vitest
+- File pattern: *.test.ts
+
+---
+id: fdic-mcp-server-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Test Naming
+
+## Action
+
+Name test files using the pattern: *.test.ts
+
+## Evidence
+
+- File pattern: *.test.ts
+- Consistent across test files
+
+---
+id: fdic-mcp-server-test-mocking
+trigger: "when mocking dependencies in tests"
+confidence: 0.75
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Test Mocking
+
+## Action
+
+Use vi.mock for mocking
+
+## Evidence
+
+- Mocking pattern detected: vi.mock
+- Consistent across test files
+
+---
+id: fdic-mcp-server-test-types
+trigger: "when planning tests for a feature"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Test Types
+
+## Action
+
+Write unit, integration, e2e tests to match project standards
+
+## Evidence
+
+- Test types detected: unit, integration, e2e
+- Coverage config: no
+
+---
+id: fdic-mcp-server-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~11x per month
+- Files: src/schemas/*, src/tools/*, src/tools/shared/*
+
+---
+id: fdic-mcp-server-workflow-refactoring
+trigger: "when refactoring code"
+confidence: 0.75
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Workflow Refactoring
+
+## Action
+
+Follow the refactoring workflow:
+1. Ensure tests pass before refactor
+2. Refactor code structure
+3. Verify tests still pass
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~5x per month
+- Files: src/**/*
+
+---
+id: fdic-mcp-server-workflow-docs-site-content-structure-update
+trigger: "when doing docs site content structure update"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Workflow Docs Site Content Structure Update
+
+## Action
+
+Follow the docs-site-content-structure-update workflow:
+1. Edit docs/_data/navigation.yml to update navigation structure.
+2. Add or update hub pages in docs/ (e.g., setup.md, prompting.md).
+3. Update front matter in multiple docs/*.md files to reflect new sections.
+4. Add redirect layouts or update old URLs as needed.
+5. Update docs/index.md and related landing pages.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: docs/_data/navigation.yml, docs/*.md, docs/_layouts/redirect.html
+
+---
+id: fdic-mcp-server-workflow-docs-site-css-style-polish
+trigger: "when doing docs site css style polish"
+confidence: 0.8
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Workflow Docs Site Css Style Polish
+
+## Action
+
+Follow the docs-site-css-style-polish workflow:
+1. Edit docs/assets/css/docs.css to adjust spacing, margins, padding, font weights, or colors.
+2. Optionally update related HTML includes or layouts for new class usage.
+3. Test visual changes in browser and dark/light modes.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~6x per month
+- Files: docs/assets/css/docs.css, docs/_includes/*.html, docs/_layouts/*.html
+
+---
+id: fdic-mcp-server-workflow-docs-site-feature-implementation-plan
+trigger: "when doing docs site feature implementation plan"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Workflow Docs Site Feature Implementation Plan
+
+## Action
+
+Follow the docs-site-feature-implementation-plan workflow:
+1. Create or update a markdown file in docs/plans/ describing the design or implementation steps.
+2. Commit with a message referencing the feature or redesign.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: docs/plans/*.md
+
+---
+id: fdic-mcp-server-workflow-tool-schema-and-validation-enhancement
+trigger: "when doing tool schema and validation enhancement"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Workflow Tool Schema And Validation Enhancement
+
+## Action
+
+Follow the tool-schema-and-validation-enhancement workflow:
+1. Edit src/schemas/*.ts and/or src/tools/*.ts to update types, validation, or defaults.
+2. Edit or add tests in tests/*.test.ts to cover new validation or defaults.
+3. Update inline documentation/comments and tool descriptions.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: src/schemas/*.ts, src/tools/*.ts, tests/*.test.ts
+
+---
+id: fdic-mcp-server-workflow-docs-site-js-feature-or-bugfix
+trigger: "when doing docs site js feature or bugfix"
+confidence: 0.7
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/jflamb/fdic-mcp-server
+---
+
+# Fdic Mcp Server Workflow Docs Site Js Feature Or Bugfix
+
+## Action
+
+Follow the docs-site-js-feature-or-bugfix workflow:
+1. Edit docs/assets/js/docs.js and/or docs/assets/js/chatbot.js to add or fix features.
+2. Optionally update related CSS or HTML includes.
+3. Test changes in browser and automated tests.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~4x per month
+- Files: docs/assets/js/docs.js, docs/assets/js/chatbot.js, docs/assets/css/docs.css
+
