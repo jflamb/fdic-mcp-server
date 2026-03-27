@@ -21,6 +21,12 @@ import { extractCanonicalMetrics, CANONICAL_FIELDS } from "./shared/metricNormal
 import { computePeerStats, type PeerStats } from "./shared/peerEngine.js";
 import { assembleProxyAssessment, type OverallBand } from "./shared/publicCamelsProxy.js";
 import { fetchHistoryEvents } from "./shared/historyFetch.js";
+import {
+  computeCamelsMetrics,
+  scoreComponent,
+  compositeScore,
+  type ComponentScore,
+} from "./shared/camelsScoring.js";
 
 interface PeerHealthEntry {
   cert: number;
@@ -256,6 +262,12 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             historyEvents: cert === params.cert ? subjectHistory : undefined,
           });
 
+          const legacyMetrics = computeCamelsMetrics(fin);
+          const legacyComponents: ComponentScore[] = (["C", "A", "E", "L", "S"] as const).map(
+            (c) => scoreComponent(c, legacyMetrics),
+          );
+          const legacyComposite = compositeScore(legacyComponents);
+
           const profile = profileMap.get(cert);
           const ca = proxyAssessment.component_assessment;
 
@@ -285,8 +297,8 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             total_assets: asNumber(fin.ASSET),
             proxy_score: proxyAssessment.overall.score,
             proxy_band: proxyAssessment.overall.band,
-            composite_rating: Math.round(5 - proxyAssessment.overall.score), // map 4.0→1, 1.0→4 for legacy compat
-            composite_label: proxyAssessment.overall.band,
+            composite_rating: legacyComposite.rating,
+            composite_label: legacyComposite.label,
             component_ratings: componentRatings,
             flags,
           });
