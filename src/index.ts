@@ -22,6 +22,9 @@ import { registerSodTools } from "./tools/sod.js";
 import { registerDemographicsTools } from "./tools/demographics.js";
 import { registerAnalysisTools } from "./tools/analysis.js";
 import { registerPeerGroupTools } from "./tools/peerGroup.js";
+import { registerBankHealthTools } from "./tools/bankHealth.js";
+import { registerPeerHealthTools } from "./tools/peerHealth.js";
+import { registerRiskSignalTools } from "./tools/riskSignals.js";
 import { registerSchemaResources } from "./resources/schemaResources.js";
 
 export function createServer(): McpServer {
@@ -39,6 +42,9 @@ export function createServer(): McpServer {
   registerDemographicsTools(server);
   registerAnalysisTools(server);
   registerPeerGroupTools(server);
+  registerBankHealthTools(server);
+  registerPeerHealthTools(server);
+  registerRiskSignalTools(server);
   registerSchemaResources(server);
 
   return server;

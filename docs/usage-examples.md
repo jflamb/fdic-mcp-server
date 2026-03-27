@@ -96,4 +96,47 @@ What a good answer should do:
 
 - Build a comparable peer set for the requested bank and report where it ranks on the requested metrics.
 
+## Analyze Bank Health
+
+Prompt:
+
+```text
+Run a CAMELS-style health assessment for CERT 3511 as of December 31, 2024 with 8 quarters of trend data.
+```
+
+What a good answer should do:
+
+- Return composite and component ratings (Capital, Asset Quality, Earnings, Liquidity, Sensitivity) with individual metric scores.
+- Show trend analysis for key metrics across prior quarters.
+- Flag any risk signals at critical or warning level.
+- Note that this is an analytical assessment, not an official regulatory rating.
+
+## Compare Peer Health
+
+Prompt:
+
+```text
+Compare CAMELS health scores for all active banks in Wyoming, sorted by composite rating.
+```
+
+What a good answer should do:
+
+- Score each institution using CAMELS-style analysis.
+- Rank institutions by composite rating (or a specific component if requested).
+- Show component breakdowns and flag any institutions with concerning scores.
+
+## Detect Risk Signals
+
+Prompt:
+
+```text
+Scan active banks in North Carolina with under $500 million in assets for risk signals. Show critical and warning flags only.
+```
+
+What a good answer should do:
+
+- Screen the matched institutions for early warning indicators.
+- Categorize signals by severity (critical, warning) and CAMELS category (capital, earnings, liquidity, etc.).
+- Rank flagged institutions by severity count so the most concerning appear first.
+
 If your MCP host shows tool activity, you may also see the model choose one or more FDIC BankFind tools behind the scenes. The public docs focus on prompt wording and result quality rather than response-format details.

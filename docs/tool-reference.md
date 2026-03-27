@@ -39,12 +39,25 @@ This page summarizes what each MCP tool is for and when to use it.
 | `fdic_compare_bank_snapshots` | You want to compare multiple banks across two quarterly report dates or over a quarterly time series | Best for growth, profitability, branch-count, and trend analysis |
 | `fdic_peer_group_analysis` | You want to benchmark one institution against a peer group at a single report date | Best for ranking a bank against comparable institutions |
 
+## Health And Risk Analysis Tools
+
+| Tool | Use It When | Notes |
+|------|-------------|-------|
+| `fdic_analyze_bank_health` | You want a CAMELS-style health assessment for a single institution | Scores Capital, Asset Quality, Earnings, Liquidity, and Sensitivity with trend analysis and risk signals |
+| `fdic_compare_peer_health` | You want to rank a group of institutions by CAMELS-style health scores | Compare by composite score or any individual component (capital, earnings, etc.) |
+| `fdic_detect_risk_signals` | You want to scan institutions for early warning indicators | Flags critical issues (undercapitalized, operating losses) and warnings (deteriorating trends, high brokered deposits) |
+
+These tools produce analytical assessments based on public financial data. They are not official regulatory CAMELS ratings.
+
 ## Choosing The Right Tool
 
 - Use search tools when you want raw records.
 - Use lookup tools when you already know the `CERT`.
 - Use `fdic_compare_bank_snapshots` when the question compares banks across time.
 - Use `fdic_peer_group_analysis` when the question is "How does this bank rank against peers right now?"
+- Use `fdic_analyze_bank_health` when the question is "How healthy is this bank?" or "What are its strengths and weaknesses?"
+- Use `fdic_compare_peer_health` when you want to rank peers by overall health rather than a single metric.
+- Use `fdic_detect_risk_signals` when you want to screen a set of banks for potential concerns.
 
 ## Data Basis Reminder
 
