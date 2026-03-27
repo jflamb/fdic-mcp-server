@@ -14,12 +14,12 @@ test("floating launcher opens the chat and suggested prompts send a message", as
 
   await launcher.click();
   await expect(page.locator("[data-chatbot-panel]")).toBeVisible();
-  await expect(page.getByRole("button", { name: /Find active banks in Texas/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /10 largest active banks in California/i })).toBeVisible();
 
-  await page.getByRole("button", { name: /Find active banks in Texas/i }).click();
+  await page.getByRole("button", { name: /10 largest active banks in California/i }).click();
 
   await expect(page.locator(".chatbot-demo__loading")).toBeVisible();
-  await expect(page.getByText("Texas results")).toBeVisible();
+  await expect(page.getByText("California results")).toBeVisible();
   await expect(page.getByText("Bank A")).toBeVisible();
 });
 

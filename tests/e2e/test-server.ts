@@ -51,10 +51,10 @@ app.get("/chat/status", (_req, res) => {
 
 app.post("/chat", (req, res) => {
   const prompt = req.body?.messages?.[0]?.content ?? "";
-  const isPromptClick = prompt.includes("Texas");
+  const isPromptClick = prompt.includes("California");
   const isRichMarkdown = prompt.includes("rich markdown");
   const reply = isPromptClick
-    ? "**Texas results**\n\n- Bank A\n- Bank B"
+    ? "**California results**\n\n- Bank A\n- Bank B"
     : isRichMarkdown
       ? [
           "## Results summary",
