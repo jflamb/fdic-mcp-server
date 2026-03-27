@@ -335,12 +335,12 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             const subjectExtraction = extractCanonicalMetrics(subjectFin);
             const sm = subjectExtraction.metrics;
 
-            const PEER_METRICS: { key: keyof typeof sm; label: string }[] = [
-              { key: "roaPct", label: "roaPct" },
-              { key: "equityCapitalRatioPct", label: "equityCapitalRatioPct" },
-              { key: "netInterestMarginPct", label: "netInterestMarginPct" },
-              { key: "efficiencyRatioPct", label: "efficiencyRatioPct" },
-              { key: "loanToDepositPct", label: "loanToDepositPct" },
+            const PEER_METRICS: { key: keyof typeof sm; label: string; higherIsBetter: boolean }[] = [
+              { key: "roaPct", label: "roaPct", higherIsBetter: true },
+              { key: "equityCapitalRatioPct", label: "equityCapitalRatioPct", higherIsBetter: true },
+              { key: "netInterestMarginPct", label: "netInterestMarginPct", higherIsBetter: true },
+              { key: "efficiencyRatioPct", label: "efficiencyRatioPct", higherIsBetter: false },
+              { key: "loanToDepositPct", label: "loanToDepositPct", higherIsBetter: false },
             ];
 
             // Collect metric values from all peers (excluding subject)
@@ -355,7 +355,9 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
                 .map((pe) => pe[pm.key])
                 .filter((v): v is number => v !== null);
               if (peerValues.length === 0) continue;
-              subjectPercentiles[pm.label] = computePeerStats(subjectVal, peerValues);
+              subjectPercentiles[pm.label] = computePeerStats(subjectVal, peerValues, {
+                higherIsBetter: pm.higherIsBetter,
+              });
             }
 
             // Build peer definition string

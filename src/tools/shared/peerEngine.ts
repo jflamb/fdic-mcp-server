@@ -92,12 +92,17 @@ export function computeWeightedAggregate(
   return entries.reduce((s, e) => s + e.value * e.weight, 0) / totalWeight;
 }
 
+export interface PeerStatsOptions {
+  higherIsBetter?: boolean;
+}
+
 /**
  * Compute full peer statistics for a single metric.
  */
 export function computePeerStats(
   subjectValue: number,
   peerValues: number[],
+  options?: PeerStatsOptions,
 ): PeerStats {
   const peerCount = peerValues.length;
 
@@ -116,7 +121,10 @@ export function computePeerStats(
   const sorted = [...peerValues].sort((a, b) => a - b);
   const median = computeMedian(sorted)!;
   const mean = peerValues.reduce((s, v) => s + v, 0) / peerCount;
-  const percentile = computePercentile(subjectValue, sorted);
+  const rawPercentile = computePercentile(subjectValue, sorted);
+  const effectivePercentile = (options?.higherIsBetter === false)
+    ? 100 - rawPercentile
+    : rawPercentile;
   const robustZ = computeRobustZScore(subjectValue, peerValues);
   const isOutlier = Math.abs(robustZ) >= 2.5;
 
@@ -125,7 +133,7 @@ export function computePeerStats(
     peer_median: median,
     peer_mean: mean,
     subject_value: subjectValue,
-    subject_percentile: percentile,
+    subject_percentile: effectivePercentile,
     robust_z_score: robustZ,
     is_outlier: isOutlier,
   };

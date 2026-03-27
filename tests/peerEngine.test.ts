@@ -88,6 +88,26 @@ describe("computePeerStats", () => {
     expect(stats.subject_percentile).toBe(50);
     expect(stats.is_outlier).toBe(false);
   });
+
+  it("inverts percentile for lower-is-better metrics", () => {
+    // Efficiency ratio: lower is better. Subject at 55% with peers at [50, 60, 70, 80, 90]
+    // Raw percentile: 1 of 5 values <= 55 = 20th percentile
+    // Inverted: 100 - 20 = 80th percentile (being low is good)
+    const stats = computePeerStats(55, [50, 60, 70, 80, 90], { higherIsBetter: false });
+    expect(stats.subject_percentile).toBe(80);
+  });
+
+  it("does not invert percentile for higher-is-better metrics", () => {
+    const stats = computePeerStats(8, [2, 4, 6, 8, 10], { higherIsBetter: true });
+    // 4 of 5 values <= 8 = 80th percentile (being high is good)
+    expect(stats.subject_percentile).toBe(80);
+  });
+
+  it("defaults to higher-is-better when no options provided", () => {
+    // Backward compatible: existing callers without options should behave as before
+    const stats = computePeerStats(8, [2, 4, 6, 8, 10]);
+    expect(stats.subject_percentile).toBe(80);
+  });
 });
 
 describe("computeWeightedAggregate", () => {
