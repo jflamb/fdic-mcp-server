@@ -28,53 +28,163 @@ This server works best when prompts are explicit about the dataset, time basis, 
 - Summary of Deposits data is annual branch data as of June 30.
 - Do not mix quarterly financial questions with annual branch questions unless the prompt acknowledges the different dates.
 
-## Good Prompt Patterns
+## Sample Prompts
 
-Institution search:
+Each prompt below lists the tools it exercises so you can see how prompts map to server capabilities. Together, these 15 prompts cover every tool in the MCP server.
+
+### Institution discovery
 
 ```text
-Find active banks in Texas with total assets above $5 billion.
+Find active banks in California with over $10 billion in assets.
 ```
 
-Single-institution lookup:
+Tools used: `fdic_search_institutions`
+
+What to expect: A filtered list of California institutions above the asset threshold, with name, location, charter class, and asset size.
+
+### Direct institution lookup
 
 ```text
 Get the FDIC institution record for CERT 3511.
 ```
 
-Quarterly financial history:
+Tools used: `fdic_get_institution`
+
+What to expect: The full institution profile for the requested CERT number.
+
+### Quarterly financials
 
 ```text
-Show Bank of America quarterly financial data for 2024, sorted newest first.
+Show quarterly financials for CERT 3511 during 2024, sorted newest first.
 ```
 
-Snapshot comparison:
+Tools used: `fdic_search_financials`
+
+What to expect: Up to four quarterly Call Report records with balance sheet, income, capital, and ratio data.
+
+### Annual summary data
 
 ```text
-Compare North Carolina banks between December 31, 2021 and June 30, 2025 and rank them by deposit growth percentage.
+Show annual summary data for CERT 628 from 2018 through 2024.
 ```
 
-Peer analysis:
+Tools used: `fdic_search_summary`
+
+What to expect: Yearly aggregate snapshots of assets, deposits, income, and office counts across the requested range.
+
+### Branch-level deposits
 
 ```text
-Build a peer group for CERT 29846 as of December 31, 2024 and tell me where it ranks on ROA, ROE, and efficiency ratio.
+Show all branch deposit totals for CERT 3511 from the 2024 Summary of Deposits report.
 ```
 
-Bank health assessment:
+Tools used: `fdic_search_sod`
+
+What to expect: Branch-by-branch deposit balances as of June 30, 2024, with branch name, address, MSA, and deposit total.
+
+### Demographics and office footprint
 
 ```text
-Run a CAMELS-style health assessment for CERT 3511 as of December 31, 2024 with 8 quarters of trend data.
+How many offices does CERT 628 operate, and in how many states?
 ```
 
-Risk signal scan:
+Tools used: `fdic_search_demographics`
+
+What to expect: Quarterly demographic data including total office count, multi-state presence, metro classification, and territory assignment.
+
+### Structural history
 
 ```text
-Scan active banks in Wyoming for risk signals. Flag any critical or warning-level concerns.
+Has CERT 3511 been involved in any mergers or name changes?
 ```
 
-## Copy-Paste Analysis Prompts
+Tools used: `fdic_search_history`
 
-These prompts are intentionally narrow enough to return a clear answer in one pass, while still requiring deeper comparison work.
+What to expect: A chronological list of structural events — mergers, acquisitions, charter conversions, and name changes.
+
+### Branch locations
+
+```text
+Show all branch locations for CERT 628 in Texas.
+```
+
+Tools used: `fdic_search_locations`
+
+What to expect: Branch addresses, coordinates, branch type, and establishment dates for the institution's Texas offices.
+
+### Bank failure search
+
+```text
+List the 10 costliest bank failures since 2008 and show estimated losses to the Deposit Insurance Fund.
+```
+
+Tools used: `fdic_search_failures`
+
+What to expect: Failed institutions ranked by DIF cost estimate, with failure date, resolution type, and acquiring institution.
+
+### Failed bank lookup
+
+```text
+What happened when Silicon Valley Bank failed? Look up CERT 24735.
+```
+
+Tools used: `fdic_get_institution_failure`
+
+What to expect: The specific failure record — failure date, resolution method, estimated cost, and acquiring institution details.
+
+### Snapshot comparison across time
+
+```text
+Compare active North Carolina banks between December 31, 2022 and December 31, 2024. Rank them by deposit growth percentage, return the top 10, and call out which of those top growers also improved ROA.
+```
+
+Tools used: `fdic_compare_bank_snapshots`
+
+What to expect: A ranked comparison showing deposit growth, asset growth, and profitability changes for each institution across the two dates.
+
+### Peer group benchmarking
+
+```text
+Build a peer group for CERT 29846 as of December 31, 2024 and rank it on ROA, efficiency ratio, and loan-to-deposit ratio. Show where it stands relative to peer medians.
+```
+
+Tools used: `fdic_peer_group_analysis`
+
+What to expect: The subject institution ranked against auto-derived peers on each requested metric, with percentile position and peer medians.
+
+### Health assessment with proxy model
+
+```text
+Run a full health assessment for CERT 3511 with 8 quarters of trend history. Show the overall assessment band, capital classification, management overlay, and all risk signals.
+```
+
+Tools used: `fdic_analyze_bank_health`
+
+What to expect: A `public_camels_proxy_v1` assessment with composite and component ratings, PCA capital categorization (well capitalized through critically undercapitalized), management overlay level, enhanced trend analysis with consecutive-worsening flags, and standardized risk signal codes with severity levels.
+
+### Peer health comparison
+
+```text
+Compare the health scores for all active banks in Wyoming, sorted by composite rating. For the weakest institution, show its peer percentiles on ROA, equity ratio, and NIM.
+```
+
+Tools used: `fdic_compare_peer_health`
+
+What to expect: A ranked list of institutions by composite health score, with component ratings and flags. For the highlighted institution, peer percentiles, robust z-scores, and outlier flags for key metrics.
+
+### Risk signal screening with follow-through
+
+```text
+Scan all active banks in Wyoming for risk signals at the latest available quarter. Show only critical and warning-level flags. For any bank with critical signals, also run a full health assessment and explain what is driving the concern.
+```
+
+Tools used: `fdic_detect_risk_signals`, `fdic_analyze_bank_health`
+
+What to expect: A severity-ranked list of flagged institutions with standardized signal codes (e.g., `capital_buffer_erosion`, `earnings_loss`, `funding_stress`). For critically flagged banks, a follow-up health assessment showing component detail and trend context.
+
+## Multi-Tool Analysis Prompts
+
+These prompts intentionally chain multiple tools for deeper analysis. They work best when the model can make several tool calls in sequence.
 
 Snapshot analysis with profitability follow-through:
 
@@ -82,46 +192,51 @@ Snapshot analysis with profitability follow-through:
 Compare active North Carolina banks between December 31, 2021 and June 30, 2025. Rank them by deposit growth percentage, return the top 10, and call out which of those top growers also improved ROA and reduced office counts.
 ```
 
+Tools used: `fdic_compare_bank_snapshots`, `fdic_search_demographics`
+
 Peer analysis with explicit comparison points:
 
 ```text
 Build a peer group for CERT 29846 as of December 31, 2024. Report its rank and percentile for total assets, ROA, efficiency ratio, and loan-to-deposit ratio, then compare the bank to peer medians on those same metrics.
 ```
 
-Time-series analysis with warning-aware output:
+Tools used: `fdic_peer_group_analysis`
+
+Health deep-dive with peer context:
 
 ```text
-Analyze Texas banks from December 31, 2022 through December 31, 2024 using time-series mode. Identify institutions with sustained asset-growth streaks, then among those flag any bank that also had a multi-quarter ROA decline. Limit the answer to the five clearest examples and include any warnings that affect interpretation.
+Run a health assessment for CERT 3511 as of December 31, 2024 using 8 quarters of trend history. Summarize the overall band, component ratings, and risk signals. Then compare its health scores against peer banks in the same state and asset range.
 ```
 
-Focused branch-versus-balance-sheet question:
+Tools used: `fdic_analyze_bank_health`, `fdic_compare_peer_health`
+
+Failure forensics:
+
+```text
+Which bank failures since 2008 had the highest estimated losses? For the top 3, show their quarterly financials from the year before they failed and identify which risk signals were present.
+```
+
+Tools used: `fdic_search_failures`, `fdic_search_financials`, `fdic_detect_risk_signals`
+
+Branch versus balance sheet:
 
 ```text
 Compare South Carolina banks between December 31, 2021 and June 30, 2025. Find banks with positive asset growth and lower office counts, then rank them by deposits-per-office improvement and summarize whether the growth looks branch-supported or mainly balance-sheet driven.
 ```
 
-Bank health deep-dive with peer context:
-
-```text
-Run a CAMELS-style health assessment for CERT 3511 as of December 31, 2024 using 8 quarters of trend history. Summarize the composite and component ratings, highlight any deteriorating trends, and list all risk signals. Then compare its CAMELS scores against peer banks in the same state and asset range.
-```
-
-Risk signal screening with follow-through:
-
-```text
-Scan all active banks in Wyoming for risk signals at the latest available quarter. Show only critical and warning-level flags. For any bank with critical signals, also run a full health assessment and explain what is driving the concern.
-```
+Tools used: `fdic_compare_bank_snapshots`, `fdic_search_demographics`, `fdic_search_sod`
 
 ## Public Off-Site Proxy Model
 
-The health and risk tools now produce a `public_camels_proxy_v1` model in their structured output. When using these tools:
+The health and risk tools produce a `public_camels_proxy_v1` model in their structured output. When using these tools:
 
-- Ask for the "overall assessment band" to get the strong/satisfactory/weak/high_risk classification
-- Ask for "capital classification" to see PCA-style categorization
-- Ask about "risk signals" to see standardized signal codes with severity levels
-- Ask for "peer percentiles" when comparing against a peer group
+- Ask for the "overall assessment band" to get the strong / satisfactory / weak / high_risk classification.
+- Ask for "capital classification" to see PCA-style categorization (well capitalized, adequately capitalized, undercapitalized, etc.).
+- Ask about "risk signals" to see standardized signal codes with severity levels.
+- Ask for "peer percentiles" when comparing against a peer group.
+- Ask about the "management overlay" to see whether pattern-based concerns are flagged.
 
-These outputs are analytical proxies based on public FDIC data — not official supervisory conclusions.
+These outputs are analytical proxies based on public FDIC data — not official CAMELS ratings or confidential supervisory conclusions.
 
 ## Prompting Pitfalls
 
@@ -145,4 +260,6 @@ Ask for:
 - "Call out any warnings or missing data that affect the ranking."
 - "Run a health assessment for the lowest-ranked bank in that peer group."
 - "Which of those flagged banks have deteriorating capital trends?"
-- "Compare the CAMELS scores of the top 5 and bottom 5 banks in that group."
+- "Compare the health scores of the top 5 and bottom 5 banks in that group."
+- "What does the management overlay say about the weakest bank?"
+- "Show the pre-failure financials for any bank that was flagged critical."
