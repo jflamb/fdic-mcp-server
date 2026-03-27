@@ -349,17 +349,13 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
           CHARACTER_LIMIT,
         );
 
-        // Destructure to avoid risk_signals collision with legacy field
-        const { risk_signals: proxyRiskSignals, ...proxyRest } = proxyAssessment;
-
         return {
           content: [{ type: "text", text }],
           structuredContent: {
-            // NEW proxy assessment fields (additive)
-            ...proxyRest,
-            proxy_risk_signals: proxyRiskSignals,
+            // Proxy assessment (canonical shape, unchanged)
+            proxy: proxyAssessment,
 
-            // LEGACY compatibility fields (existing shape preserved)
+            // Legacy compatibility fields (existing shape preserved)
             institution: summary.institution,
             composite: summary.composite,
             components: summary.components,

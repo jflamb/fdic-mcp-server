@@ -138,6 +138,11 @@ interface InstitutionRiskResult {
   critical_count: number;
   warning_count: number;
   legacy_signals: RiskSignal[];
+  proxy_summary?: {
+    overall: { score: number; band: string };
+    capital_classification: { category: string; label: string };
+    data_quality: { report_date: string; staleness: string; gaps_count: number };
+  };
 }
 
 const RiskSignalsInputSchema = z.object({
@@ -401,6 +406,14 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
             critical_count: filteredSignals.filter((s) => s.severity === "critical").length,
             warning_count: filteredSignals.filter((s) => s.severity === "warning").length,
             legacy_signals: legacySignals,
+            proxy_summary: {
+              overall: proxyAssessment.overall,
+              capital_classification: {
+                category: proxyAssessment.capital_classification.category,
+                label: proxyAssessment.capital_classification.label,
+              },
+              data_quality: proxyAssessment.data_quality,
+            },
           });
         }
 
