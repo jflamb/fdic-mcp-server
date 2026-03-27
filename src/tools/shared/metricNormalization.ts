@@ -28,6 +28,7 @@ export interface CanonicalMetrics {
   loanToDepositPct: number | null;
   domesticDepositsToAssetsPct: number | null;
   coreDepositsToAssetsPct: number | null;
+  coreDepositsToDepositsPct: number | null;
   brokeredDepositsSharePct: number | null;
   cashAndDueToAssetsPct: number | null;
   // Asset Quality
@@ -178,6 +179,7 @@ export function extractCanonicalMetrics(
   const asset = asNumber(raw.ASSET);
   const eqtot = asNumber(raw.EQTOT);
   const depdom = asNumber(raw.DEPDOM);
+  const dep = asNumber(raw.DEP);
   const coredep = asNumber(raw.COREDEP);
   const sc = asNumber(raw.SC);
   const asstlt = asNumber(raw.ASSTLT);
@@ -222,6 +224,11 @@ export function extractCanonicalMetrics(
       "coreDepositsToAssetsPct",
       () => safeDivPct(coredep, asset),
       "COREDEP / ASSET * 100",
+    ),
+    coreDepositsToDepositsPct: derived(
+      "coreDepositsToDepositsPct",
+      () => safeDivPct(coredep, dep),
+      "COREDEP / DEP * 100",
     ),
     brokeredDepositsSharePct: direct("brokeredDepositsSharePct", "BROR"),
     cashAndDueToAssetsPct: direct("cashAndDueToAssetsPct", "CHBALR"),
@@ -290,7 +297,7 @@ export function toLegacyCamelsMetrics(
     noninterest_income_share: null, // derived in legacy, not canonical
     loan_to_deposit: cm.loanToDepositPct,
     deposits_to_assets: cm.domesticDepositsToAssetsPct,
-    core_deposit_ratio: cm.coreDepositsToAssetsPct,
+    core_deposit_ratio: cm.coreDepositsToDepositsPct,
     brokered_deposit_ratio: cm.brokeredDepositsSharePct,
     cash_ratio: cm.cashAndDueToAssetsPct,
     securities_to_assets: cm.securitiesToAssetsPct,

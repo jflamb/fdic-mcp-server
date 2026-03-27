@@ -61,6 +61,13 @@ describe("extractCanonicalMetrics", () => {
     const result = extractCanonicalMetrics(raw);
     expect(result.metrics.coreDepositsToAssetsPct).toBeNull();
   });
+
+  it("computes coreDepositsToDepositsPct from COREDEP/DEP", () => {
+    const raw: Record<string, unknown> = { COREDEP: 350000, DEP: 400000, ASSET: 500000 };
+    const result = extractCanonicalMetrics(raw);
+    expect(result.metrics.coreDepositsToDepositsPct).toBeCloseTo(87.5, 1);
+    expect(result.metrics.coreDepositsToAssetsPct).toBeCloseTo(70.0, 1);
+  });
 });
 
 describe("toLegacyCamelsMetrics", () => {
@@ -73,8 +80,8 @@ describe("toLegacyCamelsMetrics", () => {
       roaPct: 1.0, roePct: 10.0, netInterestMarginPct: 3.5,
       efficiencyRatioPct: 60.0, pretaxRoaPct: 1.2,
       loanToDepositPct: 80.0, domesticDepositsToAssetsPct: 76.0,
-      coreDepositsToAssetsPct: 70.0, brokeredDepositsSharePct: 5.0,
-      cashAndDueToAssetsPct: 8.0,
+      coreDepositsToAssetsPct: 70.0, coreDepositsToDepositsPct: 87.5,
+      brokeredDepositsSharePct: 5.0, cashAndDueToAssetsPct: 8.0,
       noncurrentLoansPct: 1.0, netChargeOffsPct: 0.3,
       reserveCoveragePct: 120.0, noncurrentAssetsPct: 0.5, provisionToLoansPct: 0.4,
       securitiesToAssetsPct: 20.0, longTermAssetsPct: null,
@@ -87,6 +94,26 @@ describe("toLegacyCamelsMetrics", () => {
     expect(legacy.nim_4q_change).toBe(-0.15);
     expect(legacy.reserve_to_loans).toBeNull(); // compat stub
     expect(legacy.noninterest_income_share).toBeNull(); // not canonical
+  });
+
+  it("maps core_deposit_ratio from deposits-based metric, not assets-based", () => {
+    const cm: CanonicalMetrics = {
+      totalAssets: 500000, totalDeposits: 400000, domesticDeposits: 380000,
+      equityCapital: 50000, netIncome: 5000,
+      tier1LeveragePct: 9.5, cet1RatioPct: 8.0, tier1RiskBasedPct: 14.2,
+      totalRiskBasedPct: 15.0, equityCapitalRatioPct: 10.0,
+      roaPct: 1.0, roePct: 10.0, netInterestMarginPct: 3.5,
+      efficiencyRatioPct: 60.0, pretaxRoaPct: 1.2,
+      loanToDepositPct: 80.0, domesticDepositsToAssetsPct: 76.0,
+      coreDepositsToAssetsPct: 70.0, coreDepositsToDepositsPct: 87.5,
+      brokeredDepositsSharePct: 5.0, cashAndDueToAssetsPct: 8.0,
+      noncurrentLoansPct: 1.0, netChargeOffsPct: 0.3,
+      reserveCoveragePct: 120.0, noncurrentAssetsPct: 0.5, provisionToLoansPct: 0.4,
+      securitiesToAssetsPct: 20.0, longTermAssetsPct: null,
+      volatileLiabilitiesToAssetsPct: null,
+    };
+    const legacy = toLegacyCamelsMetrics(cm, null);
+    expect(legacy.core_deposit_ratio).toBeCloseTo(87.5, 1);
   });
 });
 

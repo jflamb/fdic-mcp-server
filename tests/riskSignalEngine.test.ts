@@ -10,8 +10,8 @@ describe("classifyRiskSignalsV2", () => {
     roaPct: 1.0, roePct: 10.0, netInterestMarginPct: 3.5,
     efficiencyRatioPct: 60.0, pretaxRoaPct: 1.2,
     loanToDepositPct: 80.0, domesticDepositsToAssetsPct: 76.0,
-    coreDepositsToAssetsPct: 70.0, brokeredDepositsSharePct: 5.0,
-    cashAndDueToAssetsPct: 8.0,
+    coreDepositsToAssetsPct: 70.0, coreDepositsToDepositsPct: 87.5,
+    brokeredDepositsSharePct: 5.0, cashAndDueToAssetsPct: 8.0,
     noncurrentLoansPct: 1.0, netChargeOffsPct: 0.3,
     reserveCoveragePct: 120.0, noncurrentAssetsPct: 0.5, provisionToLoansPct: 0.4,
     securitiesToAssetsPct: 20.0, longTermAssetsPct: null,
@@ -128,6 +128,18 @@ describe("classifyRiskSignalsV2", () => {
     });
     expect(signals).toContainEqual(expect.objectContaining({
       code: "credit_deterioration", severity: "warning",
+    }));
+  });
+
+  it("flags credit_deterioration_trending using proxy trend key 'noncurrent_loans'", () => {
+    const signals = classifyRiskSignalsV2({
+      metrics: { ...baseMetrics, noncurrentLoansPct: 3.0 },
+      capitalClassification: wellCapitalized,
+      trends: [{ metric: "noncurrent_loans", direction: "deteriorating", magnitude: "moderate", consecutive_worsening: 3, yoy_change: 0.8 }],
+      repdte: "20241231",
+    });
+    expect(signals).toContainEqual(expect.objectContaining({
+      code: "credit_deterioration_trending", severity: "warning", category: "asset_quality",
     }));
   });
 
