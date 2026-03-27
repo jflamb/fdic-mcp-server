@@ -60,6 +60,18 @@ Peer analysis:
 Build a peer group for CERT 29846 as of December 31, 2024 and tell me where it ranks on ROA, ROE, and efficiency ratio.
 ```
 
+Bank health assessment:
+
+```text
+Run a CAMELS-style health assessment for CERT 3511 as of December 31, 2024 with 8 quarters of trend data.
+```
+
+Risk signal scan:
+
+```text
+Scan active banks in Wyoming for risk signals. Flag any critical or warning-level concerns.
+```
+
 ## Copy-Paste Analysis Prompts
 
 These prompts are intentionally narrow enough to return a clear answer in one pass, while still requiring deeper comparison work.
@@ -88,6 +100,18 @@ Focused branch-versus-balance-sheet question:
 Compare South Carolina banks between December 31, 2021 and June 30, 2025. Find banks with positive asset growth and lower office counts, then rank them by deposits-per-office improvement and summarize whether the growth looks branch-supported or mainly balance-sheet driven.
 ```
 
+Bank health deep-dive with peer context:
+
+```text
+Run a CAMELS-style health assessment for CERT 3511 as of December 31, 2024 using 8 quarters of trend history. Summarize the composite and component ratings, highlight any deteriorating trends, and list all risk signals. Then compare its CAMELS scores against peer banks in the same state and asset range.
+```
+
+Risk signal screening with follow-through:
+
+```text
+Scan all active banks in Wyoming for risk signals at the latest available quarter. Show only critical and warning-level flags. For any bank with critical signals, also run a full health assessment and explain what is driving the concern.
+```
+
 ## Prompting Pitfalls
 
 - "Find the best banks" is too vague. Say what "best" means.
@@ -108,3 +132,6 @@ Ask for:
 - "Now explain which of the top growers also improved profitability."
 - "Show the same peer group but sort by efficiency ratio instead of assets."
 - "Call out any warnings or missing data that affect the ranking."
+- "Run a health assessment for the lowest-ranked bank in that peer group."
+- "Which of those flagged banks have deteriorating capital trends?"
+- "Compare the CAMELS scores of the top 5 and bottom 5 banks in that group."

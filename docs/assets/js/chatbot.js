@@ -6,8 +6,8 @@ const SUGGESTED_PROMPTS = [
   "Find active banks in Texas with over $5 billion in assets",
   "List the 10 costliest bank failures since 2000",
   "Show quarterly financials for Bank of America during 2024",
-  "Compare North Carolina banks between 2021 and 2025 by deposit growth",
-  "Build a peer group for CERT 29846 and rank on ROA and efficiency ratio",
+  "Run a CAMELS-style health assessment for CERT 3511",
+  "Scan Wyoming banks for risk signals and early warnings",
 ];
 
 const escapeHtml = (value) =>
