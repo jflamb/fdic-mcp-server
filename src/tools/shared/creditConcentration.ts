@@ -60,6 +60,11 @@ export function computeCreditMetrics(raw: Record<string, unknown>): CreditMetric
   };
 }
 
+/**
+ * Evaluates credit concentration against interagency guidance thresholds.
+ * 300% CRE-to-capital and 100% construction-to-capital are the key thresholds
+ * from the 2006 interagency CRE guidance (OCC/FRB/FDIC).
+ */
 export function scoreCreditConcentration(m: CreditMetrics): CreditSignal[] {
   const signals: CreditSignal[] = [];
 

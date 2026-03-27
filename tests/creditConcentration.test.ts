@@ -96,6 +96,21 @@ describe("scoreCreditConcentration", () => {
     );
   });
 
+  it("returns empty array when all metrics are null", () => {
+    const signals = scoreCreditConcentration({
+      total_loans: null,
+      cre_to_total_loans: null,
+      cre_to_capital: null,
+      construction_to_capital: null,
+      ci_share: null,
+      consumer_share: null,
+      residential_re_share: null,
+      ag_share: null,
+      loans_to_assets: null,
+    });
+    expect(signals).toHaveLength(0);
+  });
+
   it("returns empty array when no thresholds breached", () => {
     const signals = scoreCreditConcentration({
       total_loans: 50000,
