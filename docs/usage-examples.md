@@ -139,4 +139,104 @@ What a good answer should do:
 - Categorize signals by severity (critical, warning) and CAMELS category (capital, earnings, liquidity, etc.).
 - Rank flagged institutions by severity count so the most concerning appear first.
 
+## Analyze Credit Concentration
+
+Prompt:
+
+```text
+Analyze the credit concentration for CERT 3511 as of December 31, 2024.
+```
+
+What a good answer should do:
+
+- Show loan portfolio composition by type (CRE, C&I, consumer, residential RE, agricultural).
+- Compute CRE and construction concentrations relative to capital.
+- Flag any concentrations exceeding interagency guidance thresholds (300% CRE-to-capital, 100% construction-to-capital).
+
+## Analyze Funding Profile
+
+Prompt:
+
+```text
+Analyze the funding profile for CERT 628 at the latest available quarter.
+```
+
+What a good answer should do:
+
+- Show deposit composition: core, brokered, and foreign deposits.
+- Compute wholesale funding reliance and FHLB advances as a percentage of assets.
+- Flag any funding risks: high brokered deposits, low core deposits, high wholesale funding.
+
+## Run UBPR-Equivalent Analysis
+
+Prompt:
+
+```text
+Run a UBPR-equivalent ratio analysis for CERT 29846 as of December 31, 2024.
+```
+
+What a good answer should do:
+
+- Show summary ratios (ROA, ROE, NIM, efficiency, pretax ROA).
+- Show loan mix, capital adequacy, and liquidity metrics.
+- Include year-over-year growth rates for assets, loans, and deposits.
+- Note that ratios are UBPR-equivalent, not official FFIEC UBPR output.
+
+## Analyze Deposit Market Share
+
+Prompt:
+
+```text
+Show the deposit market share for the Dallas-Fort Worth-Arlington MSA.
+```
+
+What a good answer should do:
+
+- List the top institutions by deposit share in the specified market.
+- Show total market deposits and Herfindahl-Hirschman Index (HHI) with concentration classification.
+- If a specific institution is highlighted, show its rank and share.
+
+## Map Franchise Footprint
+
+Prompt:
+
+```text
+Map the franchise footprint for CERT 628.
+```
+
+What a good answer should do:
+
+- Show all MSAs where the institution has branches with deposit totals and branch counts.
+- Sort markets by deposit size descending.
+- Summarize total branches and total deposits across all markets.
+
+## Profile Holding Company
+
+Prompt:
+
+```text
+Profile the holding company for CERT 3511.
+```
+
+What a good answer should do:
+
+- Identify the holding company and list all FDIC-insured subsidiaries.
+- Show aggregated metrics: total assets, total deposits, asset-weighted ROA and equity ratio.
+- Compare individual subsidiary performance within the holding company.
+
+## Regional Economic Context
+
+Prompt:
+
+```text
+What is the regional economic context for banks in California?
+```
+
+What a good answer should do:
+
+- Show state unemployment rate and trend (rising, falling, stable).
+- Compare state unemployment to the national rate.
+- Classify the interest rate environment based on the federal funds rate.
+- Provide a narrative summary of how economic conditions may affect bank performance.
+
 If your MCP host shows tool activity, you may also see the model choose one or more FDIC BankFind tools behind the scenes. The public docs focus on prompt wording and result quality rather than response-format details.
