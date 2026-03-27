@@ -13,6 +13,7 @@ import {
   asNumber,
   buildCertFilters,
   getDefaultReportDate,
+  getPriorQuarterDates,
   mapWithConcurrency,
   validateQuarterEndDate,
 } from "./shared/queryUtils.js";
@@ -131,24 +132,6 @@ export function classifyRiskSignals(
   }
 
   return signals;
-}
-
-function getPriorQuarterDates(repdte: string, count: number): string[] {
-  const dates: string[] = [];
-  const suffixes = ["0331", "0630", "0930", "1231"];
-  let year = Number.parseInt(repdte.slice(0, 4), 10);
-  let qIdx = suffixes.indexOf(repdte.slice(4));
-  if (qIdx === -1) return dates;
-
-  for (let i = 0; i < count; i++) {
-    qIdx--;
-    if (qIdx < 0) {
-      qIdx = 3;
-      year--;
-    }
-    dates.push(`${year}${suffixes[qIdx]}`);
-  }
-  return dates;
 }
 
 const SEVERITY_ORDER: Record<RiskSeverity, number> = { critical: 0, warning: 1, info: 2 };

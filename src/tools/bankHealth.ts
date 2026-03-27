@@ -10,6 +10,7 @@ import {
 import {
   ANALYSIS_TIMEOUT_MS,
   getDefaultReportDate,
+  getPriorQuarterDates,
   validateQuarterEndDate,
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
@@ -122,24 +123,6 @@ export function formatHealthSummaryText(summary: HealthSummary): string {
   }
 
   return parts.join("\n");
-}
-
-function getPriorQuarterDates(repdte: string, count: number): string[] {
-  const dates: string[] = [];
-  const suffixes = ["0331", "0630", "0930", "1231"];
-  let year = Number.parseInt(repdte.slice(0, 4), 10);
-  let qIdx = suffixes.indexOf(repdte.slice(4));
-  if (qIdx === -1) return dates;
-
-  for (let i = 0; i < count; i++) {
-    qIdx--;
-    if (qIdx < 0) {
-      qIdx = 3;
-      year--;
-    }
-    dates.push(`${year}${suffixes[qIdx]}`);
-  }
-  return dates;
 }
 
 function collectRiskSignals(

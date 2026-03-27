@@ -98,6 +98,28 @@ export function buildCertFilters(certs: number[]): string[] {
   return filters;
 }
 
+/**
+ * Returns an array of prior quarter-end dates (YYYYMMDD) going backwards
+ * from the given report date.
+ */
+export function getPriorQuarterDates(repdte: string, count: number): string[] {
+  const dates: string[] = [];
+  const suffixes = ["0331", "0630", "0930", "1231"];
+  let year = Number.parseInt(repdte.slice(0, 4), 10);
+  let qIdx = suffixes.indexOf(repdte.slice(4));
+  if (qIdx === -1) return dates;
+
+  for (let i = 0; i < count; i++) {
+    qIdx--;
+    if (qIdx < 0) {
+      qIdx = 3;
+      year--;
+    }
+    dates.push(`${year}${suffixes[qIdx]}`);
+  }
+  return dates;
+}
+
 export async function mapWithConcurrency<T, R>(
   values: T[],
   limit: number,
