@@ -5,6 +5,7 @@ import {
   CANONICAL_FIELDS,
   type CanonicalMetrics,
 } from "../src/tools/shared/metricNormalization.js";
+import { CAMELS_FIELDS } from "../src/tools/shared/camelsScoring.js";
 
 describe("extractCanonicalMetrics", () => {
   it("extracts metrics from FDIC record using direct fields", () => {
@@ -95,5 +96,17 @@ describe("CANONICAL_FIELDS", () => {
     expect(CANONICAL_FIELDS).toContain("ASSET");
     expect(CANONICAL_FIELDS).toContain("ROA");
     expect(CANONICAL_FIELDS.split(",").length).toBeGreaterThan(25);
+  });
+
+  it("is a superset of CAMELS_FIELDS and includes proxy-specific fields", () => {
+    const canonicalSet = new Set(CANONICAL_FIELDS.split(","));
+    const camelsArr = CAMELS_FIELDS.split(",");
+    for (const field of camelsArr) {
+      expect(canonicalSet.has(field), `CANONICAL_FIELDS missing CAMELS field: ${field}`).toBe(true);
+    }
+    // Proxy-specific fields required for capital classification, sensitivity, and liquidity
+    for (const field of ["RBCT1J", "RBCRWAJ", "ASSTLT", "VOLIAB", "DEPDOM"]) {
+      expect(canonicalSet.has(field), `CANONICAL_FIELDS missing proxy field: ${field}`).toBe(true);
+    }
   });
 });

@@ -19,20 +19,19 @@ import {
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
 import {
-  CAMELS_FIELDS,
   computeCamelsMetrics,
   scoreComponent,
   compositeScore,
-  analyzeTrend,
   formatRating,
   type CamelsMetrics,
   type ComponentScore,
   type TrendAnalysis,
   type Rating,
 } from "./shared/camelsScoring.js";
-import { extractCanonicalMetrics } from "./shared/metricNormalization.js";
-import { classifyCapital } from "./shared/capitalClassification.js";
-import { classifyRiskSignalsV2, type RiskSignalV2 } from "./shared/riskSignalEngine.js";
+import { CANONICAL_FIELDS } from "./shared/metricNormalization.js";
+import { assembleProxyAssessment } from "./shared/publicCamelsProxy.js";
+import type { RiskSignalV2 } from "./shared/riskSignalEngine.js";
+import { fetchHistoryEvents } from "./shared/historyFetch.js";
 
 export type RiskSeverity = "critical" | "warning" | "info";
 export type RiskCategory = "capital" | "asset_quality" | "earnings" | "liquidity" | "sensitivity" | "trend";
@@ -42,15 +41,6 @@ export interface RiskSignal {
   category: RiskCategory;
   message: string;
 }
-
-const TREND_METRICS: { key: keyof CamelsMetrics; fdic_field: string; higher_is_better: boolean; category: RiskCategory }[] = [
-  { key: "tier1_leverage", fdic_field: "IDT1CER", higher_is_better: true, category: "capital" },
-  { key: "noncurrent_loans_ratio", fdic_field: "NCLNLSR", higher_is_better: false, category: "asset_quality" },
-  { key: "roa", fdic_field: "ROA", higher_is_better: true, category: "earnings" },
-  { key: "nim", fdic_field: "NIMY", higher_is_better: true, category: "earnings" },
-  { key: "efficiency_ratio", fdic_field: "EEFFR", higher_is_better: false, category: "earnings" },
-  { key: "loan_to_deposit", fdic_field: "LNLSDEPR", higher_is_better: false, category: "liquidity" },
-];
 
 export function classifyRiskSignals(
   metrics: CamelsMetrics,
@@ -144,10 +134,10 @@ interface InstitutionRiskResult {
   total_assets: number | null;
   composite_rating: number;
   composite_label: string;
-  signals: RiskSignal[];
+  signals: RiskSignalV2[];
   critical_count: number;
   warning_count: number;
-  v2_signals?: RiskSignalV2[];
+  legacy_signals: RiskSignal[];
 }
 
 const RiskSignalsInputSchema = z.object({
@@ -287,7 +277,7 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
               ENDPOINTS.FINANCIALS,
               {
                 filters: `(${certFilter}) AND REPDTE:${params.repdte}`,
-                fields: CAMELS_FIELDS,
+                fields: CANONICAL_FIELDS,
                 limit: 10_000,
                 sort_by: "CERT",
                 sort_order: "ASC",
@@ -313,7 +303,7 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
                 ENDPOINTS.FINANCIALS,
                 {
                   filters: `(${certFilter}) AND (${dateFilter})`,
-                  fields: CAMELS_FIELDS,
+                  fields: CANONICAL_FIELDS,
                   limit: 10_000,
                   sort_by: "REPDTE",
                   sort_order: "DESC",
@@ -351,7 +341,18 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
           if (c !== null) profileMap.set(c, r);
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.7, "Analyzing risk signals");
+        await sendProgressNotification(server.server, progressToken, 0.7, "Fetching history and analyzing risk signals");
+
+        // Fetch history events for all target certs in parallel (best-effort)
+        const historyByCert = new Map<number, Awaited<ReturnType<typeof fetchHistoryEvents>>>();
+        const historyResults = await mapWithConcurrency(
+          targetCerts,
+          MAX_CONCURRENCY,
+          async (cert) => ({ cert, events: await fetchHistoryEvents(cert, { signal: controller.signal }) }),
+        );
+        for (const { cert, events } of historyResults) {
+          if (events.length > 0) historyByCert.set(cert, events);
+        }
 
         const minSeverityOrder = SEVERITY_ORDER[params.min_severity];
         const results: InstitutionRiskResult[] = [];
@@ -361,47 +362,30 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
           if (cert === null) continue;
 
           const priorQuarters = priorByInstitution.get(cert) ?? [];
-          const metrics = computeCamelsMetrics(fin, priorQuarters);
 
-          // Trend analysis
-          const allQuarters = [fin, ...priorQuarters];
-          const trends: Pick<TrendAnalysis, "metric" | "label" | "direction" | "magnitude" | "quarters_analyzed">[] = [];
-          for (const tm of TREND_METRICS) {
-            const timeseries = allQuarters.map((q) => ({
-              repdte: String(q.REPDTE ?? ""),
-              value: typeof q[tm.fdic_field] === "number" ? (q[tm.fdic_field] as number) : null,
-            }));
-            timeseries.reverse();
-            trends.push(analyzeTrend(String(tm.key), timeseries, tm.higher_is_better));
-          }
+          // Use the shared proxy assessment as the primary analysis path.
+          // This runs the enhanced trend engine (real consecutive_worsening, yoy_change)
+          // and classifies V2 risk signals from the unified engine.
+          const proxyAssessment = assembleProxyAssessment({
+            rawFinancials: fin,
+            priorQuarters,
+            repdte: params.repdte,
+            historyEvents: historyByCert.get(cert),
+          });
 
-          const allSignals = classifyRiskSignals(metrics, trends);
-          const filteredSignals = allSignals.filter((s) => SEVERITY_ORDER[s.severity] <= minSeverityOrder);
+          // V2 signals are the primary screening path
+          const v2Signals = proxyAssessment.risk_signals;
+          const filteredSignals = v2Signals.filter(
+            (s) => SEVERITY_ORDER[s.severity] <= minSeverityOrder,
+          );
 
           if (filteredSignals.length === 0) continue;
 
-          // Compute V2 risk signals using the shared engine
-          const canonicalResult = extractCanonicalMetrics(fin);
-          const capitalClass = classifyCapital({
-            totalRiskBasedPct: canonicalResult.metrics.totalRiskBasedPct,
-            tier1RiskBasedPct: canonicalResult.metrics.tier1RiskBasedPct,
-            cet1RatioPct: canonicalResult.metrics.cet1RatioPct,
-            tier1LeveragePct: canonicalResult.metrics.tier1LeveragePct,
-          });
-          const v2Signals = classifyRiskSignalsV2({
-            metrics: canonicalResult.metrics,
-            capitalClassification: capitalClass,
-            trends: trends.map((t) => ({
-              metric: t.metric,
-              direction: t.direction,
-              magnitude: t.magnitude,
-              consecutive_worsening: 0,
-              yoy_change: null,
-            })),
-            repdte: params.repdte,
-          });
+          // Also compute legacy signals for backward-compat text rendering
+          const metrics = computeCamelsMetrics(fin, priorQuarters);
+          const legacySignals = classifyRiskSignals(metrics, proxyAssessment.trend_insights);
 
-          const components = (["C", "A", "E", "L", "S"] as const).map((c) => scoreComponent(c, metrics));
+          const components: ComponentScore[] = (["C", "A", "E", "L", "S"] as const).map((c) => scoreComponent(c, metrics));
           const comp = compositeScore(components);
           const profile = profileMap.get(cert);
 
@@ -416,7 +400,7 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
             signals: filteredSignals,
             critical_count: filteredSignals.filter((s) => s.severity === "critical").length,
             warning_count: filteredSignals.filter((s) => s.severity === "warning").length,
-            v2_signals: v2Signals,
+            legacy_signals: legacySignals,
           });
         }
 

@@ -15,7 +15,6 @@ import {
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
 import {
-  CAMELS_FIELDS,
   computeCamelsMetrics,
   scoreComponent,
   compositeScore,
@@ -27,7 +26,9 @@ import {
   type TrendAnalysis,
   type Rating,
 } from "./shared/camelsScoring.js";
+import { CANONICAL_FIELDS } from "./shared/metricNormalization.js";
 import { assembleProxyAssessment } from "./shared/publicCamelsProxy.js";
+import { fetchHistoryEvents } from "./shared/historyFetch.js";
 
 const COMPONENT_NAMES: Record<string, string> = {
   C: "Capital Adequacy",
@@ -62,6 +63,8 @@ export interface HealthSummary {
   trends: TrendAnalysis[];
   outliers: string[];
   risk_signals: string[];
+  /** Legacy risk signal strings kept for backward compat text formatting */
+  legacy_risk_signals?: string[];
   /** Proxy model overall band (e.g. "satisfactory") — added by proxy model */
   proxy_band?: string;
   /** Proxy model overall score on 1.0–4.0 scale */
@@ -240,7 +243,7 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
             ENDPOINTS.FINANCIALS,
             {
               filters: `CERT:${params.cert} AND REPDTE:${params.repdte}`,
-              fields: CAMELS_FIELDS,
+              fields: CANONICAL_FIELDS,
               limit: 1,
             },
             { signal: controller.signal },
@@ -264,26 +267,28 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
         }
         const currentFinancials = financialRecords[0];
 
-        await sendProgressNotification(server.server, progressToken, 0.3, "Fetching prior quarters for trend analysis");
+        await sendProgressNotification(server.server, progressToken, 0.3, "Fetching prior quarters and history");
 
         const priorDates = getPriorQuarterDates(params.repdte, params.quarters);
-        let priorQuarters: Record<string, unknown>[] = [];
 
-        if (priorDates.length > 0) {
-          const dateFilter = priorDates.map((d) => `REPDTE:${d}`).join(" OR ");
-          const priorResponse = await queryEndpoint(
-            ENDPOINTS.FINANCIALS,
-            {
-              filters: `CERT:${params.cert} AND (${dateFilter})`,
-              fields: CAMELS_FIELDS,
-              sort_by: "REPDTE",
-              sort_order: "DESC",
-              limit: params.quarters,
-            },
-            { signal: controller.signal },
-          );
-          priorQuarters = extractRecords(priorResponse);
-        }
+        // Fetch prior-quarter financials and structural-change history in parallel
+        const priorPromise = priorDates.length > 0
+          ? queryEndpoint(
+              ENDPOINTS.FINANCIALS,
+              {
+                filters: `CERT:${params.cert} AND (${priorDates.map((d) => `REPDTE:${d}`).join(" OR ")})`,
+                fields: CANONICAL_FIELDS,
+                sort_by: "REPDTE",
+                sort_order: "DESC",
+                limit: params.quarters,
+              },
+              { signal: controller.signal },
+            ).then(extractRecords)
+          : Promise.resolve([]);
+
+        const historyPromise = fetchHistoryEvents(params.cert, { signal: controller.signal });
+
+        const [priorQuarters, historyEvents] = await Promise.all([priorPromise, historyPromise]);
 
         await sendProgressNotification(server.server, progressToken, 0.6, "Computing CAMELS scores");
 
@@ -315,6 +320,7 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
           rawFinancials: currentFinancials,
           priorQuarters,
           repdte: params.repdte,
+          historyEvents,
         });
 
         const summary: HealthSummary = {
@@ -343,13 +349,17 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
           CHARACTER_LIMIT,
         );
 
+        // Destructure to avoid risk_signals collision with legacy field
+        const { risk_signals: proxyRiskSignals, ...proxyRest } = proxyAssessment;
+
         return {
           content: [{ type: "text", text }],
           structuredContent: {
-            // NEW primary output — proxy assessment fields
-            ...proxyAssessment,
+            // NEW proxy assessment fields (additive)
+            ...proxyRest,
+            proxy_risk_signals: proxyRiskSignals,
 
-            // LEGACY compatibility fields (existing shape retained)
+            // LEGACY compatibility fields (existing shape preserved)
             institution: summary.institution,
             composite: summary.composite,
             components: summary.components,

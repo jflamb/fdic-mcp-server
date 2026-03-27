@@ -17,17 +17,10 @@ import {
   validateQuarterEndDate,
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
-import {
-  CAMELS_FIELDS,
-  computeCamelsMetrics,
-  scoreComponent,
-  compositeScore,
-  formatRating,
-  type ComponentScore,
-  type Rating,
-} from "./shared/camelsScoring.js";
-import { extractCanonicalMetrics } from "./shared/metricNormalization.js";
+import { extractCanonicalMetrics, CANONICAL_FIELDS } from "./shared/metricNormalization.js";
 import { computePeerStats, type PeerStats } from "./shared/peerEngine.js";
+import { assembleProxyAssessment, type OverallBand } from "./shared/publicCamelsProxy.js";
+import { fetchHistoryEvents } from "./shared/historyFetch.js";
 
 interface PeerHealthEntry {
   cert: number;
@@ -35,6 +28,11 @@ interface PeerHealthEntry {
   city: string | null;
   state: string | null;
   total_assets: number | null;
+  /** Proxy model overall score on 1.0–4.0 scale */
+  proxy_score: number;
+  /** Proxy model overall band */
+  proxy_band: OverallBand;
+  /** Legacy composite rating (1-5) kept for backward compat */
   composite_rating: number;
   composite_label: string;
   component_ratings: Record<string, number>;
@@ -210,7 +208,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
               ENDPOINTS.FINANCIALS,
               {
                 filters: `(${certFilter}) AND REPDTE:${params.repdte}`,
-                fields: CAMELS_FIELDS,
+                fields: CANONICAL_FIELDS,
                 limit: 10_000,
                 sort_by: "CERT",
                 sort_order: "ASC",
@@ -240,19 +238,44 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           if (c !== null) profileMap.set(c, r);
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.7, "Computing CAMELS scores");
+        await sendProgressNotification(server.server, progressToken, 0.7, "Computing proxy assessments");
+
+        // Fetch history for subject bank if specified (best-effort, additive)
+        const subjectHistory = params.cert
+          ? await fetchHistoryEvents(params.cert, { signal: controller.signal })
+          : [];
 
         const entries: PeerHealthEntry[] = [];
         for (const fin of allFinancials) {
           const cert = asNumber(fin.CERT);
           if (cert === null) continue;
 
-          const metrics = computeCamelsMetrics(fin);
-          const components: ComponentScore[] = (["C", "A", "E", "L", "S"] as const).map(
-            (c) => scoreComponent(c, metrics),
-          );
-          const comp = compositeScore(components);
+          const proxyAssessment = assembleProxyAssessment({
+            rawFinancials: fin,
+            repdte: params.repdte,
+            historyEvents: cert === params.cert ? subjectHistory : undefined,
+          });
+
           const profile = profileMap.get(cert);
+          const ca = proxyAssessment.component_assessment;
+
+          // Map component assessments to legacy-style ratings for backward compat
+          const componentRatings: Record<string, number> = {
+            C: ca.capital.legacy_rating,
+            A: ca.asset_quality.legacy_rating,
+            E: ca.earnings.legacy_rating,
+            L: ca.liquidity_funding.legacy_rating,
+            S: ca.sensitivity_proxy.legacy_rating,
+          };
+
+          // Collect flags from all components
+          const flags = [
+            ...ca.capital.flags,
+            ...ca.asset_quality.flags,
+            ...ca.earnings.flags,
+            ...ca.liquidity_funding.flags,
+            ...ca.sensitivity_proxy.flags,
+          ];
 
           entries.push({
             cert,
@@ -260,18 +283,25 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             city: profile?.CITY ? String(profile.CITY) : null,
             state: profile?.STALP ? String(profile.STALP) : null,
             total_assets: asNumber(fin.ASSET),
-            composite_rating: comp.rating,
-            composite_label: comp.label,
-            component_ratings: Object.fromEntries(components.map((c) => [c.component, c.rating])),
-            flags: comp.flags,
+            proxy_score: proxyAssessment.overall.score,
+            proxy_band: proxyAssessment.overall.band,
+            composite_rating: Math.round(5 - proxyAssessment.overall.score), // map 4.0→1, 1.0→4 for legacy compat
+            composite_label: proxyAssessment.overall.band,
+            component_ratings: componentRatings,
+            flags,
           });
         }
 
         const sortComponent = sortKeyToComponent(params.sort_by);
         entries.sort((a, b) => {
-          const aVal = sortComponent ? (a.component_ratings[sortComponent] ?? 3) : a.composite_rating;
-          const bVal = sortComponent ? (b.component_ratings[sortComponent] ?? 3) : b.composite_rating;
-          if (aVal !== bVal) return aVal - bVal;
+          if (sortComponent) {
+            const aVal = a.component_ratings[sortComponent] ?? 3;
+            const bVal = b.component_ratings[sortComponent] ?? 3;
+            if (aVal !== bVal) return aVal - bVal;
+          } else {
+            // Sort by proxy score descending (higher = healthier)
+            if (a.proxy_score !== b.proxy_score) return b.proxy_score - a.proxy_score;
+          }
           return (b.total_assets ?? 0) - (a.total_assets ?? 0);
         });
 
@@ -344,14 +374,14 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
         await sendProgressNotification(server.server, progressToken, 0.9, "Formatting results");
 
         const parts: string[] = [];
-        parts.push(`CAMELS Peer Health Comparison — ${entries.length} institutions ranked by ${params.sort_by}`);
+        parts.push(`Peer Health Comparison — ${entries.length} institutions ranked by ${params.sort_by}`);
         parts.push(`Report Date: ${params.repdte}`);
-        parts.push("NOTE: Analytical assessment, not official regulatory ratings.");
+        parts.push("NOTE: Public off-site analytical proxy — not official supervisory ratings.");
         parts.push("");
 
         if (subjectRank && subjectRank > 0 && params.cert) {
           const subj = entries[subjectRank - 1];
-          parts.push(`Subject: ${subj.name} (CERT ${subj.cert}) — Rank ${subjectRank} of ${entries.length}, Composite: ${formatRating(subj.composite_rating as Rating)}`);
+          parts.push(`Subject: ${subj.name} (CERT ${subj.cert}) — Rank ${subjectRank} of ${entries.length}, Assessment: ${subj.proxy_band} (${subj.proxy_score.toFixed(2)}/4.0)`);
           if (peerContext && Object.keys(peerContext.subject_percentiles).length > 0) {
             const pctParts: string[] = [];
             for (const [metric, stats] of Object.entries(peerContext.subject_percentiles)) {
@@ -375,7 +405,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             `${String(rank).padStart(3)}. ${e.name} (${location}) CERT ${e.cert}${marker}`,
           );
           parts.push(
-            `     Composite: ${formatRating(e.composite_rating as Rating)} | ${compStr} | Assets: ${assetStr}`,
+            `     Assessment: ${e.proxy_band} (${e.proxy_score.toFixed(2)}/4.0) | ${compStr} | Assets: ${assetStr}`,
           );
           if (e.flags.length > 0) {
             parts.push(`     Flags: ${e.flags.join("; ")}`);
@@ -392,6 +422,8 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
         return {
           content: [{ type: "text", text }],
           structuredContent: {
+            model: "public_camels_proxy_v1" as const,
+            official_status: "public off-site proxy, not official CAMELS" as const,
             report_date: params.repdte,
             sort_by: params.sort_by,
             total_institutions: entries.length,
