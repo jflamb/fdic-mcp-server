@@ -112,100 +112,16 @@ Risk signal screening with follow-through:
 Scan all active banks in Wyoming for risk signals at the latest available quarter. Show only critical and warning-level flags. For any bank with critical signals, also run a full health assessment and explain what is driving the concern.
 ```
 
-Credit concentration analysis:
+## Public Off-Site Proxy Model
 
-```text
-Analyze the credit concentration for CERT 3511 as of December 31, 2024.
-Show CRE exposure relative to capital and flag any concentrations
-exceeding interagency guidance thresholds.
-```
+The health and risk tools now produce a `public_camels_proxy_v1` model in their structured output. When using these tools:
 
-Funding profile:
+- Ask for the "overall assessment band" to get the strong/satisfactory/weak/high_risk classification
+- Ask for "capital classification" to see PCA-style categorization
+- Ask about "risk signals" to see standardized signal codes with severity levels
+- Ask for "peer percentiles" when comparing against a peer group
 
-```text
-Analyze the funding profile for CERT 628 at the latest quarter.
-How reliant is this bank on brokered deposits and wholesale funding?
-```
-
-Securities portfolio:
-
-```text
-Analyze the securities portfolio for CERT 3511. What percentage of
-assets is in securities, and how concentrated is the MBS position?
-```
-
-UBPR-equivalent analysis:
-
-```text
-Run a UBPR-equivalent ratio analysis for CERT 29846 as of
-December 31, 2024. Include year-over-year growth rates.
-```
-
-Market share analysis:
-
-```text
-Show the deposit market share breakdown for the
-Dallas-Fort Worth-Arlington MSA in the latest SOD year.
-Highlight JPMorgan Chase.
-```
-
-Franchise footprint:
-
-```text
-Map the franchise footprint for CERT 628.
-Show branch counts and deposit totals by MSA.
-```
-
-Holding company profile:
-
-```text
-Profile the holding company for CERT 3511.
-Show all subsidiaries with their individual ROA and equity ratios.
-```
-
-Regional economic context:
-
-```text
-What is the regional economic context for banks in California?
-Show unemployment trends and how the state compares nationally.
-```
-
-## Copy-Paste Analysis Prompts For Advanced Tools
-
-Full credit and funding deep-dive:
-
-```text
-For CERT 3511 as of December 31, 2024: run a credit concentration
-analysis and a funding profile analysis. Highlight any CRE
-concentrations above interagency thresholds and flag any wholesale
-funding reliance above 25% of assets.
-```
-
-Multi-tool bank assessment:
-
-```text
-For CERT 628: run a CAMELS health assessment, credit concentration
-analysis, and UBPR-equivalent ratio report. Then pull the regional
-economic context for its state. Synthesize the results into a
-one-page summary of strengths, weaknesses, and environmental risks.
-```
-
-Market and franchise comparison:
-
-```text
-Compare the franchise footprints of CERT 3511 and CERT 628.
-For the MSAs where they both operate, show each bank's market
-share and rank.
-```
-
-## Recommended Follow-On Prompts For Advanced Tools
-
-- "Now analyze the credit concentration for the weakest bank in that peer group."
-- "Show me the funding profile for any bank with brokered deposits above 15%."
-- "Run a UBPR analysis for the top and bottom banks by ROA in that comparison."
-- "What is the holding company structure for that institution?"
-- "Overlay the regional economic context for the state where most of its branches are."
-- "Compare the market share positions of the top 3 banks in that MSA over the last 3 years."
+These outputs are analytical proxies based on public FDIC data — not official supervisory conclusions.
 
 ## Prompting Pitfalls
 

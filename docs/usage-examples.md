@@ -107,8 +107,10 @@ Run a CAMELS-style health assessment for CERT 3511 as of December 31, 2024 with 
 What a good answer should do:
 
 - Return composite and component ratings (Capital, Asset Quality, Earnings, Liquidity, Sensitivity) with individual metric scores.
+- Include the public_camels_proxy_v1 assessment with overall band (strong/satisfactory/weak/high_risk).
+- Show PCA-style capital categorization (well capitalized, adequately capitalized, etc.).
 - Show trend analysis for key metrics across prior quarters.
-- Flag any risk signals at critical or warning level.
+- Flag risk signals using standardized codes with neutral, supervisory-safe language.
 - Note that this is an analytical assessment, not an official regulatory rating.
 
 ## Compare Peer Health

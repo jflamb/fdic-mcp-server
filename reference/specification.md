@@ -31,6 +31,12 @@ Server-side analysis tools:
 - `fdic_compare_bank_snapshots`
 - `fdic_peer_group_analysis`
 
+Health and risk analysis tools:
+
+- `fdic_analyze_bank_health`
+- `fdic_compare_peer_health`
+- `fdic_detect_risk_signals`
+
 ## Resource Surface
 
 The server also exposes MCP `resources` for endpoint field discovery:
@@ -64,6 +70,18 @@ Contract stability matters because MCP clients may automate against either or bo
 - Summary of Deposits data is annual branch-level data as of June 30.
 - Monetary values are generally reported in thousands of dollars.
 - `CERT` is the stable institution identifier used across datasets.
+
+## Public Off-Site Proxy Model
+
+The health and risk analysis tools (`fdic_analyze_bank_health`, `fdic_compare_peer_health`, `fdic_detect_risk_signals`) now include a `public_camels_proxy_v1` model in their structured output. This model:
+
+- Scores institutions on a 1-4 scale across five components: capital, asset quality, earnings, liquidity/funding, and sensitivity proxy
+- Includes PCA-style capital categorization using official regulatory thresholds
+- Adds a management overlay (normal / watch / elevated_concern) based on multi-factor pattern detection
+- Provides risk signals with standardized codes and neutral, supervisory-safe language
+- Records metric provenance and data-quality flags
+
+**Important:** This is a public-data analytical proxy — not an official CAMELS rating or confidential supervisory conclusion. The Management (M) component is not scored directly; it appears only as a pattern-based overlay.
 
 ## Non-Goals
 

@@ -24,6 +24,23 @@ Repository reference for the end-to-end request flow and the code boundaries bet
 - The FDIC client centralizes HTTP and pagination concerns.
 - Analysis tools batch multiple FDIC lookups inside the server to reduce client-side orchestration cost.
 
+## Shared Analysis Engine
+
+The `src/tools/shared/` directory contains reusable analysis modules:
+
+- `metricNormalization.ts` — canonical metric extraction with field-alias resolution and provenance tracking
+- `capitalClassification.ts` — PCA-style capital categorization using official regulatory thresholds
+- `trendEngine.ts` — enhanced trend analysis with consecutive-worsening detection, reversal flags, and history-event awareness
+- `peerEngine.ts` — peer comparison with percentile computation, MAD-based robust z-scores, and outlier detection
+- `managementOverlay.ts` — management overlay assessment with band-capping logic
+- `riskSignalEngine.ts` — unified risk signal classification with standardized codes
+- `publicCamelsProxy.ts` — orchestration layer assembling all modules into the `public_camels_proxy_v1` model
+- `camelsScoring.ts` — original CAMELS-style scoring (retained for backward compatibility)
+- `financialMetrics.ts` — derived financial metrics used by peer group and snapshot tools
+- `queryUtils.ts` — shared query construction, date handling, and concurrency utilities
+
+These modules are designed as pure functions with no FDIC API dependencies, making them fully testable in isolation.
+
 ## Operational Notes
 
 - The package supports both direct CLI execution and imported server construction via `dist/server.js`.

@@ -43,9 +43,9 @@ This page summarizes what each MCP tool is for and when to use it.
 
 | Tool | Use It When | Notes |
 |------|-------------|-------|
-| `fdic_analyze_bank_health` | You want a CAMELS-style health assessment for a single institution | Scores Capital, Asset Quality, Earnings, Liquidity, and Sensitivity with trend analysis and risk signals |
-| `fdic_compare_peer_health` | You want to rank a group of institutions by CAMELS-style health scores | Compare by composite score or any individual component (capital, earnings, etc.) |
-| `fdic_detect_risk_signals` | You want to scan institutions for early warning indicators | Flags critical issues (undercapitalized, operating losses) and warnings (deteriorating trends, high brokered deposits) |
+| `fdic_analyze_bank_health` | You want a CAMELS-style health assessment for a single institution | Produces a public_camels_proxy_v1 assessment with PCA capital categorization, management overlay, and enhanced trend analysis. Legacy CAMELS-style output retained for compatibility. |
+| `fdic_compare_peer_health` | You want to rank a group of institutions by CAMELS-style health scores | Ranks peers by health scores with peer percentiles, robust z-scores, and outlier flags for the subject institution. |
+| `fdic_detect_risk_signals` | You want to scan institutions for early warning indicators | Flags critical issues with standardized V2 signal codes (capital_buffer_erosion, earnings_loss, etc.) alongside legacy signals. |
 
 These tools produce analytical assessments based on public financial data. They are not official regulatory CAMELS ratings.
 

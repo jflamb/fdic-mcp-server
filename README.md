@@ -205,11 +205,15 @@ More examples are in [docs/usage-examples.md](./docs/usage-examples.md).
 | `fdic_search_demographics` | Search quarterly demographics and market-structure data |
 | `fdic_compare_bank_snapshots` | Compare two reporting snapshots across banks and rank growth and profitability changes |
 | `fdic_peer_group_analysis` | Build a peer group and rank an institution against peers on financial metrics |
+| `fdic_analyze_bank_health` | Run a CAMELS-style health assessment for a single institution |
+| `fdic_compare_peer_health` | Rank a group of institutions by CAMELS-style health scores |
+| `fdic_detect_risk_signals` | Scan institutions for early warning risk indicators |
 
-Two tools are server-side analysis helpers:
+Server-side analysis helpers:
 
 - `fdic_compare_bank_snapshots` batches roster lookup, financial snapshots, and optional demographics snapshots inside the MCP server
 - `fdic_peer_group_analysis` builds a peer group from asset size, charter class, and geography criteria and then ranks an institution against peers
+- `fdic_analyze_bank_health`, `fdic_compare_peer_health`, and `fdic_detect_risk_signals` produce a `public_camels_proxy_v1` assessment based on public financial data — these are analytical proxies, not official regulatory CAMELS ratings
 
 ## Data Notes
 
