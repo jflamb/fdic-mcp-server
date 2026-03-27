@@ -25,6 +25,7 @@ import { registerPeerGroupTools } from "./tools/peerGroup.js";
 import { registerBankHealthTools } from "./tools/bankHealth.js";
 import { registerPeerHealthTools } from "./tools/peerHealth.js";
 import { registerRiskSignalTools } from "./tools/riskSignals.js";
+import { registerCreditConcentrationTools } from "./tools/creditConcentration.js";
 import { registerSchemaResources } from "./resources/schemaResources.js";
 
 export function createServer(): McpServer {
@@ -45,6 +46,7 @@ export function createServer(): McpServer {
   registerBankHealthTools(server);
   registerPeerHealthTools(server);
   registerRiskSignalTools(server);
+  registerCreditConcentrationTools(server);
   registerSchemaResources(server);
 
   return server;
