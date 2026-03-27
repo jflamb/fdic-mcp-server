@@ -103,6 +103,84 @@ describe("assembleProxyAssessment", () => {
     expect(result.key_metrics.totalAssets).toBeNull();
   });
 
+  it("documents tangible-equity gap in capital classification data gaps", () => {
+    const result = assembleProxyAssessment({
+      rawFinancials: healthyBank,
+      repdte: "20241231",
+    });
+    const tangibleGap = result.capital_classification.dataGaps.find(
+      (g) => g.includes("tangibleEquity"),
+    );
+    expect(tangibleGap).toBeDefined();
+    expect(tangibleGap).toContain("critically_undercapitalized");
+  });
+
+  it("capital component score is anchored to PCA classification, not legacy thresholds", () => {
+    // Bank that is well_capitalized by PCA thresholds but would get a weaker
+    // legacy rating due to equity_ratio being below the legacy "Strong" threshold of 10%
+    const pcaStrongLegacyWeak: Record<string, unknown> = {
+      ASSET: 500000, DEP: 400000, DEPDOM: 380000,
+      EQTOT: 35000, NETINC: 5000,
+      // PCA: all four ratios above well-capitalized thresholds
+      IDT1CER: 6.0, IDT1RWAJR: 9.0, RBCT1J: 7.0, RBCRWAJ: 11.0,
+      // Legacy: EQV below "Strong" (10) and "Satisfactory" (8) thresholds → legacy would rate 3 or 4
+      EQV: 7.0,
+      ROA: 1.0, ROAPTX: 1.2, ROE: 10.0, NIMY: 3.5, EEFFR: 58.0,
+      LNLSDEPR: 78.0, DEPDASTR: 76.0,
+      COREDEP: 350000, BROR: 3.0, CHBALR: 8.0,
+      NCLNLSR: 0.8, NTLNLSR: 0.2, NPERFV: 0.3, LNRESNCR: 150.0, ELNATRY: 0.3,
+      SC: 80000,
+    };
+    const result = assembleProxyAssessment({
+      rawFinancials: pcaStrongLegacyWeak,
+      repdte: "20241231",
+    });
+    expect(result.capital_classification.category).toBe("well_capitalized");
+    expect(result.component_assessment.capital.score).toBe(4.0);
+    expect(result.component_assessment.capital.label).toBe("Strong");
+    expect(result.component_assessment.capital.legacy_rating).toBeGreaterThanOrEqual(1);
+    expect(result.component_assessment.capital.legacy_rating).toBeLessThanOrEqual(5);
+  });
+
+  it("undercapitalized PCA produces weak capital component regardless of legacy score", () => {
+    const undercap: Record<string, unknown> = {
+      ASSET: 500000, DEP: 400000, DEPDOM: 380000,
+      EQTOT: 20000, NETINC: 2000,
+      IDT1CER: 3.5, IDT1RWAJR: 5.5, RBCT1J: 4.0, RBCRWAJ: 7.5,
+      EQV: 4.0,
+      ROA: 1.0, ROAPTX: 1.2, ROE: 10.0, NIMY: 3.5, EEFFR: 58.0,
+      LNLSDEPR: 78.0, DEPDASTR: 76.0,
+      COREDEP: 350000, BROR: 3.0, CHBALR: 8.0,
+      NCLNLSR: 0.8, NTLNLSR: 0.2, NPERFV: 0.3, LNRESNCR: 150.0, ELNATRY: 0.3,
+      SC: 80000,
+    };
+    const result = assembleProxyAssessment({
+      rawFinancials: undercap,
+      repdte: "20241231",
+    });
+    expect(result.capital_classification.category).toBe("undercapitalized");
+    expect(result.component_assessment.capital.score).toBe(2.0);
+    expect(result.component_assessment.capital.label).toBe("Weak");
+  });
+
+  it("PCA-anchored capital score feeds into overall weighted average", () => {
+    const result = assembleProxyAssessment({
+      rawFinancials: {
+        ASSET: 500000, DEP: 400000, DEPDOM: 380000,
+        EQTOT: 50000, NETINC: 5000,
+        IDT1CER: 9.5, IDT1RWAJR: 14.2, RBCT1J: 8.0, RBCRWAJ: 15.0, EQV: 10.0,
+        ROA: 1.0, ROAPTX: 1.2, ROE: 10.0, NIMY: 3.5, EEFFR: 58.0,
+        LNLSDEPR: 78.0, DEPDASTR: 76.0,
+        COREDEP: 350000, BROR: 3.0, CHBALR: 8.0,
+        NCLNLSR: 0.8, NTLNLSR: 0.2, NPERFV: 0.3, LNRESNCR: 150.0, ELNATRY: 0.3,
+        SC: 80000,
+      },
+      repdte: "20241231",
+    });
+    const capitalContribution = result.component_assessment.capital.score * 0.30;
+    expect(capitalContribution).toBeCloseTo(1.2, 1);
+  });
+
   it("annotates history events in trend insights", () => {
     const prior = [
       { ...healthyBank, REPDTE: "20240930" },

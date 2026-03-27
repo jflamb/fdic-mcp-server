@@ -111,6 +111,26 @@ const PROXY_WEIGHTS = {
   sensitivity_proxy: 0.10,
 } as const;
 
+const PCA_TO_PROXY_SCORE: Record<string, number> = {
+  well_capitalized: 4.0,
+  adequately_capitalized: 3.0,
+  undercapitalized: 2.0,
+  significantly_undercapitalized: 1.0,
+  critically_undercapitalized: 1.0,
+  indeterminate: 2.5,
+};
+
+// Map PCA category to the legacy 1-5 scale (higher = worse) for management overlay input.
+// The overlay counts ratings >= 3 as "weak" and >= 4 as "severe".
+const PCA_TO_LEGACY_EQUIVALENT: Record<string, number> = {
+  well_capitalized: 1,
+  adequately_capitalized: 2,
+  undercapitalized: 3,
+  significantly_undercapitalized: 4,
+  critically_undercapitalized: 5,
+  indeterminate: 3,
+};
+
 const PROXY_TREND_METRICS = [
   { key: "tier1_leverage", fdicField: "IDT1CER", higherIsBetter: true },
   { key: "noncurrent_loans", fdicField: "NCLNLSR", higherIsBetter: false },
@@ -143,6 +163,25 @@ function buildComponentAssessment(
     legacy_label: comp.label,
     key_metrics: keyMetrics,
     flags: comp.flags,
+  };
+}
+
+function buildCapitalAssessment(
+  pcaCategory: string,
+  legacyScore: ComponentScore,
+): ComponentAssessment {
+  const pcaProxyScore = PCA_TO_PROXY_SCORE[pcaCategory] ?? 2.5;
+  const keyMetrics: Record<string, { value: number | null; unit: string }> = {};
+  for (const m of legacyScore.metrics) {
+    keyMetrics[m.name] = { value: m.value, unit: m.unit };
+  }
+  return {
+    score: pcaProxyScore,
+    label: scoreToLabel(pcaProxyScore),
+    legacy_rating: legacyScore.rating,
+    legacy_label: legacyScore.label,
+    key_metrics: keyMetrics,
+    flags: legacyScore.flags,
   };
 }
 
@@ -180,12 +219,19 @@ export function assembleProxyAssessment(params: {
   const sensitivityScore = scoreComponent("S", legacyMetrics);
 
   // 5. Classify capital using PCA thresholds
+  // Note: tangible equity to assets is not available from BankFind public data,
+  // so critically_undercapitalized cannot be determined from this path.
   const capitalClassification = classifyCapital({
     totalRiskBasedPct: canonicalMetrics.totalRiskBasedPct,
     tier1RiskBasedPct: canonicalMetrics.tier1RiskBasedPct,
     cet1RatioPct: canonicalMetrics.cet1RatioPct,
     tier1LeveragePct: canonicalMetrics.tier1LeveragePct,
   });
+  if (!capitalClassification.dataGaps.some((g) => g.includes("tangibleEquity"))) {
+    capitalClassification.dataGaps.push(
+      "tangibleEquityToAssets: not available from public data — critically_undercapitalized classification is not possible",
+    );
+  }
 
   // 6. Compute trends using enhanced engine
   const trendInsights: EnhancedTrendResult[] = [];
@@ -229,8 +275,9 @@ export function assembleProxyAssessment(params: {
   });
 
   // 8. Assess management overlay
+  // Use PCA-derived equivalent for capital so overlay is consistent with PCA-anchored score
   const componentRatings: Record<string, number> = {
-    C: capitalScore.rating,
+    C: PCA_TO_LEGACY_EQUIVALENT[capitalClassification.category] ?? 3,
     A: assetQualityScore.rating,
     E: earningsScore.rating,
     L: liquidityScore.rating,
@@ -248,7 +295,7 @@ export function assembleProxyAssessment(params: {
   });
 
   // 9. Build component assessments with new 1-4 scale
-  const capitalAssessment = buildComponentAssessment(capitalScore);
+  const capitalAssessment = buildCapitalAssessment(capitalClassification.category, capitalScore);
   const assetQualityAssessment = buildComponentAssessment(assetQualityScore);
   const earningsAssessment = buildComponentAssessment(earningsScore);
   const liquidityAssessment = buildComponentAssessment(liquidityScore);
