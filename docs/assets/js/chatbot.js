@@ -3,11 +3,10 @@ const CHATBOT_THREAD_KEY = "bankfind-chatbot-thread";
 const RELOAD_TYPE = "reload";
 
 const SUGGESTED_PROMPTS = [
-  "Find active banks in Texas with over $5 billion in assets",
-  "Run a CAMELS-style health assessment for CERT 3511",
-  "Analyze credit concentration and funding profile for CERT 628",
-  "Show deposit market share for the Dallas-Fort Worth-Arlington MSA",
-  "Profile the holding company for CERT 3511 with subsidiary comparison",
+  "Find the 10 largest active banks in California and compare their deposit growth over the past two years",
+  "Run a full health assessment for CERT 3511 with 8 quarters of trend history, then compare it against a peer group",
+  "Scan all active banks in Wyoming for risk signals, then show branch locations and deposit history for any bank flagged critical",
+  "Which bank failures since 2008 had the highest estimated losses, and what did their financials look like in the year before they failed?",
 ];
 
 const escapeHtml = (value) =>
