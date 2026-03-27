@@ -29,6 +29,9 @@ import {
   type TrendAnalysis,
   type Rating,
 } from "./shared/camelsScoring.js";
+import { extractCanonicalMetrics } from "./shared/metricNormalization.js";
+import { classifyCapital } from "./shared/capitalClassification.js";
+import { classifyRiskSignalsV2, type RiskSignalV2 } from "./shared/riskSignalEngine.js";
 
 export type RiskSeverity = "critical" | "warning" | "info";
 export type RiskCategory = "capital" | "asset_quality" | "earnings" | "liquidity" | "sensitivity" | "trend";
@@ -161,6 +164,7 @@ interface InstitutionRiskResult {
   signals: RiskSignal[];
   critical_count: number;
   warning_count: number;
+  v2_signals?: RiskSignalV2[];
 }
 
 const RiskSignalsInputSchema = z.object({
@@ -393,6 +397,27 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
 
           if (filteredSignals.length === 0) continue;
 
+          // Compute V2 risk signals using the shared engine
+          const canonicalResult = extractCanonicalMetrics(fin);
+          const capitalClass = classifyCapital({
+            totalRiskBasedPct: canonicalResult.metrics.totalRiskBasedPct,
+            tier1RiskBasedPct: canonicalResult.metrics.tier1RiskBasedPct,
+            cet1RatioPct: canonicalResult.metrics.cet1RatioPct,
+            tier1LeveragePct: canonicalResult.metrics.tier1LeveragePct,
+          });
+          const v2Signals = classifyRiskSignalsV2({
+            metrics: canonicalResult.metrics,
+            capitalClassification: capitalClass,
+            trends: trends.map((t) => ({
+              metric: t.metric,
+              direction: t.direction,
+              magnitude: t.magnitude,
+              consecutive_worsening: 0,
+              yoy_change: null,
+            })),
+            repdte: params.repdte,
+          });
+
           const components = (["C", "A", "E", "L", "S"] as const).map((c) => scoreComponent(c, metrics));
           const comp = compositeScore(components);
           const profile = profileMap.get(cert);
@@ -408,6 +433,7 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
             signals: filteredSignals,
             critical_count: filteredSignals.filter((s) => s.severity === "critical").length,
             warning_count: filteredSignals.filter((s) => s.severity === "warning").length,
+            v2_signals: v2Signals,
           });
         }
 
@@ -425,7 +451,7 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
         const parts: string[] = [];
         parts.push(`Risk Signal Scan — ${results.length} flagged of ${allCurrentFinancials.length} institutions scanned`);
         parts.push(`Report Date: ${params.repdte} | Min Severity: ${params.min_severity}`);
-        parts.push("NOTE: Analytical screening tool, not official supervisory ratings.");
+        parts.push("NOTE: Public off-site analytical proxy — not official supervisory ratings.");
         parts.push("");
 
         if (returned.length === 0) {
@@ -460,6 +486,8 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
             institutions_flagged: results.length,
             returned_count: returned.length,
             institutions: returned,
+            model: "public_camels_proxy_v1" as const,
+            official_status: "public off-site proxy, not official CAMELS" as const,
           },
         };
       } catch (err) {
