@@ -4,10 +4,10 @@ const RELOAD_TYPE = "reload";
 
 const SUGGESTED_PROMPTS = [
   "Find active banks in Texas with over $5 billion in assets",
-  "List the 10 costliest bank failures since 2000",
-  "Show quarterly financials for Bank of America during 2024",
   "Run a CAMELS-style health assessment for CERT 3511",
-  "Scan Wyoming banks for risk signals and early warnings",
+  "Analyze credit concentration and funding profile for CERT 628",
+  "Show deposit market share for the Dallas-Fort Worth-Arlington MSA",
+  "Profile the holding company for CERT 3511 with subsidiary comparison",
 ];
 
 const escapeHtml = (value) =>
