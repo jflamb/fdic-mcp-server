@@ -26,6 +26,7 @@ import {
   type TrendAnalysis,
   type Rating,
 } from "./shared/camelsScoring.js";
+import { assembleProxyAssessment } from "./shared/publicCamelsProxy.js";
 
 const COMPONENT_NAMES: Record<string, string> = {
   C: "Capital Adequacy",
@@ -60,6 +61,12 @@ export interface HealthSummary {
   trends: TrendAnalysis[];
   outliers: string[];
   risk_signals: string[];
+  /** Proxy model overall band (e.g. "satisfactory") — added by proxy model */
+  proxy_band?: string;
+  /** Proxy model overall score on 1.0–4.0 scale */
+  proxy_score?: number;
+  /** PCA capital classification category (e.g. "well_capitalized") */
+  capital_category?: string;
 }
 
 export function formatHealthSummaryText(summary: HealthSummary): string {
@@ -70,9 +77,15 @@ export function formatHealthSummaryText(summary: HealthSummary): string {
   parts.push(`${inst.city}, ${inst.state} | Charter: ${inst.charter_class} | Assets: $${Math.round(inst.total_assets).toLocaleString()}k`);
   parts.push(`Report Date: ${inst.report_date} | Data: ${inst.data_staleness}`);
   parts.push("");
-  parts.push("NOTE: This is an analytical assessment based on public financial data, not an official regulatory CAMELS rating.");
+  parts.push("NOTE: This is a public off-site analytical proxy based on public financial data — not an official CAMELS rating or confidential supervisory conclusion.");
   parts.push("");
   parts.push(`Composite Rating: ${formatRating(composite.rating as Rating)}`);
+  if (summary.proxy_band !== undefined && summary.proxy_score !== undefined) {
+    parts.push(`Overall Assessment: ${summary.proxy_band} (score ${summary.proxy_score}/4.0)`);
+  }
+  if (summary.capital_category !== undefined) {
+    parts.push(`Capital Classification: ${summary.capital_category}`);
+  }
   parts.push("");
 
   for (const comp of summary.components) {
@@ -195,17 +208,19 @@ export function registerBankHealthTools(server: McpServer): void {
     "fdic_analyze_bank_health",
     {
       title: "Analyze Bank Health (CAMELS-Style)",
-      description: `Produce a CAMELS-style analytical assessment for a single FDIC-insured institution.
+      description: `Produce a CAMELS-style analytical assessment for a single FDIC-insured institution using the public off-site proxy model.
 
-Scores five components — Capital (C), Asset Quality (A), Earnings (E), Liquidity (L), Sensitivity (S) — using published FDIC financial data and derives a weighted composite rating (1=Strong to 5=Unsatisfactory).
+Scores five components — Capital (C), Asset Quality (A), Earnings (E), Liquidity (L), Sensitivity (S) — using published FDIC financial data and derives a weighted composite rating (1=Strong to 5=Unsatisfactory), plus a proxy model overall band (1.0–4.0 scale).
 
 Output includes:
   - Composite and component ratings with individual metric scores
+  - Proxy model overall assessment band with capital classification
+  - Management overlay assessment (inferred from public data patterns)
   - Trend analysis across prior quarters for key metrics
   - Risk signals flagging critical and warning-level concerns
-  - Structured JSON for programmatic consumption
+  - Structured JSON for programmatic consumption (legacy + proxy fields)
 
-NOTE: Management (M) is omitted — cannot be assessed from public data. Sensitivity (S) uses proxy metrics (NIM trend, securities concentration). This is an analytical tool, not an official regulatory rating.`,
+NOTE: Management (M) is omitted from component scoring — cannot be assessed from public data. Sensitivity (S) uses proxy metrics (NIM trend, securities concentration). This is a public off-site analytical proxy, not an official CAMELS rating.`,
       inputSchema: BankHealthInputSchema,
       annotations: {
         readOnlyHint: true,
@@ -312,6 +327,13 @@ NOTE: Management (M) is omitted — cannot be assessed from public data. Sensiti
         const riskSignals = collectRiskSignals(metrics, components, trends);
         const staleness = isStale(params.repdte) ? "stale (>120 days old)" : "current";
 
+        // Assemble the new proxy model assessment alongside legacy scoring
+        const proxyAssessment = assembleProxyAssessment({
+          rawFinancials: currentFinancials,
+          priorQuarters,
+          repdte: params.repdte,
+        });
+
         const summary: HealthSummary = {
           institution: {
             cert: params.cert,
@@ -328,6 +350,9 @@ NOTE: Management (M) is omitted — cannot be assessed from public data. Sensiti
           trends,
           outliers: [],
           risk_signals: riskSignals,
+          proxy_band: proxyAssessment.overall.band,
+          proxy_score: proxyAssessment.overall.score,
+          capital_category: proxyAssessment.capital_classification.category,
         };
 
         const text = truncateIfNeeded(
@@ -337,7 +362,18 @@ NOTE: Management (M) is omitted — cannot be assessed from public data. Sensiti
 
         return {
           content: [{ type: "text", text }],
-          structuredContent: summary as unknown as Record<string, unknown>,
+          structuredContent: {
+            // NEW primary output — proxy assessment fields
+            ...proxyAssessment,
+
+            // LEGACY compatibility fields (existing shape retained)
+            institution: summary.institution,
+            composite: summary.composite,
+            components: summary.components,
+            trends: summary.trends,
+            outliers: summary.outliers,
+            risk_signals: summary.risk_signals,
+          } as unknown as Record<string, unknown>,
         };
       } catch (err) {
         return formatToolError(err);
