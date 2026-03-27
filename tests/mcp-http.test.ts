@@ -789,7 +789,7 @@ describe("HTTP MCP server", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.result.tools).toHaveLength(21);
+    expect(response.body.result.tools).toHaveLength(22);
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toContain("fdic_search_demographics");

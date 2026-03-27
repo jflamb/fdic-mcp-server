@@ -31,6 +31,7 @@ import { registerSecuritiesPortfolioTools } from "./tools/securitiesPortfolio.js
 import { registerUbprAnalysisTools } from "./tools/ubprAnalysis.js";
 import { registerMarketShareAnalysisTools } from "./tools/marketShareAnalysis.js";
 import { registerFranchiseFootprintTools } from "./tools/franchiseFootprint.js";
+import { registerHoldingCompanyProfileTools } from "./tools/holdingCompanyProfile.js";
 import { registerSchemaResources } from "./resources/schemaResources.js";
 
 export function createServer(): McpServer {
@@ -57,6 +58,7 @@ export function createServer(): McpServer {
   registerUbprAnalysisTools(server);
   registerMarketShareAnalysisTools(server);
   registerFranchiseFootprintTools(server);
+  registerHoldingCompanyProfileTools(server);
   registerSchemaResources(server);
 
   return server;
