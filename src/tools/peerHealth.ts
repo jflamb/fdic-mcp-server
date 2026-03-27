@@ -26,6 +26,8 @@ import {
   type ComponentScore,
   type Rating,
 } from "./shared/camelsScoring.js";
+import { extractCanonicalMetrics } from "./shared/metricNormalization.js";
+import { computePeerStats, type PeerStats } from "./shared/peerEngine.js";
 
 interface PeerHealthEntry {
   cert: number;
@@ -109,9 +111,9 @@ Three usage modes:
 
 Optionally provide cert to highlight a subject institution's position in the ranking.
 
-Output: Ranked list of institutions with CAMELS composite and component scores, sorted by composite or any individual component.
+Output: Ranked list of institutions with CAMELS composite and component scores, sorted by composite or any individual component. When a subject cert is provided, includes peer percentile context for key metrics (ROA, equity ratio, NIM, efficiency ratio, loan-to-deposit).
 
-NOTE: This is an analytical assessment, not official regulatory ratings.`,
+NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
       inputSchema: PeerHealthInputSchema,
       annotations: {
         readOnlyHint: true,
@@ -277,6 +279,66 @@ NOTE: This is an analytical assessment, not official regulatory ratings.`,
           ? entries.findIndex((e) => e.cert === params.cert) + 1
           : null;
 
+        // Compute peer percentile context for the subject institution
+        let peerContext: {
+          peer_count: number;
+          peer_definition: string;
+          subject_rank: number | null;
+          subject_percentiles: Record<string, PeerStats>;
+        } | null = null;
+
+        if (params.cert) {
+          const subjectFin = allFinancials.find((f) => asNumber(f.CERT) === params.cert);
+          if (subjectFin) {
+            const subjectExtraction = extractCanonicalMetrics(subjectFin);
+            const sm = subjectExtraction.metrics;
+
+            const PEER_METRICS: { key: keyof typeof sm; label: string }[] = [
+              { key: "roaPct", label: "roaPct" },
+              { key: "equityCapitalRatioPct", label: "equityCapitalRatioPct" },
+              { key: "netInterestMarginPct", label: "netInterestMarginPct" },
+              { key: "efficiencyRatioPct", label: "efficiencyRatioPct" },
+              { key: "loanToDepositPct", label: "loanToDepositPct" },
+            ];
+
+            // Collect metric values from all peers (excluding subject)
+            const peerFinancials = allFinancials.filter((f) => asNumber(f.CERT) !== params.cert);
+            const peerExtractions = peerFinancials.map((f) => extractCanonicalMetrics(f).metrics);
+
+            const subjectPercentiles: Record<string, PeerStats> = {};
+            for (const pm of PEER_METRICS) {
+              const subjectVal = sm[pm.key];
+              if (subjectVal === null) continue;
+              const peerValues = peerExtractions
+                .map((pe) => pe[pm.key])
+                .filter((v): v is number => v !== null);
+              if (peerValues.length === 0) continue;
+              subjectPercentiles[pm.label] = computePeerStats(subjectVal, peerValues);
+            }
+
+            // Build peer definition string
+            let peerDef: string;
+            if (params.certs) {
+              peerDef = `CERTs ${params.certs.join(",")}`;
+            } else if (params.state) {
+              peerDef = `Active institutions in ${params.state}`;
+            } else if (params.asset_min !== undefined || params.asset_max !== undefined) {
+              const minStr = params.asset_min !== undefined ? `$${params.asset_min.toLocaleString()}k` : "any";
+              const maxStr = params.asset_max !== undefined ? `$${params.asset_max.toLocaleString()}k` : "any";
+              peerDef = `Active institutions with assets ${minStr}–${maxStr}`;
+            } else {
+              peerDef = `Auto-selected peers by asset size and charter class`;
+            }
+
+            peerContext = {
+              peer_count: entries.length,
+              peer_definition: peerDef,
+              subject_rank: subjectRank,
+              subject_percentiles: subjectPercentiles,
+            };
+          }
+        }
+
         const returned = entries.slice(0, params.limit);
 
         await sendProgressNotification(server.server, progressToken, 0.9, "Formatting results");
@@ -290,6 +352,13 @@ NOTE: This is an analytical assessment, not official regulatory ratings.`,
         if (subjectRank && subjectRank > 0 && params.cert) {
           const subj = entries[subjectRank - 1];
           parts.push(`Subject: ${subj.name} (CERT ${subj.cert}) — Rank ${subjectRank} of ${entries.length}, Composite: ${formatRating(subj.composite_rating as Rating)}`);
+          if (peerContext && Object.keys(peerContext.subject_percentiles).length > 0) {
+            const pctParts: string[] = [];
+            for (const [metric, stats] of Object.entries(peerContext.subject_percentiles)) {
+              pctParts.push(`${metric}: P${Math.round(stats.subject_percentile)}`);
+            }
+            parts.push(`  Peer percentiles: ${pctParts.join(", ")}`);
+          }
           parts.push("");
         }
 
@@ -330,6 +399,7 @@ NOTE: This is an analytical assessment, not official regulatory ratings.`,
             subject_cert: params.cert ?? null,
             subject_rank: subjectRank,
             institutions: returned,
+            peer_context: peerContext,
           },
         };
       } catch (err) {
