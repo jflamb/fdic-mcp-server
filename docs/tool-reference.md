@@ -82,6 +82,18 @@ These tools produce analytical assessments based on public financial data. They 
 |------|-------------|-------|
 | `fdic_regional_context` | You want macro/regional economic context for a bank's operating environment | Uses FRED data for unemployment and interest rate trends. Gracefully degrades if FRED is unavailable. |
 
+## Examiner Overlay Skill (Claude Code)
+
+If you are using Claude Code with this MCP server, the `/fdic-examiner-overlay` command guides you through layering qualitative examiner knowledge onto a `public_camels_proxy_v1` baseline.
+
+| Skill | Use It When | Notes |
+|-------|-------------|-------|
+| `/fdic-examiner-overlay` | You have examination-grade qualitative knowledge to add to a public-data health assessment | Produces a blended assessment with explicit provenance separating public-data findings from examiner overlay inputs. Not an MCP tool — a conversational skill that calls `fdic_analyze_bank_health` internally. |
+
+The skill collects structured analyst inputs for five overlay domains (management, asset quality, earnings, liquidity/funding, sensitivity), computes bounded score adjustments, and produces a seven-section output including a machine-readable worksheet. Capital is excluded from overlay in v1.
+
+This is a Claude Code command, not an MCP tool. It is available to analysts using Claude Code with this server but is not callable programmatically from other MCP clients.
+
 ## Choosing The Right Tool
 
 - Use search tools when you want raw records.
@@ -99,6 +111,7 @@ These tools produce analytical assessments based on public financial data. They 
 - Use `fdic_franchise_footprint` when you want to map where an institution operates and how its deposits are distributed.
 - Use `fdic_holding_company_profile` when you want to understand the parent-subsidiary structure and consolidated metrics.
 - Use `fdic_regional_context` when you need economic backdrop for interpreting bank performance.
+- Use `/fdic-examiner-overlay` when you have examiner-grade qualitative knowledge to layer onto a public-data health assessment.
 
 ## Data Basis Reminder
 
