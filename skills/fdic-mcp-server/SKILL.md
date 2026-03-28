@@ -3,9 +3,6 @@ name: fdic-mcp-server-conventions
 description: Development conventions and patterns for fdic-mcp-server. TypeScript Express project with mixed commits.
 ---
 
-<!-- sync-source: skills/fdic-mcp-server/SKILL.md -->
-<!-- Managed copy for contributor auto-loading. Canonical source is skills/fdic-mcp-server/SKILL.md -->
-
 # Fdic Mcp Server Conventions
 
 > Generated from [jflamb/fdic-mcp-server](https://github.com/jflamb/fdic-mcp-server) on 2026-03-21

@@ -1,0 +1,10 @@
+{
+  "name": "fdic-mcp-server",
+  "description": "FDIC BankFind Suite — banking data tools and conventions for Claude Code",
+  "plugins": [
+    {
+      "name": "fdic-mcp-server",
+      "path": ".."
+    }
+  ]
+}

@@ -109,6 +109,7 @@
     "workflow-pack"
   ],
   "managedFiles": [
+    "skills/fdic-mcp-server/SKILL.md",
     ".claude/skills/fdic-mcp-server/SKILL.md",
     ".agents/skills/fdic-mcp-server/SKILL.md",
     ".agents/skills/fdic-mcp-server/agents/openai.yaml",
@@ -125,6 +126,7 @@
   ],
   "packageFiles": {
     "runtime-core": [
+      "skills/fdic-mcp-server/SKILL.md",
       ".claude/skills/fdic-mcp-server/SKILL.md",
       ".agents/skills/fdic-mcp-server/SKILL.md",
       ".agents/skills/fdic-mcp-server/agents/openai.yaml",
@@ -144,6 +146,7 @@
   },
   "moduleFiles": {
     "runtime-core": [
+      "skills/fdic-mcp-server/SKILL.md",
       ".claude/skills/fdic-mcp-server/SKILL.md",
       ".agents/skills/fdic-mcp-server/SKILL.md",
       ".agents/skills/fdic-mcp-server/agents/openai.yaml",
@@ -164,8 +167,13 @@
   "files": [
     {
       "moduleId": "runtime-core",
+      "path": "skills/fdic-mcp-server/SKILL.md",
+      "description": "Canonical plugin skill distributed via Claude Code plugin system."
+    },
+    {
+      "moduleId": "runtime-core",
       "path": ".claude/skills/fdic-mcp-server/SKILL.md",
-      "description": "Repository-specific Claude Code skill generated from git history."
+      "description": "Managed copy of the canonical skill for contributor auto-loading."
     },
     {
       "moduleId": "runtime-core",
