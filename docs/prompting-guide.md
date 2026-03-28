@@ -160,17 +160,17 @@ Run a full health assessment for CERT 3511 with 8 quarters of trend history. Sho
 
 Tools used: `fdic_analyze_bank_health`
 
-What to expect: A `public_camels_proxy_v1` assessment with composite and component ratings, PCA capital categorization (well capitalized through critically undercapitalized), management overlay level, enhanced trend analysis with consecutive-worsening flags, and standardized risk signal codes with severity levels.
+What to expect: A `public_camels_proxy_v1` assessment with composite and component ratings, PCA capital categorization (well capitalized through significantly undercapitalized — critically undercapitalized requires tangible-equity data not available from public BankFind), management overlay level, enhanced trend analysis with consecutive-worsening flags, and standardized risk signal codes with severity levels.
 
 ### Peer health comparison
 
 ```text
-Compare the health scores for all active banks in Wyoming, sorted by composite rating. For the weakest institution, show its peer percentiles on ROA, equity ratio, and NIM.
+Compare the health scores for all active banks in Wyoming, sorted by composite rating. Highlight CERT 3511 and show its peer percentiles.
 ```
 
 Tools used: `fdic_compare_peer_health`
 
-What to expect: A ranked list of institutions by composite health score, with component ratings and flags. For the highlighted institution, peer percentiles, robust z-scores, and outlier flags for key metrics.
+What to expect: A ranked list of institutions by composite health score, with component ratings and flags. When a subject `cert` is provided, includes peer percentiles and robust z-scores for key metrics (ROA, equity ratio, NIM, efficiency ratio, loan-to-deposit). Outlier flags indicate when the subject is more than 2.5 MAD from the peer median. Note: peer percentile context requires a subject `cert` parameter — without one, the tool returns rankings only.
 
 ### Risk signal screening with follow-through
 

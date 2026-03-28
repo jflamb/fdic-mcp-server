@@ -28,8 +28,8 @@ Repository reference for the end-to-end request flow and the code boundaries bet
 
 The `src/tools/shared/` directory contains reusable analysis modules:
 
-- `metricNormalization.ts` — canonical metric extraction with field-alias resolution and provenance tracking
-- `capitalClassification.ts` — PCA-style capital categorization using official regulatory thresholds
+- `metricNormalization.ts` — canonical metric extraction with provenance tracking (reads primary FDIC field names)
+- `capitalClassification.ts` — PCA-style capital categorization using official regulatory thresholds (critically undercapitalized requires tangible-equity data not available from BankFind public financials)
 - `trendEngine.ts` — enhanced trend analysis with consecutive-worsening detection, reversal flags, and history-event awareness
 - `peerEngine.ts` — peer comparison with percentile computation, MAD-based robust z-scores, and outlier detection
 - `managementOverlay.ts` — management overlay assessment with band-capping logic
@@ -39,7 +39,7 @@ The `src/tools/shared/` directory contains reusable analysis modules:
 - `financialMetrics.ts` — derived financial metrics used by peer group and snapshot tools
 - `queryUtils.ts` — shared query construction, date handling, and concurrency utilities
 
-These modules are designed as pure functions with no FDIC API dependencies, making them fully testable in isolation.
+These modules are designed as pure functions with no FDIC API dependencies, making them fully testable in isolation — with the exception of `historyFetch.ts`, which queries the FDIC history endpoint and is tested via mock.
 
 ## Operational Notes
 
