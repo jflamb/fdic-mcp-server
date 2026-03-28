@@ -107,7 +107,7 @@ The proxy has no direct management score — only an algorithmic overlay. This i
 | `mgmt_tenure_stability` | "How would you characterize senior management tenure and stability?" | `stable` / `recent_turnover` / `significant_disruption` |
 | `board_governance` | "Any board or governance concerns? (independence, expertise, engagement, conflicts)" | `no_concerns` / `minor_concerns` / `material_concerns` |
 | `internal_controls` | "Internal audit and control environment findings?" | `satisfactory` / `needs_improvement` / `deficient` |
-| `risk_management` | "How effective is the institution's risk management framework?" | `effective` / `adequate` / `inadequate` / `materially_deficient` |
+| `risk_management` | "How effective is the institution's risk management framework?" | `effective` / `adequate` / `inadequate` |
 | `succession_planning` | "Is there a credible succession plan for key positions?" | `documented` / `informal` / `absent` |
 | `supervisory_issues_history` | "Any recent enforcement actions, MRAs, or exam-history flags?" | `clean` / `open_mras` / `enforcement_action` |
 
@@ -119,7 +119,7 @@ The proxy scores NCL ratio, net charge-offs, reserve coverage, and noncurrent as
 |-------|--------|-----------|
 | `concentration_risk` | "Any material loan concentration concerns? (CRE, single-borrower, sector)" | `no_concerns` / `moderate` / `elevated` |
 | `underwriting_quality` | "How would you assess recent underwriting standards?" | `sound` / `loosening` / `weak` |
-| `classified_asset_trend` | "Direction of classified/criticized assets since last exam?" | `improving` / `stable` / `deteriorating` / `severe_deterioration` |
+| `classified_asset_trend` | "Direction of classified/criticized assets since last exam?" | `improving` / `stable` / `deteriorating` |
 | `allowance_adequacy` | "Is the allowance (ALLL/ACL) adequate relative to identified risk?" | `adequate` / `marginally_adequate` / `inadequate` |
 
 Note: `classified_asset_trend` reflects confidential supervisory information. The skill must flag this in the caveats section.
@@ -184,10 +184,12 @@ Severe overrides apply only to downgrade direction.
 | `contingency_funding` | `absent` | 0.50 |
 | `irr_model_results` | `exceeding_limits` | 0.50 |
 | `allowance_adequacy` | `inadequate` | 0.50 |
-| `classified_asset_trend` | `severe_deterioration` | 0.50 |
-| `risk_management` | `materially_deficient` | 0.50 |
 
 Not severe overrides (by design): `open_mras`, `material_concerns`, `adequate` (in any context). These are too ambiguous for a floor.
+
+**v1.1 candidates** (add only if analyst sessions demonstrate the need):
+- `classified_asset_trend`: add `severe_deterioration` enum + severe override
+- `risk_management`: add `materially_deficient` enum + severe override
 
 ### Non-management domain adjustment
 
@@ -228,7 +230,7 @@ Management does not produce a component score adjustment. It modifies the manage
 **downgrade:**
 - Raw magnitude computed same as other domains: `mean(field_magnitudes)`
 - If raw magnitude ≥ 0.25: elevate overlay by one level (`normal` → `watch`, `watch` → `elevated_concern`)
-- Two-level escalation (`normal` → `elevated_concern`) only if: confidence is `high` AND at least one management severe override is present (`enforcement_action`, `deficient` internal controls, or `materially_deficient` risk management)
+- Two-level escalation (`normal` → `elevated_concern`) only if: confidence is `high` AND at least one management severe override is present (`enforcement_action` or `deficient` internal controls)
 - `elevated_concern` caps the final band down by one level (same as existing proxy behavior)
 - If the proxy already produced `elevated_concern`, a management downgrade reinforces it (no double-cap, but flagged in the narrative)
 
