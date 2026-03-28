@@ -181,6 +181,20 @@ describe("assembleProxyAssessment", () => {
     expect(capitalContribution).toBeCloseTo(1.2, 1);
   });
 
+  it("does not emit merger_distorted_trend for events outside the trend window", () => {
+    const prior = [
+      { ...healthyBank, REPDTE: "20240930" },
+      { ...healthyBank, REPDTE: "20240630" },
+    ];
+    const result = assembleProxyAssessment({
+      rawFinancials: healthyBank,
+      priorQuarters: prior,
+      repdte: "20241231",
+      historyEvents: [{ repdte: "20200315", event_type: "merger", description: "Old merger" }],
+    });
+    expect(result.risk_signals.some(s => s.code === "merger_distorted_trend")).toBe(false);
+  });
+
   it("annotates history events in trend insights", () => {
     const prior = [
       { ...healthyBank, REPDTE: "20240930" },

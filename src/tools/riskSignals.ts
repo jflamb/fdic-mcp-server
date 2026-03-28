@@ -353,7 +353,7 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
         const historyResults = await mapWithConcurrency(
           targetCerts,
           MAX_CONCURRENCY,
-          async (cert) => ({ cert, events: await fetchHistoryEvents(cert, { signal: controller.signal }) }),
+          async (cert) => ({ cert, events: await fetchHistoryEvents(cert, { signal: controller.signal, repdte: params.repdte }) }),
         );
         for (const { cert, events } of historyResults) {
           if (events.length > 0) historyByCert.set(cert, events);

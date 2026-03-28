@@ -248,7 +248,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
 
         // Fetch history for subject bank if specified (best-effort, additive)
         const subjectHistory = params.cert
-          ? await fetchHistoryEvents(params.cert, { signal: controller.signal })
+          ? await fetchHistoryEvents(params.cert, { signal: controller.signal, repdte: params.repdte })
           : [];
 
         const entries: PeerHealthEntry[] = [];

@@ -40,6 +40,7 @@ export function classifyRiskSignalsV2(params: {
   trends: TrendInput[];
   repdte: string;
   historyEvents?: HistoryEvent[];
+  trendWindow?: { earliest: string; latest: string };
 }): RiskSignalV2[] {
   const signals: RiskSignalV2[] = [];
   const { metrics, capitalClassification, trends, repdte, historyEvents } =
@@ -133,7 +134,8 @@ export function classifyRiskSignalsV2(params: {
   const nclTrend = trends.find(
     (t) =>
       t.metric === "noncurrent_loans_ratio" ||
-      t.metric === "noncurrentLoansPct",
+      t.metric === "noncurrentLoansPct" ||
+      t.metric === "noncurrent_loans",
   );
   if (nclTrend && nclTrend.consecutive_worsening >= 2) {
     signals.push({
@@ -253,14 +255,22 @@ export function classifyRiskSignalsV2(params: {
   // Data quality signals
   // -------------------------------------------------------------------------
 
-  // merger_distorted_trend: info when historyEvents has event inside lookback window
-  if (historyEvents && historyEvents.length > 0) {
-    signals.push({
-      code: "merger_distorted_trend",
-      severity: "info",
-      category: "data_quality",
-      message: `Public data suggest trend analysis may be distorted by a ${historyEvents[0].event_type} event reported on ${historyEvents[0].repdte}.`,
-    });
+  // merger_distorted_trend: info when historyEvents has event inside the trend window.
+  // Only emit when a trend window exists — if no trends were analyzed, there is nothing to distort.
+  if (historyEvents && historyEvents.length > 0 && params.trendWindow) {
+    const window = params.trendWindow;
+    const overlapping = historyEvents.filter((e) =>
+      e.repdte >= window.earliest && e.repdte <= window.latest,
+    );
+
+    if (overlapping.length > 0) {
+      signals.push({
+        code: "merger_distorted_trend",
+        severity: "info",
+        category: "data_quality",
+        message: `Public data suggest trend analysis may be distorted by a ${overlapping[0].event_type} event reported on ${overlapping[0].repdte}.`,
+      });
+    }
   }
 
   // stale_reporting_period: info when repdte is stale

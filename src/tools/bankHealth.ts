@@ -286,7 +286,7 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
             ).then(extractRecords)
           : Promise.resolve([]);
 
-        const historyPromise = fetchHistoryEvents(params.cert, { signal: controller.signal });
+        const historyPromise = fetchHistoryEvents(params.cert, { signal: controller.signal, repdte: params.repdte });
 
         const [priorQuarters, historyEvents] = await Promise.all([priorPromise, historyPromise]);
 

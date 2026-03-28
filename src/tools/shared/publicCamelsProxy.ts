@@ -257,7 +257,19 @@ export function assembleProxyAssessment(params: {
     }
   }
 
-  // 7. Classify risk signals
+  // 7. Compute the actual trend window from prior quarter dates
+  let trendWindow: { earliest: string; latest: string } | undefined;
+  if (priorQuarters && priorQuarters.length > 0) {
+    const allRepdtes = [
+      ...priorQuarters.map((q) => String(q.REPDTE ?? "")),
+      repdte,
+    ].filter(Boolean).sort();
+    if (allRepdtes.length >= 2) {
+      trendWindow = { earliest: allRepdtes[0], latest: allRepdtes[allRepdtes.length - 1] };
+    }
+  }
+
+  // 8. Classify risk signals
   const trendInputs = trendInsights.map((t) => ({
     metric: t.metric,
     direction: t.direction,
@@ -272,9 +284,10 @@ export function assembleProxyAssessment(params: {
     trends: trendInputs,
     repdte,
     historyEvents,
+    trendWindow,
   });
 
-  // 8. Assess management overlay
+  // 9. Assess management overlay
   // Use PCA-derived equivalent for capital so overlay is consistent with PCA-anchored score
   const componentRatings: Record<string, number> = {
     C: PCA_TO_LEGACY_EQUIVALENT[capitalClassification.category] ?? 3,
@@ -294,14 +307,14 @@ export function assembleProxyAssessment(params: {
     capital_category: capitalClassification.category,
   });
 
-  // 9. Build component assessments with new 1-4 scale
+  // 10. Build component assessments with new 1-4 scale
   const capitalAssessment = buildCapitalAssessment(capitalClassification.category, capitalScore);
   const assetQualityAssessment = buildComponentAssessment(assetQualityScore);
   const earningsAssessment = buildComponentAssessment(earningsScore);
   const liquidityAssessment = buildComponentAssessment(liquidityScore);
   const sensitivityAssessment = buildComponentAssessment(sensitivityScore);
 
-  // 10. Compute overall score (weighted average on 1-4 scale)
+  // 11. Compute overall score (weighted average on 1-4 scale)
   const rawScore =
     capitalAssessment.score * PROXY_WEIGHTS.capital +
     assetQualityAssessment.score * PROXY_WEIGHTS.asset_quality +
@@ -313,7 +326,7 @@ export function assembleProxyAssessment(params: {
   const overallScore = Math.round(rawScore * 100) / 100;
   const band = scoreToBand(overallScore, managementOverlay.caps_band);
 
-  // 11. Data quality
+  // 12. Data quality
   const dataQuality = {
     report_date: repdte,
     staleness: isStale(repdte) ? "stale (>120 days old)" : "current",

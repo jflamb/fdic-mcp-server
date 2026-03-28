@@ -82,13 +82,14 @@ describe("classifyRiskSignalsV2", () => {
     }));
   });
 
-  it("flags merger_distorted_trend for history events", () => {
+  it("flags merger_distorted_trend for history events within the trend window", () => {
     const signals = classifyRiskSignalsV2({
       metrics: baseMetrics,
       capitalClassification: wellCapitalized,
       trends: [],
       repdte: "20241231",
       historyEvents: [{ repdte: "20240630", event_type: "merger" }],
+      trendWindow: { earliest: "20240101", latest: "20241231" },
     });
     expect(signals).toContainEqual(expect.objectContaining({
       code: "merger_distorted_trend", severity: "info", category: "data_quality",
@@ -141,6 +142,57 @@ describe("classifyRiskSignalsV2", () => {
     expect(signals).toContainEqual(expect.objectContaining({
       code: "credit_deterioration_trending", severity: "warning", category: "asset_quality",
     }));
+  });
+
+  it("does not emit merger_distorted_trend for events outside the trend window", () => {
+    const signals = classifyRiskSignalsV2({
+      metrics: baseMetrics,
+      capitalClassification: wellCapitalized,
+      trends: [{
+        metric: "tier1_leverage",
+        direction: "stable",
+        magnitude: "minimal",
+        consecutive_worsening: 0,
+        yoy_change: null,
+      }],
+      repdte: "20241231",
+      historyEvents: [{ repdte: "20200315", event_type: "merger" }],
+      trendWindow: { earliest: "20240101", latest: "20241231" },
+    });
+    const distortion = signals.find(s => s.code === "merger_distorted_trend");
+    expect(distortion).toBeUndefined();
+  });
+
+  it("emits merger_distorted_trend for events inside the trend window", () => {
+    const signals = classifyRiskSignalsV2({
+      metrics: baseMetrics,
+      capitalClassification: wellCapitalized,
+      trends: [{
+        metric: "tier1_leverage",
+        direction: "stable",
+        magnitude: "minimal",
+        consecutive_worsening: 0,
+        yoy_change: null,
+      }],
+      repdte: "20241231",
+      historyEvents: [{ repdte: "20240615", event_type: "merger" }],
+      trendWindow: { earliest: "20240101", latest: "20241231" },
+    });
+    const distortion = signals.find(s => s.code === "merger_distorted_trend");
+    expect(distortion).toBeDefined();
+    expect(distortion!.severity).toBe("info");
+  });
+
+  it("does not emit merger_distorted_trend when no trendWindow provided (no trends to distort)", () => {
+    const signals = classifyRiskSignalsV2({
+      metrics: baseMetrics,
+      capitalClassification: wellCapitalized,
+      trends: [],
+      repdte: "20241231",
+      historyEvents: [{ repdte: "20240615", event_type: "merger" }],
+    });
+    const distortion = signals.find(s => s.code === "merger_distorted_trend");
+    expect(distortion).toBeUndefined();
   });
 
   it("uses neutral supervisory-safe language in messages", () => {
