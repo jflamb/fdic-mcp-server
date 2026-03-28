@@ -460,14 +460,15 @@ NOTE: Analytical screening tool, not official supervisory ratings.`,
         return {
           content: [{ type: "text", text }],
           structuredContent: {
+            model: "public_camels_proxy_v1" as const,
+            official_status: "public off-site proxy, not official CAMELS" as const,
+            proxy: null,
             report_date: params.repdte,
             min_severity: params.min_severity,
             institutions_scanned: allCurrentFinancials.length,
             institutions_flagged: results.length,
             returned_count: returned.length,
             institutions: returned,
-            model: "public_camels_proxy_v1" as const,
-            official_status: "public off-site proxy, not official CAMELS" as const,
           },
         };
       } catch (err) {

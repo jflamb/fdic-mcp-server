@@ -19,7 +19,7 @@ import {
 import { sendProgressNotification } from "./shared/progress.js";
 import { extractCanonicalMetrics, CANONICAL_FIELDS } from "./shared/metricNormalization.js";
 import { computePeerStats, type PeerStats } from "./shared/peerEngine.js";
-import { assembleProxyAssessment, type OverallBand } from "./shared/publicCamelsProxy.js";
+import { assembleProxyAssessment, type OverallBand, type ProxyAssessment } from "./shared/publicCamelsProxy.js";
 import { fetchHistoryEvents } from "./shared/historyFetch.js";
 import {
   computeCamelsMetrics,
@@ -251,6 +251,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           ? await fetchHistoryEvents(params.cert, { signal: controller.signal, repdte: params.repdte })
           : [];
 
+        let subjectProxy: ProxyAssessment | null = null;
         const entries: PeerHealthEntry[] = [];
         for (const fin of allFinancials) {
           const cert = asNumber(fin.CERT);
@@ -261,6 +262,9 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             repdte: params.repdte,
             historyEvents: cert === params.cert ? subjectHistory : undefined,
           });
+          if (cert === params.cert) {
+            subjectProxy = proxyAssessment;
+          }
 
           const legacyMetrics = computeCamelsMetrics(fin);
           const legacyComponents: ComponentScore[] = (["C", "A", "E", "L", "S"] as const).map(
@@ -438,6 +442,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           structuredContent: {
             model: "public_camels_proxy_v1" as const,
             official_status: "public off-site proxy, not official CAMELS" as const,
+            proxy: subjectProxy,
             report_date: params.repdte,
             sort_by: params.sort_by,
             total_institutions: entries.length,

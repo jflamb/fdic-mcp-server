@@ -352,7 +352,8 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
         return {
           content: [{ type: "text", text }],
           structuredContent: {
-            // Proxy assessment (canonical shape, unchanged)
+            model: "public_camels_proxy_v1" as const,
+            official_status: "public off-site proxy, not official CAMELS" as const,
             proxy: proxyAssessment,
 
             // Legacy compatibility fields (existing shape preserved)
