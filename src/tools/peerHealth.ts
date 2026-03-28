@@ -18,7 +18,7 @@ import {
 } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
 import { extractCanonicalMetrics, CANONICAL_FIELDS } from "./shared/metricNormalization.js";
-import { computePeerStats, type PeerStats } from "./shared/peerEngine.js";
+import { computePeerStats, computeWeightedAggregate, type PeerStats } from "./shared/peerEngine.js";
 import { assembleProxyAssessment, type OverallBand, type ProxyAssessment } from "./shared/publicCamelsProxy.js";
 import { fetchHistoryEvents } from "./shared/historyFetch.js";
 import {
@@ -115,7 +115,7 @@ Three usage modes:
 
 Optionally provide cert to highlight a subject institution's position in the ranking.
 
-Output: Ranked list of institutions with CAMELS composite and component scores, sorted by composite or any individual component. When a subject cert is provided, includes peer percentile context for key metrics (ROA, equity ratio, NIM, efficiency ratio, loan-to-deposit).
+Output: Ranked list with per-institution proxy_score (1-4 scale) and proxy_band, sorted by composite or any individual component. When a subject cert is provided, includes peer percentile context, asset-weighted peer averages, and the subject's full proxy assessment. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.
 
 NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
       inputSchema: PeerHealthInputSchema,
@@ -144,7 +144,9 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
 
         await sendProgressNotification(server.server, progressToken, 0.1, "Building peer roster");
 
+        const MIN_PEER_COUNT = 10;
         let peerCerts: number[];
+        const broadeningSteps: string[] = [];
 
         if (params.certs) {
           peerCerts = [...params.certs];
@@ -152,51 +154,149 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             peerCerts.push(params.cert);
           }
         } else {
-          const filterParts: string[] = ["ACTIVE:1"];
-          if (params.state) filterParts.push(`STALP:${params.state}`);
-          if (params.asset_min !== undefined || params.asset_max !== undefined) {
-            const min = params.asset_min ?? 0;
-            const max = params.asset_max ?? "*";
-            filterParts.push(`ASSET:[${min} TO ${max}]`);
-          }
+          // Peer roster construction uses two-stage filtering:
+          // 1. Non-financial filters (state, charter class, active status) via institutions endpoint
+          // 2. Asset-range filters via financials endpoint at the requested repdte
+          //    (institutions ASSET is a current snapshot; financials ASSET is report-date consistent)
+          const institutionFilters: string[] = ["ACTIVE:1"];
+          if (params.state) institutionFilters.push(`STALP:${params.state}`);
+
+          // Track asset range separately — applied to financials, not institutions
+          let assetMin: number | null = params.asset_min ?? null;
+          let assetMax: number | null = params.asset_max ?? null;
+
+          // Auto-peer selection: derive asset band from report-date financials
+          let subjectAsset: number | null = null;
+          let bkclass: string | null = null;
           if (params.cert && !params.state && params.asset_min === undefined) {
-            const profileResp = await queryEndpoint(
-              ENDPOINTS.INSTITUTIONS,
-              {
-                filters: `CERT:${params.cert}`,
-                fields: "CERT,ASSET,STALP,BKCLASS",
-                limit: 1,
-              },
-              { signal: controller.signal },
-            );
+            const [subjectFinResp, profileResp] = await Promise.all([
+              queryEndpoint(
+                ENDPOINTS.FINANCIALS,
+                {
+                  filters: `CERT:${params.cert} AND REPDTE:${params.repdte}`,
+                  fields: "CERT,ASSET",
+                  limit: 1,
+                },
+                { signal: controller.signal },
+              ),
+              queryEndpoint(
+                ENDPOINTS.INSTITUTIONS,
+                {
+                  filters: `CERT:${params.cert}`,
+                  fields: "CERT,STALP,BKCLASS",
+                  limit: 1,
+                },
+                { signal: controller.signal },
+              ),
+            ]);
             const profileRecs = extractRecords(profileResp);
             if (profileRecs.length === 0) {
               return formatToolError(new Error(`No institution found with CERT ${params.cert}.`));
             }
-            const subjectAsset = asNumber(profileRecs[0].ASSET);
+            const subjectFinRecs = extractRecords(subjectFinResp);
+            subjectAsset = subjectFinRecs.length > 0
+              ? asNumber(subjectFinRecs[0].ASSET)
+              : null;
             if (subjectAsset !== null) {
-              filterParts.push(`ASSET:[${subjectAsset * 0.5} TO ${subjectAsset * 2.0}]`);
+              assetMin = subjectAsset * 0.5;
+              assetMax = subjectAsset * 2.0;
             }
-            const bkclass = profileRecs[0].BKCLASS;
-            if (typeof bkclass === "string") {
-              filterParts.push(`BKCLASS:${bkclass}`);
+            bkclass = typeof profileRecs[0].BKCLASS === "string"
+              ? profileRecs[0].BKCLASS as string
+              : null;
+            if (bkclass) {
+              institutionFilters.push(`BKCLASS:${bkclass}`);
             }
           }
 
-          const rosterResp = await queryEndpoint(
-            ENDPOINTS.INSTITUTIONS,
-            {
-              filters: filterParts.join(" AND "),
-              fields: "CERT",
-              limit: 10_000,
-              sort_by: "CERT",
-              sort_order: "ASC",
-            },
-            { signal: controller.signal },
-          );
-          peerCerts = extractRecords(rosterResp)
-            .map((r) => asNumber(r.CERT))
-            .filter((c): c is number => c !== null);
+          // Helper: query institutions endpoint for non-financial filters
+          async function queryInstitutionCerts(filters: string[]): Promise<number[]> {
+            const resp = await queryEndpoint(
+              ENDPOINTS.INSTITUTIONS,
+              {
+                filters: filters.join(" AND "),
+                fields: "CERT",
+                limit: 10_000,
+                sort_by: "CERT",
+                sort_order: "ASC",
+              },
+              { signal: controller.signal },
+            );
+            return extractRecords(resp)
+              .map((r) => asNumber(r.CERT))
+              .filter((c): c is number => c !== null);
+          }
+
+          // Helper: filter CERTs by report-date asset range via financials endpoint
+          async function filterByRepdateAssets(
+            certs: number[],
+            min: number,
+            max: number,
+          ): Promise<number[]> {
+            const certFilterStrs = buildCertFilters(certs);
+            const responses = await mapWithConcurrency(
+              certFilterStrs,
+              MAX_CONCURRENCY,
+              async (certFilter) =>
+                queryEndpoint(
+                  ENDPOINTS.FINANCIALS,
+                  {
+                    filters: `(${certFilter}) AND REPDTE:${params.repdte} AND ASSET:[${min} TO ${max}]`,
+                    fields: "CERT",
+                    limit: 10_000,
+                  },
+                  { signal: controller.signal },
+                ),
+            );
+            return responses
+              .flatMap(extractRecords)
+              .map((r) => asNumber(r.CERT))
+              .filter((c): c is number => c !== null);
+          }
+
+          // Helper: build full peer roster with current filter state
+          async function buildRoster(
+            instFilters: string[],
+            aMin: number | null,
+            aMax: number | null,
+          ): Promise<number[]> {
+            const baseCerts = await queryInstitutionCerts(instFilters);
+            if (baseCerts.length === 0) return [];
+            if (aMin !== null && aMax !== null) {
+              return filterByRepdateAssets(baseCerts, aMin, aMax);
+            }
+            return baseCerts;
+          }
+
+          peerCerts = await buildRoster(institutionFilters, assetMin, assetMax);
+
+          // Broadening: if auto-peer cohort is too small, progressively relax filters
+          if (params.cert && !params.certs && peerCerts.length < MIN_PEER_COUNT) {
+            // Step 1: Drop charter class filter
+            if (bkclass) {
+              const withoutBkclass = institutionFilters.filter(f => !f.startsWith("BKCLASS:"));
+              const broader = await buildRoster(withoutBkclass, assetMin, assetMax);
+              if (broader.length > peerCerts.length) {
+                peerCerts = broader;
+                broadeningSteps.push(`Relaxed charter class filter (was BKCLASS:${bkclass})`);
+                institutionFilters.length = 0;
+                institutionFilters.push(...withoutBkclass);
+              }
+            }
+
+            // Step 2: Widen asset band to 0.25x–4.0x if still too small
+            if (peerCerts.length < MIN_PEER_COUNT && subjectAsset !== null) {
+              const widerMin = subjectAsset * 0.25;
+              const widerMax = subjectAsset * 4.0;
+              const broader = await buildRoster(institutionFilters, widerMin, widerMax);
+              if (broader.length > peerCerts.length) {
+                peerCerts = broader;
+                assetMin = widerMin;
+                assetMax = widerMax;
+                broadeningSteps.push(`Widened asset band from 0.5x–2.0x to 0.25x–4.0x`);
+              }
+            }
+          }
         }
 
         if (peerCerts.length === 0) {
@@ -329,8 +429,10 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
         let peerContext: {
           peer_count: number;
           peer_definition: string;
+          broadening_steps: string[];
           subject_rank: number | null;
           subject_percentiles: Record<string, PeerStats>;
+          weighted_peer_averages: Record<string, number>;
         } | null = null;
 
         if (params.cert) {
@@ -349,19 +451,34 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
 
             // Collect metric values from all peers (excluding subject)
             const peerFinancials = allFinancials.filter((f) => asNumber(f.CERT) !== params.cert);
-            const peerExtractions = peerFinancials.map((f) => extractCanonicalMetrics(f).metrics);
+            const peerExtractions = peerFinancials.map((f) => extractCanonicalMetrics(f));
 
             const subjectPercentiles: Record<string, PeerStats> = {};
+            const weightedPeerAverages: Record<string, number> = {};
             for (const pm of PEER_METRICS) {
               const subjectVal = sm[pm.key];
-              if (subjectVal === null) continue;
-              const peerValues = peerExtractions
-                .map((pe) => pe[pm.key])
-                .filter((v): v is number => v !== null);
+              // Build value + weight pairs for weighted aggregate (weight = totalAssets)
+              const weightedEntries: { value: number; weight: number }[] = [];
+              const peerValues: number[] = [];
+              for (const pe of peerExtractions) {
+                const v = pe.metrics[pm.key];
+                if (v === null) continue;
+                peerValues.push(v);
+                const w = pe.metrics.totalAssets;
+                if (w !== null && w > 0) {
+                  weightedEntries.push({ value: v, weight: w });
+                }
+              }
               if (peerValues.length === 0) continue;
-              subjectPercentiles[pm.label] = computePeerStats(subjectVal, peerValues, {
-                higherIsBetter: pm.higherIsBetter,
-              });
+              if (subjectVal !== null) {
+                subjectPercentiles[pm.label] = computePeerStats(subjectVal, peerValues, {
+                  higherIsBetter: pm.higherIsBetter,
+                });
+              }
+              const weighted = computeWeightedAggregate(weightedEntries);
+              if (weighted !== null) {
+                weightedPeerAverages[pm.label] = Math.round(weighted * 100) / 100;
+              }
             }
 
             // Build peer definition string
@@ -381,8 +498,10 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             peerContext = {
               peer_count: entries.length,
               peer_definition: peerDef,
+              broadening_steps: broadeningSteps,
               subject_rank: subjectRank,
               subject_percentiles: subjectPercentiles,
+              weighted_peer_averages: weightedPeerAverages,
             };
           }
         }
@@ -396,6 +515,11 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
         parts.push(`Report Date: ${params.repdte}`);
         parts.push("NOTE: Public off-site analytical proxy — not official supervisory ratings.");
         parts.push("");
+
+        if (broadeningSteps.length > 0) {
+          parts.push(`Peer broadening: ${broadeningSteps.join("; ")}`);
+          parts.push("");
+        }
 
         if (subjectRank && subjectRank > 0 && params.cert) {
           const subj = entries[subjectRank - 1];

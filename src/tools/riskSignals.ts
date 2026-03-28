@@ -196,21 +196,21 @@ export function registerRiskSignalTools(server: McpServer): void {
     "fdic_detect_risk_signals",
     {
       title: "Detect Risk Signals (Early Warning)",
-      description: `Scan FDIC-insured institutions for early warning risk signals using CAMELS-style analysis.
+      description: `Scan FDIC-insured institutions for early warning risk signals using the public_camels_proxy_v1 analytical engine.
 
-Scans institutions for:
-  - Critical: undercapitalized (Tier 1 < 5%), operating losses (ROA < 0), reserve coverage < 50%
-  - Warning: CAMELS component rated 4+, significant deteriorating trends, brokered deposits > 15%, noncurrent loans > 3%
-  - Info: moderate deteriorating trends
+Standardized signal codes with severity levels:
+  - Critical: capital_undercapitalized (PCA breach), earnings_loss (ROA < 0), reserve_coverage_low (< 50%)
+  - Warning: capital_buffer_erosion, credit_deterioration, credit_deterioration_trending, earnings_pressure, margin_compression, funding_stress, funding_ltd_stretched, rate_risk_proxy_elevated, wholesale_funding_elevated
+  - Info: merger_distorted_trend, stale_reporting_period
 
 Three scan modes:
   - State-wide: provide state to scan all active institutions
   - Explicit list: provide certs (up to 50)
   - Asset-based: provide asset_min/asset_max
 
-Output: Ranked list of flagged institutions sorted by signal severity count.
+Output: Per-institution risk signals ranked by severity count. The proxy engine drives signal generation internally; the output is signal-shaped, not assessment-shaped.
 
-NOTE: Analytical screening tool, not official supervisory ratings.`,
+NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
       inputSchema: RiskSignalsInputSchema,
       annotations: {
         readOnlyHint: true,

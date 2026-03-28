@@ -73,13 +73,23 @@ Contract stability matters because MCP clients may automate against either or bo
 
 ## Public Off-Site Proxy Model
 
-The health and risk analysis tools (`fdic_analyze_bank_health`, `fdic_compare_peer_health`, `fdic_detect_risk_signals`) now include a `public_camels_proxy_v1` model in their structured output. This model:
+The analysis tools use a shared `public_camels_proxy_v1` model that:
 
 - Scores institutions on a 1-4 scale across five components: capital, asset quality, earnings, liquidity/funding, and sensitivity proxy
 - Includes PCA-style capital categorization using official regulatory thresholds
 - Adds a management overlay (normal / watch / elevated_concern) based on multi-factor pattern detection
 - Provides risk signals with standardized codes and neutral, supervisory-safe language
 - Records metric provenance and data-quality flags
+
+**Output shape varies by tool:**
+
+| Tool | Proxy in `structuredContent` | Rationale |
+|------|------------------------------|-----------|
+| `fdic_analyze_bank_health` | Full `ProxyAssessment` object under `proxy` | Single-institution deep analysis |
+| `fdic_compare_peer_health` | Per-institution `proxy_score` + `proxy_band` summary; full `ProxyAssessment` under `proxy` only for the subject cert (or `null`) | Bulk comparison — full proxy per institution would bloat response |
+| `fdic_detect_risk_signals` | `proxy: null`; signals derived from the proxy engine internally, surfaced as per-institution `signals[]` | Screening tool — the proxy engine drives signal generation but the output is signal-shaped, not assessment-shaped |
+
+All three tools include `model: "public_camels_proxy_v1"` and `official_status` at the top level of `structuredContent` to identify the analytical framework.
 
 **Important:** This is a public-data analytical proxy — not an official CAMELS rating or confidential supervisory conclusion. The Management (M) component is not scored directly; it appears only as a pattern-based overlay.
 

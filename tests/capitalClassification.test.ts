@@ -65,9 +65,8 @@ describe("classifyCapital", () => {
       cet1RatioPct: null, tier1LeveragePct: 7.0,
     });
     // Only leverage available at 7.0% — above well-cap 5.0 threshold
-    // But can't confirm well_capitalized without other ratios
-    // Should be at least adequately_capitalized based on available data
-    expect(["well_capitalized", "adequately_capitalized"]).toContain(result.category);
+    // But well_capitalized requires all four ratios per PCA rules
+    expect(result.category).toBe("adequately_capitalized");
     expect(result.dataGaps.length).toBe(3);
   });
 

@@ -202,6 +202,39 @@ export function classifyRiskSignalsV2(params: {
   // Sensitivity signals
   // -------------------------------------------------------------------------
 
+  // rate_risk_proxy_elevated: warning when long-term assets > 40% of assets
+  // AND volatile liabilities > 25% of assets — proxy for interest-rate mismatch.
+  if (
+    metrics.longTermAssetsPct !== null &&
+    metrics.longTermAssetsPct > 40 &&
+    metrics.volatileLiabilitiesToAssetsPct !== null &&
+    metrics.volatileLiabilitiesToAssetsPct > 25
+  ) {
+    signals.push({
+      code: "rate_risk_proxy_elevated",
+      severity: "warning",
+      category: "sensitivity",
+      message: `Reported long-term assets at ${metrics.longTermAssetsPct.toFixed(1)}% of assets combined with volatile liabilities at ${metrics.volatileLiabilitiesToAssetsPct.toFixed(1)}% of assets suggest elevated interest rate risk exposure.`,
+      metric_name: "longTermAssetsPct",
+      metric_value: metrics.longTermAssetsPct,
+    });
+  }
+
+  // wholesale_funding_elevated: warning when borrowedFundsToAssetsPct > 20%
+  if (
+    metrics.borrowedFundsToAssetsPct !== null &&
+    metrics.borrowedFundsToAssetsPct > 20
+  ) {
+    signals.push({
+      code: "wholesale_funding_elevated",
+      severity: "warning",
+      category: "liquidity",
+      message: `Reported borrowed funds at ${metrics.borrowedFundsToAssetsPct.toFixed(1)}% of assets indicate significant reliance on wholesale funding.`,
+      metric_name: "borrowedFundsToAssetsPct",
+      metric_value: metrics.borrowedFundsToAssetsPct,
+    });
+  }
+
   // margin_compression: warning when NIM yoy_change < -0.30
   const nimTrend = trends.find(
     (t) => t.metric === "nim" || t.metric === "netInterestMarginPct",

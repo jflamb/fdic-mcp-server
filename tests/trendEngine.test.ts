@@ -97,6 +97,30 @@ describe("analyzeTrendEnhanced", () => {
     expect(result.data_quality.stale_period).toBe(true);
   });
 
+  it("detects volatility spike for erratic values", () => {
+    // Alternating large swings: +2, -3, +2.5, -2 => high CV
+    const ts = [
+      { repdte: "20240331", value: 3.0 },
+      { repdte: "20240630", value: 5.0 },
+      { repdte: "20240930", value: 2.0 },
+      { repdte: "20241231", value: 4.5 },
+      { repdte: "20250331", value: 2.5 },
+    ];
+    const result = analyzeTrendEnhanced("nim", ts, true);
+    expect(result.volatility_spike).toBe(true);
+  });
+
+  it("does not flag volatility spike for steady trend", () => {
+    const ts = [
+      { repdte: "20240331", value: 3.0 },
+      { repdte: "20240630", value: 3.2 },
+      { repdte: "20240930", value: 3.4 },
+      { repdte: "20241231", value: 3.6 },
+    ];
+    const result = analyzeTrendEnhanced("nim", ts, true);
+    expect(result.volatility_spike).toBe(false);
+  });
+
   it("handles lower-is-better metrics correctly for worsening", () => {
     // For efficiency_ratio, lower is better, so increases are worsening
     const ts = [

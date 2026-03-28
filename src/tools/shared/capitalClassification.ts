@@ -118,12 +118,12 @@ export function classifyCapital(ratios: RatioInput): CapitalClassification {
     }
   }
 
-  // 4. Well capitalized: ALL available ratios meet well-cap, requires at least leverage
+  // 4. Well capitalized: ALL FOUR ratios must be present and meet well-cap thresholds
   const wellThresholds = PCA_THRESHOLDS.well_capitalized;
-  const hasLeverage = ratios.tier1LeveragePct !== null;
+  const allFourPresent = available.length === 4;
   const allMeetWellCap = available.every((e) => e.value! >= wellThresholds[e.key]);
 
-  if (hasLeverage && allMeetWellCap) {
+  if (allFourPresent && allMeetWellCap) {
     return {
       category: "well_capitalized",
       label: CATEGORY_LABELS.well_capitalized,

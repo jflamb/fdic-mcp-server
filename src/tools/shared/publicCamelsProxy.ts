@@ -133,6 +133,7 @@ const PCA_TO_LEGACY_EQUIVALENT: Record<string, number> = {
 
 const PROXY_TREND_METRICS = [
   { key: "tier1_leverage", fdicField: "IDT1CER", higherIsBetter: true },
+  { key: "equity_ratio", fdicField: "EQV", higherIsBetter: true },
   { key: "noncurrent_loans", fdicField: "NCLNLSR", higherIsBetter: false },
   { key: "roa", fdicField: "ROA", higherIsBetter: true },
   { key: "nim", fdicField: "NIMY", higherIsBetter: true },

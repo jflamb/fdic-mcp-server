@@ -181,6 +181,27 @@ describe("assembleProxyAssessment", () => {
     expect(capitalContribution).toBeCloseTo(1.2, 1);
   });
 
+  it("detects capital_buffer_erosion via equity_ratio trend decline", () => {
+    // Equity ratio declining by >1.5pp over 4 quarters
+    const prior = [
+      { ...healthyBank, REPDTE: "20240930", EQV: 10.0 },
+      { ...healthyBank, REPDTE: "20240630", EQV: 10.5 },
+      { ...healthyBank, REPDTE: "20240331", EQV: 11.0 },
+      { ...healthyBank, REPDTE: "20231231", EQV: 12.0 },
+    ];
+    const current = { ...healthyBank, EQV: 10.0 };
+    const result = assembleProxyAssessment({
+      rawFinancials: current,
+      priorQuarters: prior,
+      repdte: "20241231",
+    });
+    // equity_ratio trend should now exist and yoy_change should be -2.0pp
+    const erosion = result.risk_signals.find(s => s.code === "capital_buffer_erosion");
+    expect(erosion).toBeDefined();
+    expect(erosion!.severity).toBe("warning");
+    expect(erosion!.message.toLowerCase()).toContain("equity capital ratio");
+  });
+
   it("does not emit merger_distorted_trend for events outside the trend window", () => {
     const prior = [
       { ...healthyBank, REPDTE: "20240930" },

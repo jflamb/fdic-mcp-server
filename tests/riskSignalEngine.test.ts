@@ -15,7 +15,7 @@ describe("classifyRiskSignalsV2", () => {
     noncurrentLoansPct: 1.0, netChargeOffsPct: 0.3,
     reserveCoveragePct: 120.0, noncurrentAssetsPct: 0.5, provisionToLoansPct: 0.4,
     securitiesToAssetsPct: 20.0, longTermAssetsPct: null,
-    volatileLiabilitiesToAssetsPct: null,
+    volatileLiabilitiesToAssetsPct: null, borrowedFundsToAssetsPct: null,
   };
   const wellCapitalized = {
     category: "well_capitalized" as const, label: "Well Capitalized",
@@ -193,6 +193,40 @@ describe("classifyRiskSignalsV2", () => {
     });
     const distortion = signals.find(s => s.code === "merger_distorted_trend");
     expect(distortion).toBeUndefined();
+  });
+
+  it("flags rate_risk_proxy_elevated for high long-term assets + volatile liabilities", () => {
+    const signals = classifyRiskSignalsV2({
+      metrics: { ...baseMetrics, longTermAssetsPct: 45.0, volatileLiabilitiesToAssetsPct: 30.0 },
+      capitalClassification: wellCapitalized,
+      trends: [],
+      repdte: "20241231",
+    });
+    expect(signals).toContainEqual(expect.objectContaining({
+      code: "rate_risk_proxy_elevated", severity: "warning", category: "sensitivity",
+    }));
+  });
+
+  it("does not flag rate_risk_proxy_elevated when only one metric is elevated", () => {
+    const signals = classifyRiskSignalsV2({
+      metrics: { ...baseMetrics, longTermAssetsPct: 45.0, volatileLiabilitiesToAssetsPct: 10.0 },
+      capitalClassification: wellCapitalized,
+      trends: [],
+      repdte: "20241231",
+    });
+    expect(signals.find(s => s.code === "rate_risk_proxy_elevated")).toBeUndefined();
+  });
+
+  it("flags wholesale_funding_elevated for high borrowed funds", () => {
+    const signals = classifyRiskSignalsV2({
+      metrics: { ...baseMetrics, borrowedFundsToAssetsPct: 25.0 },
+      capitalClassification: wellCapitalized,
+      trends: [],
+      repdte: "20241231",
+    });
+    expect(signals).toContainEqual(expect.objectContaining({
+      code: "wholesale_funding_elevated", severity: "warning", category: "liquidity",
+    }));
   });
 
   it("uses neutral supervisory-safe language in messages", () => {

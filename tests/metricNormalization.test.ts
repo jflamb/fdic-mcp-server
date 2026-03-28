@@ -3,6 +3,7 @@ import {
   extractCanonicalMetrics,
   toLegacyCamelsMetrics,
   CANONICAL_FIELDS,
+  FIELD_ALIASES,
   type CanonicalMetrics,
 } from "../src/tools/shared/metricNormalization.js";
 import { CAMELS_FIELDS } from "../src/tools/shared/camelsScoring.js";
@@ -56,10 +57,34 @@ describe("extractCanonicalMetrics", () => {
     expect(result.dataGaps.length).toBeGreaterThan(0);
   });
 
+  it("falls back to alias fields when primary is missing", () => {
+    // NIMY is the primary field for NIM; NIM is the alias
+    const raw: Record<string, unknown> = { NIM: 3.2 };
+    const result = extractCanonicalMetrics(raw);
+    expect(result.metrics.netInterestMarginPct).toBe(3.2);
+    expect(result.provenance.netInterestMarginPct?.source).toBe("direct");
+    expect(result.provenance.netInterestMarginPct?.fdicField).toBe("NIM");
+  });
+
+  it("prefers primary field over alias when both present", () => {
+    const raw: Record<string, unknown> = { NIMY: 3.5, NIM: 3.2 };
+    const result = extractCanonicalMetrics(raw);
+    expect(result.metrics.netInterestMarginPct).toBe(3.5);
+    expect(result.provenance.netInterestMarginPct?.fdicField).toBe("NIMY");
+  });
+
   it("handles division by zero in derived metrics", () => {
     const raw: Record<string, unknown> = { COREDEP: 350000, ASSET: 0 };
     const result = extractCanonicalMetrics(raw);
     expect(result.metrics.coreDepositsToAssetsPct).toBeNull();
+  });
+
+  it("derives borrowedFundsToAssetsPct from BRWDMONY/ASSET", () => {
+    const raw: Record<string, unknown> = { BRWDMONY: 25000, ASSET: 500000 };
+    const result = extractCanonicalMetrics(raw);
+    expect(result.metrics.borrowedFundsToAssetsPct).toBeCloseTo(5.0, 1);
+    expect(result.provenance.borrowedFundsToAssetsPct?.source).toBe("derived");
+    expect(result.provenance.borrowedFundsToAssetsPct?.formula).toContain("BRWDMONY / ASSET");
   });
 
   it("computes coreDepositsToDepositsPct from COREDEP/DEP", () => {
@@ -85,7 +110,7 @@ describe("toLegacyCamelsMetrics", () => {
       noncurrentLoansPct: 1.0, netChargeOffsPct: 0.3,
       reserveCoveragePct: 120.0, noncurrentAssetsPct: 0.5, provisionToLoansPct: 0.4,
       securitiesToAssetsPct: 20.0, longTermAssetsPct: null,
-      volatileLiabilitiesToAssetsPct: null,
+      volatileLiabilitiesToAssetsPct: null, borrowedFundsToAssetsPct: null,
     };
     const legacy = toLegacyCamelsMetrics(cm, -0.15);
     expect(legacy.tier1_leverage).toBe(9.5);
@@ -110,10 +135,18 @@ describe("toLegacyCamelsMetrics", () => {
       noncurrentLoansPct: 1.0, netChargeOffsPct: 0.3,
       reserveCoveragePct: 120.0, noncurrentAssetsPct: 0.5, provisionToLoansPct: 0.4,
       securitiesToAssetsPct: 20.0, longTermAssetsPct: null,
-      volatileLiabilitiesToAssetsPct: null,
+      volatileLiabilitiesToAssetsPct: null, borrowedFundsToAssetsPct: null,
     };
     const legacy = toLegacyCamelsMetrics(cm, null);
     expect(legacy.core_deposit_ratio).toBeCloseTo(87.5, 1);
+  });
+});
+
+describe("FIELD_ALIASES", () => {
+  it("defines aliases for key metrics", () => {
+    expect(FIELD_ALIASES.NIMY).toContain("NIM");
+    expect(FIELD_ALIASES.IDT1CER).toBeDefined();
+    expect(FIELD_ALIASES.ROA).toBeDefined();
   });
 });
 
@@ -132,7 +165,7 @@ describe("CANONICAL_FIELDS", () => {
       expect(canonicalSet.has(field), `CANONICAL_FIELDS missing CAMELS field: ${field}`).toBe(true);
     }
     // Proxy-specific fields required for capital classification, sensitivity, and liquidity
-    for (const field of ["RBCT1J", "RBCRWAJ", "ASSTLT", "VOLIAB", "DEPDOM"]) {
+    for (const field of ["RBCT1J", "RBCRWAJ", "ASSTLT", "VOLIAB", "DEPDOM", "BRWDMONY"]) {
       expect(canonicalSet.has(field), `CANONICAL_FIELDS missing proxy field: ${field}`).toBe(true);
     }
   });

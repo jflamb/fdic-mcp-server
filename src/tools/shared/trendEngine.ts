@@ -20,6 +20,7 @@ export interface EnhancedTrendResult {
   prior_quarter_change: number | null;
   yoy_change: number | null;
   slope: number;
+  volatility_spike: boolean;
   data_quality: TrendDataQuality;
 }
 
@@ -104,6 +105,7 @@ export function analyzeTrendEnhanced(
       prior_quarter_change: null,
       yoy_change: null,
       slope: 0,
+      volatility_spike: false,
       data_quality: dataQuality,
     };
   }
@@ -125,6 +127,10 @@ export function analyzeTrendEnhanced(
   // yoy_change: find value 4 quarters ago by matching REPDTE quarter
   const yoyChange = computeYoyChange(valid);
 
+  // volatility_spike: true when quarter-over-quarter changes have a coefficient
+  // of variation > 1.5, indicating erratic movement rather than a steady trend.
+  const volatilitySpike = detectVolatilitySpike(vals);
+
   return {
     metric: metricName,
     label,
@@ -137,8 +143,27 @@ export function analyzeTrendEnhanced(
     prior_quarter_change: priorQuarterChange,
     yoy_change: yoyChange,
     slope,
+    volatility_spike: volatilitySpike,
     data_quality: dataQuality,
   };
+}
+
+/**
+ * Detect a volatility spike: true when the coefficient of variation of
+ * quarter-over-quarter changes exceeds 1.5. Requires at least 3 values
+ * (2 changes) to compute.
+ */
+function detectVolatilitySpike(vals: number[]): boolean {
+  if (vals.length < 3) return false;
+  const changes: number[] = [];
+  for (let i = 1; i < vals.length; i++) {
+    changes.push(vals[i] - vals[i - 1]);
+  }
+  const mean = changes.reduce((s, c) => s + c, 0) / changes.length;
+  if (mean === 0) return false;
+  const variance = changes.reduce((s, c) => s + (c - mean) ** 2, 0) / changes.length;
+  const cv = Math.sqrt(variance) / Math.abs(mean);
+  return cv > 1.5;
 }
 
 function computeConsecutiveWorsening(vals: number[], higherIsBetter: boolean): number {

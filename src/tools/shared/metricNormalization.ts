@@ -41,6 +41,7 @@ export interface CanonicalMetrics {
   securitiesToAssetsPct: number | null;
   longTermAssetsPct: number | null;
   volatileLiabilitiesToAssetsPct: number | null;
+  borrowedFundsToAssetsPct: number | null;
 }
 
 export interface MetricProvenanceEntry {
@@ -104,7 +105,26 @@ export const CANONICAL_FIELDS = [
   "SC",
   "ASSTLT",
   "VOLIAB",
+  "BRWDMONY",
 ].join(",");
+
+// ---------------------------------------------------------------------------
+// Field alias table
+// ---------------------------------------------------------------------------
+// Maps primary FDIC field names to known alternates. When the primary field
+// is missing from a record, the extractor tries aliases in order.
+
+export const FIELD_ALIASES: Record<string, string[]> = {
+  IDT1CER: ["REPTE9"],         // Tier 1 leverage ratio
+  IDT1RWAJR: ["REPTE4"],      // Tier 1 risk-based ratio
+  RBCT1J: ["T1CETEFAJR"],     // CET1 ratio
+  RBCRWAJ: ["REPTE3"],        // Total risk-based capital ratio
+  ROA: ["ROAQ"],              // Return on assets (quarterly variant)
+  NIMY: ["NIM"],              // Net interest margin
+  EEFFR: ["EFFICR"],          // Efficiency ratio
+  NCLNLSR: ["P3ASSET"],       // Noncurrent loans ratio
+  NTLNLSR: ["NTRATIO"],       // Net charge-off ratio
+};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -128,7 +148,7 @@ export function extractCanonicalMetrics(
   const provenance: MetricProvenance = {};
   const dataGaps: DataGap[] = [];
 
-  // Helper: read a direct FDIC field and record provenance
+  // Helper: read a direct FDIC field, trying aliases if primary is missing
   function direct(
     metric: keyof CanonicalMetrics,
     fdicField: string,
@@ -136,8 +156,20 @@ export function extractCanonicalMetrics(
     const v = asNumber(raw[fdicField]);
     if (v !== null) {
       provenance[metric] = { source: "direct", fdicField };
+      return v;
     }
-    return v;
+    // Try aliases
+    const aliases = FIELD_ALIASES[fdicField];
+    if (aliases) {
+      for (const alias of aliases) {
+        const av = asNumber(raw[alias]);
+        if (av !== null) {
+          provenance[metric] = { source: "direct", fdicField: alias };
+          return av;
+        }
+      }
+    }
+    return null;
   }
 
   // Helper: try direct first, fall back to derivation
@@ -184,6 +216,7 @@ export function extractCanonicalMetrics(
   const sc = asNumber(raw.SC);
   const asstlt = asNumber(raw.ASSTLT);
   const voliab = asNumber(raw.VOLIAB);
+  const brwdmony = asNumber(raw.BRWDMONY);
 
   const metrics: CanonicalMetrics = {
     // Amounts
@@ -255,6 +288,11 @@ export function extractCanonicalMetrics(
       "volatileLiabilitiesToAssetsPct",
       () => safeDivPct(voliab, asset),
       "VOLIAB / ASSET * 100",
+    ),
+    borrowedFundsToAssetsPct: derived(
+      "borrowedFundsToAssetsPct",
+      () => safeDivPct(brwdmony, asset),
+      "BRWDMONY / ASSET * 100",
     ),
   };
 

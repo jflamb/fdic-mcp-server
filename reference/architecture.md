@@ -41,6 +41,16 @@ The `src/tools/shared/` directory contains reusable analysis modules:
 
 These modules are designed as pure functions with no FDIC API dependencies, making them fully testable in isolation — with the exception of `historyFetch.ts`, which queries the FDIC history endpoint and is tested via mock.
 
+### Proxy Output Contract
+
+The shared engine produces a full `ProxyAssessment` object, but tools surface it differently based on their use case:
+
+- **Single-institution tools** (`fdic_analyze_bank_health`): return the full `ProxyAssessment` under `structuredContent.proxy`.
+- **Bulk-comparison tools** (`fdic_compare_peer_health`): return per-institution summary fields (`proxy_score`, `proxy_band`) with a full `ProxyAssessment` only for the highlighted subject cert.
+- **Screening tools** (`fdic_detect_risk_signals`): use the proxy engine internally to generate signals but return signal-shaped output, not assessment-shaped. `structuredContent.proxy` is `null`.
+
+All three tools include `model: "public_camels_proxy_v1"` and `official_status` at the `structuredContent` top level.
+
 ## Operational Notes
 
 - The package supports both direct CLI execution and imported server construction via `dist/server.js`.

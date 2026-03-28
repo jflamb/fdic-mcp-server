@@ -213,7 +213,7 @@ Server-side analysis helpers:
 
 - `fdic_compare_bank_snapshots` batches roster lookup, financial snapshots, and optional demographics snapshots inside the MCP server
 - `fdic_peer_group_analysis` builds a peer group from asset size, charter class, and geography criteria and then ranks an institution against peers
-- `fdic_analyze_bank_health`, `fdic_compare_peer_health`, and `fdic_detect_risk_signals` produce a `public_camels_proxy_v1` assessment based on public financial data — these are analytical proxies, not official regulatory CAMELS ratings
+- `fdic_analyze_bank_health` returns a full `public_camels_proxy_v1` proxy assessment; `fdic_compare_peer_health` returns per-institution summary scores with a full proxy for the subject; `fdic_detect_risk_signals` uses the proxy engine to generate per-institution risk signals — all are analytical proxies, not official regulatory CAMELS ratings
 
 ## Data Notes
 
