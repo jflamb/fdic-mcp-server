@@ -4,6 +4,9 @@ dist/
 .jekyll-cache/
 .jekyll-metadata
 docs/.jekyll-cache/
+_site/
+docs/_site/
+Gemfile.lock
 .DS_Store
 *.tsbuildinfo
 .envrc
@@ -11,3 +14,4 @@ docs/.jekyll-cache/
 .env
 docs/_data/latest_release.json
 docs/_data/releases.json
+.claude/running-servers.md
