@@ -36,6 +36,10 @@ sections:
         url: /prompting-guide/
       - title: Usage Examples
         url: /usage-examples/
+      - title: Tool Reference
+        url: /tool-reference/
+      - title: FDIC Examiner Support
+        url: /examiner-support/
   project:
     title: Project & Support
     items:

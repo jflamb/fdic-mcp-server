@@ -236,11 +236,11 @@ The health and risk tools use a shared `public_camels_proxy_v1` analytical engin
 
 These outputs are analytical proxies based on public FDIC data — not official CAMELS ratings or confidential supervisory conclusions.
 
-## Examiner Overlay Skill (Claude Code)
+## FDIC Examiner Support Skill (Claude Code)
 
 If you are using Claude Code, the `/fdic-examiner-overlay` command lets you layer qualitative examiner knowledge onto a public-data health assessment. The skill fetches a proxy baseline, collects structured analyst inputs for five overlay domains (management, asset quality, earnings, liquidity/funding, sensitivity), computes bounded score adjustments, and produces a blended assessment with explicit provenance separation.
 
-See the [Examiner Overlay](examiner-overlay.md) page for the full walkthrough, domain-specific field tables, adjustment rules, and output format.
+See the [FDIC Examiner Support](examiner-support.md) page for the full walkthrough, domain-specific field tables, adjustment rules, and output format.
 
 ## Prompting Pitfalls
 

@@ -26,6 +26,25 @@ body_class: overview-page
   </section>
 </div>
 
+## What's included
+
+<div class="hero-grid">
+  <section class="hero-panel">
+    <h3>MCP Tools</h3>
+    <p>
+      20+ tools that work in <strong>any MCP client</strong> — Claude Desktop, ChatGPT, Gemini CLI, GitHub Copilot CLI, and more.
+      Search institutions, pull quarterly financials, run peer analysis, and detect risk signals.
+    </p>
+  </section>
+  <section class="hero-panel">
+    <h3>Claude Code Skills</h3>
+    <p>
+      Guided analyst workflows that run inside <strong>Claude Code only</strong>.
+      <a href="{{ '/examiner-support/' | relative_url }}">FDIC Examiner Support</a> layers qualitative examiner knowledge onto CAMELS proxy scores. More skills are planned.
+    </p>
+  </section>
+</div>
+
 ## Start here
 
 <div class="card-grid">
@@ -78,6 +97,11 @@ body_class: overview-page
     <span class="card__eyebrow">Choose Tools</span>
     <h3>Find the right MCP tool</h3>
     <p>Pick the right search, lookup, comparison, or peer-analysis tool before you start prompting.</p>
+  </a>
+  <a class="card" href="{{ '/examiner-support/' | relative_url }}">
+    <span class="card__eyebrow">Skills</span>
+    <h3>FDIC Examiner Support</h3>
+    <p>A Claude Code skill that guides examiners through layering qualitative knowledge onto a public-data CAMELS proxy baseline.</p>
   </a>
   <a class="card" href="{{ '/project-information/' | relative_url }}">
     <span class="card__eyebrow">Project &amp; Support</span>

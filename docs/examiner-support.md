@@ -1,8 +1,8 @@
 ---
-title: Examiner Overlay
+title: FDIC Examiner Support
 nav_group: prompting
-kicker: Analysis
-summary: Layer qualitative examiner knowledge onto a public-data health assessment using the /fdic-examiner-overlay Claude Code skill.
+kicker: Skill
+summary: A Claude Code skill that guides examiners through layering qualitative knowledge onto a public-data CAMELS proxy baseline.
 breadcrumbs:
   - title: Overview
     url: /
@@ -12,7 +12,7 @@ breadcrumbs:
 
 The `/fdic-examiner-overlay` command is a Claude Code skill that guides an experienced bank examiner or financial analyst through enriching a `public_camels_proxy_v1` baseline with qualitative knowledge not available from public Call Report data.
 
-This is a Claude Code command, not an MCP tool. It is available to analysts using Claude Code with this server but is not callable programmatically from other MCP clients.
+This is a **Claude Code skill**, not an MCP tool. Skills are guided analyst workflows that run inside Claude Code only. MCP tools (like `fdic_analyze_bank_health`) work in any MCP client. This skill builds on those tools to provide a structured, multi-step workflow with bounded adjustments and provenance separation.
 
 ## What It Does
 
@@ -58,9 +58,9 @@ Confidence caps the maximum adjustment:
 
 | Confidence | Maximum adjustment |
 |------------|--------------------|
-| `low` | &pm;0.50 |
-| `medium` | &pm;0.75 |
-| `high` | &pm;1.00 |
+| `low` | ±0.50 |
+| `medium` | ±0.75 |
+| `high` | ±1.00 |
 
 ### Severe overrides
 
@@ -258,7 +258,7 @@ The structured JSON worksheet (Section 7) captures every input, magnitude, adjus
 - **Start from the baseline.** Review the proxy output before deciding which domains to overlay. The proxy may already capture concerns you would have flagged.
 - **Use `confirm` freely.** If the proxy is adequate in a domain, select it and confirm with evidence. That records your review in the audit trail without forcing a score change.
 - **Evidence is required.** Vague statements like "management seems weak" will be re-prompted. Tie overlays to specific, observable factors.
-- **Adjustments are bounded.** No single domain overlay can move a score by more than &pm;1.0, and low-confidence inputs are further capped. The skill cannot produce extreme swings from a few qualitative inputs.
+- **Adjustments are bounded.** No single domain overlay can move a score by more than ±1.0, and low-confidence inputs are further capped. The skill cannot produce extreme swings from a few qualitative inputs.
 - **Capital is excluded in v1.** It is already the most rules-based component of the proxy. Qualitative capital overlay risks overstating supervisory certainty.
 - **Some inputs reflect confidential information.** Fields like `classified_asset_trend` and `supervisory_issues_history` may contain confidential supervisory information. The skill marks these in the caveats section. The blended output should be handled according to your institution's information-sharing policies.
 

@@ -44,6 +44,47 @@ Client support changes quickly. Treat the linked official docs as the source of 
 
 Last verified: March 15, 2026.
 
+## Claude Code
+
+Claude Code has a plugin system that installs both the MCP server and Claude Code skills in one step.
+
+Add the marketplace and install:
+
+```text
+/plugin marketplace add jflamb/fdic-mcp-server
+/plugin install fdic-mcp-server@fdic-mcp-server
+```
+
+This gives you:
+- **MCP tools** — the hosted endpoint at `https://bankfind.jflamb.com/mcp`, giving you all 20+ search, analysis, and comparison tools that work in any MCP client
+- **Claude Code skills** — guided analyst workflows like [FDIC Examiner Support](/examiner-support/), which layers qualitative examiner knowledge onto CAMELS proxy scores (Claude Code only)
+
+Skills complement the MCP tools. Tools give you raw data access; skills build structured, multi-step workflows on top of those tools.
+
+To use a local server instead, override the MCP config after installing the plugin:
+
+```bash
+claude mcp add fdic -- npx -y fdic-mcp-server
+```
+
+Manual setup without the plugin (MCP tools only, no skills):
+
+```bash
+claude mcp add fdic --transport http https://bankfind.jflamb.com/mcp
+```
+
+Or add directly to your project or user `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "fdic": {
+      "url": "https://bankfind.jflamb.com/mcp"
+    }
+  }
+}
+```
+
 ## Claude Desktop
 
 Claude Desktop supports remote MCP connectors. If you have a supported Claude plan, use the hosted endpoint instead of a local binary.
@@ -88,8 +129,8 @@ Example:
 After editing the file, restart Claude Desktop.
 
 Official docs:
-- Anthropic custom remote connectors: https://support.anthropic.com/en/articles/11175166-about-custom-integrations-using-remote-mcp
-- Anthropic remote MCP build/deploy notes: https://support.anthropic.com/en/articles/11503834-building-custom-connectors-via-remote-mcp-servers
+- [About custom integrations using remote MCP](https://support.anthropic.com/en/articles/11175166-about-custom-integrations-using-remote-mcp)
+- [Building custom connectors via remote MCP servers](https://support.anthropic.com/en/articles/11503834-building-custom-connectors-via-remote-mcp-servers)
 
 ## ChatGPT
 
@@ -114,8 +155,8 @@ Notes:
 - For Business and Enterprise/Edu workspaces, admins may need to allow custom apps first.
 
 Official docs:
-- OpenAI Developer Mode: https://developers.openai.com/api/docs/guides/developer-mode
-- OpenAI Apps in ChatGPT help: https://help.openai.com/en/articles/11487775
+- [OpenAI Developer Mode](https://developers.openai.com/api/docs/guides/developer-mode)
+- [Apps in ChatGPT](https://help.openai.com/en/articles/11487775)
 
 ## Gemini CLI
 
@@ -162,7 +203,7 @@ Notes:
 - If the current folder is untrusted, local stdio MCP servers may appear disconnected until you trust the folder.
 
 Official docs:
-- Gemini CLI MCP guide: https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md
+- [Gemini CLI MCP guide](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md)
 
 ## GitHub Copilot CLI
 
@@ -201,7 +242,7 @@ Notes:
 - Copilot CLI makes newly added MCP servers available immediately without a restart.
 
 Official docs:
-- GitHub Copilot CLI MCP setup: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers
+- [Add MCP servers to Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers)
 
 ## Other MCP Hosts
 

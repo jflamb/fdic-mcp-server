@@ -82,11 +82,11 @@ These tools produce analytical assessments based on public financial data. They 
 |------|-------------|-------|
 | `fdic_regional_context` | You want macro/regional economic context for a bank's operating environment | Uses FRED data for unemployment and interest rate trends. Gracefully degrades if FRED is unavailable. |
 
-## Examiner Overlay Skill (Claude Code)
+## FDIC Examiner Support Skill (Claude Code)
 
 If you are using Claude Code with this MCP server, the `/fdic-examiner-overlay` command guides you through layering qualitative examiner knowledge onto a `public_camels_proxy_v1` baseline. It collects structured analyst inputs for five overlay domains, computes bounded score adjustments, and produces a blended assessment with explicit provenance separation.
 
-See the [Examiner Overlay](examiner-overlay.md) page for the full walkthrough, adjustment rules, and output format.
+See the [FDIC Examiner Support](examiner-support.md) page for the full walkthrough, adjustment rules, and output format.
 
 ## Choosing The Right Tool
 

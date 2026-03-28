@@ -8,7 +8,7 @@ breadcrumbs:
     url: /
 ---
 
-Learn the prompt patterns that produce reliable results, then use the examples as starting points for your own queries.
+This section covers two things: **prompt patterns** for the MCP tools that work in any client, and **Claude Code skills** — guided analyst workflows that are only available in Claude Code.
 
 <div class="card-grid">
   <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
@@ -25,6 +25,11 @@ Learn the prompt patterns that produce reliable results, then use the examples a
     <span class="card__eyebrow">Reference</span>
     <h3>Tool Reference</h3>
     <p>Pick the right search, lookup, comparison, or peer-analysis tool before you start prompting.</p>
+  </a>
+  <a class="card" href="{{ '/examiner-support/' | relative_url }}">
+    <span class="card__eyebrow">Skill</span>
+    <h3>FDIC Examiner Support</h3>
+    <p>Layer qualitative examiner knowledge onto a public CAMELS proxy baseline for a blended assessment. Claude Code only.</p>
   </a>
 </div>
 
