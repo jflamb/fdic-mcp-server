@@ -14,13 +14,13 @@ This matrix summarizes the level of setup guidance and expected support for comm
 
 Last reviewed: March 15, 2026.
 
-| Host | Local Stdio | Remote HTTP | Documented Here | Support Level | Notes |
-|------|-------------|-------------|-----------------|---------------|-------|
-| Claude Desktop | Yes | Yes | Yes | Good | Hosted connector path is preferred when available |
-| ChatGPT Developer Mode | No direct local stdio | Yes | Yes | Good | Requires reachable HTTPS MCP endpoint |
-| Gemini CLI | Yes | Yes | Yes | Good | Local trust settings can block startup |
-| GitHub Copilot CLI | Yes | Not documented here | Yes | Good | Local config is straightforward |
-| Other MCP hosts | Varies | Varies | Generic only | Best effort | Validate transport support before relying on the server |
+| Host | Local Stdio | Remote HTTP | Support | Notes |
+|------|:-----------:|:-----------:|:-------:|-------|
+| Claude Desktop | ✓ | ✓ | Good | Hosted connector path is preferred when available |
+| ChatGPT Developer Mode | ✗ | ✓ | Good | Requires reachable HTTPS MCP endpoint |
+| Gemini CLI | ✓ | ✓ | Good | Local trust settings can block startup |
+| GitHub Copilot CLI | ✓ | — | Good | Local config is straightforward |
+| Other MCP hosts | — | — | Best effort | Validate transport support before relying on the server |
 
 ## Support Level Meanings
 

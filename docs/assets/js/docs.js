@@ -77,14 +77,25 @@ const enhanceTables = () => {
   const tables = document.querySelectorAll(".doc-content table");
 
   tables.forEach((table) => {
-    if (table.parentElement?.classList.contains("table-wrap")) {
-      return;
+    if (!table.parentElement?.classList.contains("table-wrap")) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "table-wrap";
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
     }
 
-    const wrapper = document.createElement("div");
-    wrapper.className = "table-wrap";
-    table.parentNode.insertBefore(wrapper, table);
-    wrapper.appendChild(table);
+    const headers = Array.from(table.querySelectorAll("thead th")).map(
+      (th) => th.textContent.trim()
+    );
+    if (headers.length) {
+      table.querySelectorAll("tbody tr").forEach((tr) => {
+        Array.from(tr.children).forEach((td, i) => {
+          if (i > 0 && headers[i]) {
+            td.setAttribute("data-label", headers[i]);
+          }
+        });
+      });
+    }
   });
 };
 

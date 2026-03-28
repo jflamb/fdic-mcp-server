@@ -1031,6 +1031,7 @@ img {
 
 .doc-content table {
   width: 100%;
+  min-width: 480px;
   border-collapse: collapse;
   border-style: hidden;
 }
@@ -1041,6 +1042,15 @@ img {
   text-align: left;
   vertical-align: top;
   border: 1px solid var(--line);
+}
+
+.doc-content th:first-child,
+.doc-content td:first-child {
+  white-space: nowrap;
+}
+
+.doc-content td code {
+  white-space: nowrap;
 }
 
 .doc-content th {
@@ -1717,6 +1727,49 @@ img {
     background: rgba(255, 255, 255, 0.96);
     border: 1px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 24px 70px rgba(10, 19, 17, 0.24);
+  }
+
+  /* Card-stacked tables on narrow viewports */
+  .doc-content table {
+    min-width: 0;
+  }
+
+  .doc-content table thead {
+    display: none;
+  }
+
+  .doc-content table tr {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .doc-content table td {
+    display: block;
+    padding: 0.25rem 0;
+    border: 0;
+    white-space: normal;
+  }
+
+  .doc-content table td:first-child {
+    font-weight: 600;
+    padding-bottom: 0.35rem;
+    white-space: normal;
+  }
+
+  .doc-content table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+  }
+
+  .doc-content table td:first-child::before {
+    display: none;
   }
 }
 
