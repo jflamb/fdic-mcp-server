@@ -216,7 +216,7 @@ Map the franchise footprint for CERT 628.
 
 What a good answer should do:
 
-- Show all MSAs where the institution has branches with deposit totals and branch counts.
+- Show all markets where the institution has branches, grouped by MSA code (`MSA <code>`) or `Non-MSA / Rural` for non-metro branches, with deposit totals and branch counts per market.
 - Sort markets by deposit size descending.
 - Summarize total branches and total deposits across all markets.
 

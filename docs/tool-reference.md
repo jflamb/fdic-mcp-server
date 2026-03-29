@@ -67,8 +67,8 @@ These tools produce analytical assessments based on public financial data. They 
 
 | Tool | Use It When | Notes |
 |------|-------------|-------|
-| `fdic_market_share_analysis` | You want deposit market share and HHI concentration for an MSA or county | Uses annual SOD data. Ranks institutions by deposit share and computes market concentration. |
-| `fdic_franchise_footprint` | You want to see one institution's branch network across all its markets | Shows deposit totals and branch counts by MSA from SOD data |
+| `fdic_market_share_analysis` | You want deposit market share and HHI concentration for an MSA or city market | Requires either a numeric `MSABR` code (`msa`) or a city name and state (`city` + `state`). Use `fdic_search_sod` to look up MSABR codes. Uses annual SOD data. |
+| `fdic_franchise_footprint` | You want to see one institution's branch network across all its markets | Shows deposit totals and branch counts grouped by MSA code (`MSA <code>` or `Non-MSA / Rural`) from SOD data. |
 
 ## Holding Company Tools
 

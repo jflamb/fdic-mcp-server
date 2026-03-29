@@ -30,7 +30,7 @@ This server works best when prompts are explicit about the dataset, time basis, 
 
 ## Sample Prompts
 
-Each prompt below lists the tools it exercises so you can see how prompts map to server capabilities. Together, these 15 prompts cover every tool in the MCP server.
+Each prompt below lists the tools it exercises so you can see how prompts map to server capabilities. These prompts cover the core search, lookup, comparison, and health analysis tools. For market share, franchise footprint, holding company, UBPR analysis, credit concentration, funding profile, securities portfolio, and regional context examples, see [Usage Examples](usage-examples.md).
 
 ### Institution discovery
 
@@ -80,7 +80,7 @@ Show all branch deposit totals for CERT 3511 from the 2024 Summary of Deposits r
 
 Tools used: `fdic_search_sod`
 
-What to expect: Branch-by-branch deposit balances as of June 30, 2024, with branch name, address, MSA, and deposit total.
+What to expect: Branch-by-branch deposit balances as of June 30, 2024, with branch name, address, MSABR numeric code, and deposit total.
 
 ### Demographics and office footprint
 
