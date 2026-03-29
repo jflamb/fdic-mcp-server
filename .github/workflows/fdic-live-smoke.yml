@@ -33,6 +33,7 @@ jobs:
       - name: Run live smoke tests
         id: smoke
         run: |
+          set -o pipefail
           # Run with verbose reporter for CI and capture JSON output for diagnostics
           npx vitest run --config vitest.live.config.ts \
             --reporter=verbose \
