@@ -11,7 +11,7 @@ import { ANALYSIS_TIMEOUT_MS } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
 
 const SOD_BRANCH_FIELDS =
-  "CERT,UNINAME,DEPSUMBR,BRNUM,MSANAMEBR,CNTYBR,STALPBR,YEAR";
+  "CERT,NAMEFULL,DEPSUMBR,BRNUM,MSABR,STALPBR,YEAR";
 const SOD_FETCH_LIMIT = 10000;
 const NON_MSA_LABEL = "Non-MSA / Rural";
 
@@ -186,8 +186,8 @@ Branches outside MSAs are grouped under "Non-MSA / Rural".`,
 
         for (const rec of branchRecords) {
           const msaName =
-            typeof rec.MSANAMEBR === "string" && rec.MSANAMEBR.trim() !== ""
-              ? rec.MSANAMEBR.trim()
+            typeof rec.MSABR === "number" && rec.MSABR !== 0
+              ? `MSA ${rec.MSABR}`
               : NON_MSA_LABEL;
           const deposits =
             typeof rec.DEPSUMBR === "number" ? rec.DEPSUMBR : 0;
