@@ -34,8 +34,22 @@ Server-side analysis tools:
 Health and risk analysis tools:
 
 - `fdic_analyze_bank_health`
+- `fdic_ubpr_analysis`
 - `fdic_compare_peer_health`
 - `fdic_detect_risk_signals`
+- `fdic_analyze_credit_concentration`
+- `fdic_analyze_funding_profile`
+- `fdic_analyze_securities_portfolio`
+
+Geographic and market tools:
+
+- `fdic_franchise_footprint`
+- `fdic_market_share_analysis`
+
+Entity tools:
+
+- `fdic_holding_company_profile`
+- `fdic_regional_context`
 
 ## Resource Surface
 
@@ -92,6 +106,25 @@ The analysis tools use a shared `public_camels_proxy_v1` model that:
 All three tools include `model: "public_camels_proxy_v1"` and `official_status` at the top level of `structuredContent` to identify the analytical framework.
 
 **Important:** This is a public-data analytical proxy — not an official CAMELS rating or confidential supervisory conclusion. The Management (M) component is not scored directly; it appears only as a pattern-based overlay.
+
+## Claude Code Skills
+
+The repository ships one Claude Code slash command skill in `.claude/commands/`:
+
+| Skill file | Command | Description |
+|------------|---------|-------------|
+| `fdic-bank-deep-dive.md` | `/fdic-bank-deep-dive` | Chains nine MCP tools into a ten-section narrative report for a single institution. Accepts a bank name or CERT number and an optional quarter-end `repdte`. For inactive institutions, derives the analysis date from the institution's last reported `REPDTE`. |
+
+Skills are prompt documents — not server-side code — and are versioned alongside the MCP tools they depend on.
+
+## Input Contract Notes
+
+`fdic_market_share_analysis` accepts a geographic market through one of two mutually exclusive paths:
+
+- `msa` (number): numeric FDIC MSABR code (e.g., `19100` for Dallas-Fort Worth-Arlington). Use `fdic_search_sod` to look up MSABR codes by state or institution.
+- `city` (string) + `state` (string): city name and two-letter state code.
+
+The former `msa` (string name) and `county` parameters are no longer supported; the FDIC SOD endpoint no longer accepts `MSANAMEBR` or `CNTYBR` as filter fields.
 
 ## Non-Goals
 

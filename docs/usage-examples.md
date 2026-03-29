@@ -186,10 +186,18 @@ What a good answer should do:
 
 ## Analyze Deposit Market Share
 
-Prompt:
+`fdic_market_share_analysis` requires either a numeric MSABR code (`msa`) or a city name and state (`city` + `state`). To find an MSABR code, use `fdic_search_sod` and filter by institution or state to retrieve the `MSABR` field for branches in the target market.
+
+Prompt (MSA by code):
 
 ```text
-Show the deposit market share for the Dallas-Fort Worth-Arlington MSA.
+Show the deposit market share for MSABR 19100 (Dallas-Fort Worth-Arlington).
+```
+
+Prompt (city market):
+
+```text
+Show the deposit market share for banks in Austin, TX.
 ```
 
 What a good answer should do:
@@ -208,7 +216,7 @@ Map the franchise footprint for CERT 628.
 
 What a good answer should do:
 
-- Show all MSAs where the institution has branches with deposit totals and branch counts.
+- Show all markets where the institution has branches, grouped by MSA code (`MSA <code>`) or `Non-MSA / Rural` for non-metro branches, with deposit totals and branch counts per market.
 - Sort markets by deposit size descending.
 - Summarize total branches and total deposits across all markets.
 
@@ -240,5 +248,32 @@ What a good answer should do:
 - Compare state unemployment to the national rate.
 - Classify the interest rate environment based on the federal funds rate.
 - Provide a narrative summary of how economic conditions may affect bank performance.
+
+## Run A Bank Deep Dive (Claude Code Skill)
+
+The `/fdic-bank-deep-dive` skill is a Claude Code slash command that chains nine FDIC MCP tools into a ten-section narrative report for a single institution. It is available in any Claude Code session with this MCP server configured.
+
+Invocations:
+
+```text
+/fdic-bank-deep-dive Coastal Community Bank
+```
+
+```text
+/fdic-bank-deep-dive 34403
+```
+
+```text
+/fdic-bank-deep-dive Signature Bank 20221231
+```
+
+What a good answer should do:
+
+- Resolve the bank name or CERT to a single FDIC institution, with disambiguation if multiple matches are found.
+- Validate the report date as a quarter-end (`0331`, `0630`, `0930`, `1231`) and default to the latest available quarter if omitted.
+- For inactive institutions, automatically scope the analysis to the institution's last reported quarter rather than the current quarter.
+- Produce a structured ten-section report: Institution Profile, Health Assessment, Financial Performance, Peer Benchmarking, Credit & Concentration, Funding & Liquidity, Securities Portfolio, Geographic Franchise, Economic Context, and Summary.
+- Degrade gracefully for sections where data is unavailable, narrating the gap rather than omitting the section.
+- Offer to save the report to a file.
 
 If your MCP host shows tool activity, you may also see the model choose one or more FDIC BankFind tools behind the scenes. The public docs focus on prompt wording and result quality rather than response-format details.

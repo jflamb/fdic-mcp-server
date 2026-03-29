@@ -266,11 +266,11 @@ Present the identity block in this fixed format:
 **[NAME]** (CERT [CERT])
 [CITY], [STATE] | Charter: [BKCLASS] | Regulator: [REGAGNT]
 Established: [ESTYMD]
-Holding Company: [NAMHCR]
+Holding Company: [NAMEHCR]
 Total Assets: $[ASSET]K | Total Deposits: $[DEP]K | Offices: [OFFICES]
 ```
 
-**Holding company:** Show the "Holding Company:" line only if `NAMHCR` is present and non-empty in the tool response. Omit that line for independent institutions. The "Established:" line is always present regardless.
+**Holding company:** Show the "Holding Company:" line only if `NAMEHCR` is present and non-empty in the tool response. Omit that line for independent institutions. The "Established:" line is always present regardless.
 
 **Date-basis caveat:** `fdic_get_institution` always returns the current FDIC record for the institution — it is not date-scoped. When `repdte` is historical (i.e., not the current quarter), add this note immediately beneath the identity block:
 

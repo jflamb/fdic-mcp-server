@@ -206,14 +206,32 @@ More examples are in [docs/usage-examples.md](./docs/usage-examples.md).
 | `fdic_compare_bank_snapshots` | Compare two reporting snapshots across banks and rank growth and profitability changes |
 | `fdic_peer_group_analysis` | Build a peer group and rank an institution against peers on financial metrics |
 | `fdic_analyze_bank_health` | Run a CAMELS-style health assessment for a single institution |
+| `fdic_ubpr_analysis` | Run a UBPR-equivalent ratio analysis (ROA, ROE, NIM, efficiency, capital, liquidity, growth) |
 | `fdic_compare_peer_health` | Rank a group of institutions by CAMELS-style health scores |
 | `fdic_detect_risk_signals` | Scan institutions for early warning risk indicators |
+| `fdic_analyze_credit_concentration` | Analyze loan portfolio composition and CRE/construction concentration relative to capital |
+| `fdic_analyze_funding_profile` | Analyze deposit composition, wholesale funding reliance, and funding risk signals |
+| `fdic_analyze_securities_portfolio` | Analyze securities portfolio size, MBS concentration, and interest rate exposure |
+| `fdic_franchise_footprint` | Map branch and deposit distribution across MSA markets using SOD data |
+| `fdic_market_share_analysis` | Rank institutions by deposit market share in an MSA or city market and compute HHI |
+| `fdic_holding_company_profile` | Profile a holding company and its FDIC-insured subsidiaries with aggregated metrics |
+| `fdic_regional_context` | Provide regional economic context (unemployment, interest rate environment) for a bank's market |
 
 Server-side analysis helpers:
 
 - `fdic_compare_bank_snapshots` batches roster lookup, financial snapshots, and optional demographics snapshots inside the MCP server
 - `fdic_peer_group_analysis` builds a peer group from asset size, charter class, and geography criteria and then ranks an institution against peers
 - `fdic_analyze_bank_health` returns a full `public_camels_proxy_v1` proxy assessment; `fdic_compare_peer_health` returns per-institution summary scores with a full proxy for the subject; `fdic_detect_risk_signals` uses the proxy engine to generate per-institution risk signals — all are analytical proxies, not official regulatory CAMELS ratings
+
+## Claude Code Skills
+
+This repository includes a [Claude Code](https://claude.ai/claude-code) slash command that chains multiple FDIC MCP tools into a structured analysis workflow.
+
+| Skill | Command | Description |
+|-------|---------|-------------|
+| Bank Deep Dive | `/fdic-bank-deep-dive` | Comprehensive single-institution analysis report covering health assessment, financial performance, peer benchmarking, credit concentration, funding profile, securities portfolio, franchise footprint, and economic context. Accepts a bank name or CERT number with an optional report date. |
+
+Skills are defined in `.claude/commands/` and are available to any Claude Code session with this MCP server configured. See [docs/usage-examples.md](./docs/usage-examples.md) for a usage example.
 
 ## Data Notes
 

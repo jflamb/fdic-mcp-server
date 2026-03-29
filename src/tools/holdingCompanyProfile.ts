@@ -24,7 +24,7 @@ import {
 } from "./shared/holdingCompany.js";
 
 const INSTITUTION_FIELDS =
-  "CERT,NAME,STALP,CITY,ASSET,DEP,NAMHCR,HCTMULT,ACTIVE,SPECGRP,CHRTAGNT";
+  "CERT,NAME,STALP,CITY,ASSET,DEP,NAMEHCR,HCTMULT,ACTIVE,SPECGRP,CHRTAGNT";
 
 const FINANCIAL_FIELDS = "CERT,ROA,EQV";
 
@@ -165,7 +165,7 @@ NOTE: This is an analytical tool based on public financial data.`,
             ENDPOINTS.INSTITUTIONS,
             {
               filters: `CERT:${rawParams.cert}`,
-              fields: "CERT,NAMHCR",
+              fields: "CERT,NAMEHCR",
               limit: 1,
             },
             { signal: controller.signal },
@@ -178,11 +178,11 @@ NOTE: This is an analytical tool based on public financial data.`,
             );
           }
 
-          const namhcr = certRecords[0].NAMHCR;
+          const namhcr = certRecords[0].NAMEHCR;
           if (!namhcr || String(namhcr).trim() === "") {
             return formatToolError(
               new Error(
-                `Institution with CERT ${rawParams.cert} is not part of a holding company (NAMHCR is empty).`,
+                `Institution with CERT ${rawParams.cert} is not part of a holding company (NAMEHCR is empty).`,
               ),
             );
           }
@@ -202,7 +202,7 @@ NOTE: This is an analytical tool based on public financial data.`,
         const instResponse = await queryEndpoint(
           ENDPOINTS.INSTITUTIONS,
           {
-            filters: `NAMHCR:"${hcName}"`,
+            filters: `NAMEHCR:"${hcName}"`,
             fields: INSTITUTION_FIELDS,
             limit: 500,
             sort_by: "ASSET",
@@ -215,7 +215,7 @@ NOTE: This is an analytical tool based on public financial data.`,
         if (instRecords.length === 0) {
           return formatToolError(
             new Error(
-              `No institutions found for holding company "${hcName}". Check the name spelling (use NAMHCR value from FDIC data).`,
+              `No institutions found for holding company "${hcName}". Check the name spelling (use NAMEHCR value from FDIC data).`,
             ),
           );
         }

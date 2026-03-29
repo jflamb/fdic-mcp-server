@@ -26,6 +26,11 @@ This section covers two things: **prompt patterns** for the MCP tools that work 
     <h3>Tool Reference</h3>
     <p>Pick the right search, lookup, comparison, or peer-analysis tool before you start prompting.</p>
   </a>
+  <a class="card" href="{{ '/usage-examples/' | relative_url }}#run-a-bank-deep-dive-claude-code-skill">
+    <span class="card__eyebrow">Skill</span>
+    <h3>Bank Deep Dive</h3>
+    <p>Chain nine MCP tools into a ten-section institution report with a single command. Claude Code only.</p>
+  </a>
   <a class="card" href="{{ '/examiner-support/' | relative_url }}">
     <span class="card__eyebrow">Skill</span>
     <h3>FDIC Examiner Support</h3>
