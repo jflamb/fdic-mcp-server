@@ -71,9 +71,10 @@ If the institution is inactive (ACTIVE: 0), warn that financials will be histori
 
 Use a tiered search strategy:
 
-1. **Exact quoted search:** `NAME:"[user input]" AND ACTIVE:1`. If results are returned, move to candidate ranking.
-2. **Loose token-based search (fallback):** If zero results from the exact search, retry with a looser token-based name search. If the user included geographic hints (state names, city names, abbreviations), fold those into the filter (e.g., add `STALP` or `STNAME` constraints).
-3. **Zero results after both passes:** Stop. Ask the user to refine or provide CERT directly.
+1. **Exact quoted search (active):** `NAME:"[user input]" AND ACTIVE:1`. If results are returned, move to candidate ranking.
+2. **Loose token-based search (active fallback):** If zero results from the exact search, retry with a looser token-based name search, still filtered to `ACTIVE:1`. If the user included geographic hints (state names, city names, abbreviations), fold those into the filter (e.g., add `STALP` or `STNAME` constraints).
+3. **Inactive fallback:** If zero active results after both passes, retry the exact and loose searches without the `ACTIVE:1` filter. If inactive matches are found, present them with an explicit warning that financials will be historical. The user must confirm before proceeding.
+4. **Zero results after all passes:** Stop. Ask the user to refine or provide CERT directly.
 
 **Candidate ranking:** Rank results by:
 
@@ -153,6 +154,15 @@ When the report mixes data from different temporal bases, each section explicitl
 - Quarterly financial sections: "As of report date `YYYYMMDD`"
 - Franchise footprint: "Using annual SOD data as of June 30, `YEAR`"
 - Economic context: "Macro context referenced to `YYYYMMDD`, using trailing two-year FRED series when available"
+
+### SOD year derivation
+
+The franchise footprint tool requires an annual `year` argument. Derive it deterministically from the analysis date:
+
+- Use the most recent SOD year where June 30 of that year does not exceed the confirmed analysis date.
+- Example: `repdte=20251231` uses SOD year 2025 (June 30, 2025 ≤ Dec 31, 2025).
+- Example: `repdte=20250331` uses SOD year 2024 (June 30, 2024 ≤ March 31, 2025; June 30, 2025 would exceed the analysis date).
+- When `repdte` is omitted (defaulting to latest available quarter), omit the `year` argument and let the tool default to the most recent available SOD year.
 
 ## Section Templates
 
