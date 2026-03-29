@@ -218,3 +218,159 @@ Each section in the report must explicitly state its temporal basis:
 - Quarterly financial sections (1-7): "As of report date `[YYYYMMDD]`" (or "As of most recent available quarter" if repdte was omitted)
 - Franchise footprint (8): "Using annual SOD data as of June 30, `[YEAR]`"
 - Economic context (9): "Macro context referenced to `[YYYYMMDD]`, using trailing two-year FRED series when available"
+
+---
+
+## Step 5: Render Report
+
+Generate the report with the following structure. Every section is always present. Do NOT skip sections. Do NOT reorder sections.
+
+### Report Header
+
+Start the report with:
+
+```
+# Bank Deep Dive: [Institution Name]
+*Generated [current date] from public data sources*
+
+> This report is generated from public FDIC data and, where available,
+> FRED macroeconomic data using the public_camels_proxy_v1 analytical
+> model. It is not an official CAMELS rating, supervisory assessment,
+> or investment recommendation. Monetary amounts are reported in
+> thousands of dollars unless otherwise noted.
+```
+
+---
+
+### Section 1: Institution Profile
+
+*Tool data:* `fdic_get_institution` result
+
+Present the identity block in this fixed format:
+
+```
+## 1. Institution Profile
+
+**[NAME]** (CERT [CERT])
+[CITY], [STATE] | Charter: [BKCLASS] | Regulator: [REGAGNT]
+Established: [ESTYMD] | Holding Company: [NAMHCR]
+Total Assets: $[ASSET]K | Total Deposits: $[DEP]K | Offices: [OFFICES]
+```
+
+**Holding company:** Show the "Holding Company:" line only if `NAMHCR` is present and non-empty in the tool response. Omit the entire line for independent institutions.
+
+**Narrative:** One paragraph covering charter type, regulatory framework, size context (community bank if assets < $10B, regional if $10B-$100B, large if > $100B), and holding company relationship if applicable. Factual orientation only — no interpretive judgment.
+
+---
+
+### Section 2: Health Assessment
+
+*Tool data:* `fdic_analyze_bank_health` result
+
+```
+## 2. Health Assessment
+*As of report date [YYYYMMDD]*
+```
+
+Present the proxy assessment summary table:
+
+| Component | Score | Rating | Key Flag |
+|-----------|-------|--------|----------|
+| Capital | [score] | [label] | PCA: [capital_classification] |
+| Asset Quality | [score] | [label] | |
+| Earnings | [score] | [label] | |
+| Liquidity/Funding | [score] | [label] | |
+| Sensitivity Proxy | [score] | [label] | |
+| **Overall** | [proxy_score] | **[proxy_band]** | |
+
+Extract scores and labels from `structuredContent.proxy.components` and overall from `structuredContent.proxy.proxy_score` / `structuredContent.proxy.proxy_band`.
+
+**Risk signals:** Summarize by severity count: "[N] risk signals ([X] critical, [Y] warning, [Z] info)". List any critical signals by name.
+
+**Trend insights:** Report available trend observations from the proxy assessment. Phrase as observations ("Asset quality scores have improved over the trailing four quarters") rather than guaranteed per-component trend lines.
+
+**Narrative:** Interpret the overall health picture — what is strong, what is under pressure, what the trend trajectory suggests. Reference specific component scores and risk signals.
+
+---
+
+### Section 3: Financial Performance
+
+*Tool data:* `fdic_ubpr_analysis` result
+
+```
+## 3. Financial Performance
+*As of report date [YYYYMMDD]*
+```
+
+**Key ratios table:**
+
+| Metric | Value | YoY Change |
+|--------|-------|------------|
+| ROA | [roa]% | [yoy_change] |
+| ROE | [roe]% | [yoy_change] |
+| Net Interest Margin | [nim]% | [yoy_change] |
+| Efficiency Ratio | [efficiency]% | [yoy_change] |
+| Pretax ROA | [pretax_roa]% | [yoy_change] |
+
+**Additional coverage (as available from tool results):**
+- **Loan mix:** Real estate, commercial, consumer, agricultural shares
+- **Capital adequacy:** Tier 1 leverage ratio, Tier 1 risk-based ratio, equity-to-assets ratio
+- **Liquidity snapshot:** Loan-to-deposit ratio, core deposit ratio
+- **YoY growth rates:** Asset growth, loan growth, deposit growth
+
+**Narrative:** Interpret profitability trends, margin dynamics, efficiency, and growth trajectory. This section is standalone operating performance — do NOT use peer-relative language like "above average" or "below median." Benchmarking context belongs in Section 4.
+
+---
+
+### Section 4: Peer Benchmarking
+
+*Tool data:* `fdic_peer_group_analysis` result
+
+```
+## 4. Peer Benchmarking
+*As of report date [YYYYMMDD] | Peer set: [peer_count] institutions ([charter_classes], $[asset_min]K–$[asset_max]K)*
+```
+
+**Peer-set quality disclosure:**
+- If peer count < 10: Add italic note: *"Thin peer cohort — rankings should be interpreted with caution."*
+- If the tool auto-broadened the peer criteria: State the broadening parameters (e.g., "Peer criteria broadened from default asset range to achieve minimum cohort size.")
+- If peer count ≥ 10 and no broadening: State count and criteria without caveat.
+
+**Rankings table:**
+
+| Metric | Value | Rank | Percentile | Peer Median |
+|--------|-------|------|------------|-------------|
+| Total Assets | | | | |
+| ROA | | | | |
+| ROE | | | | |
+| NIM | | | | |
+| Efficiency Ratio | | | | |
+| Equity Capital Ratio | | | | |
+| Loan-to-Deposit Ratio | | | | |
+
+Populate from `structuredContent.rankings`. If rank or percentile is unavailable for a specific metric (denominator differences, missing peer values), show "n/a" in that cell.
+
+**Narrative:** Highlight where the institution stands out (top or bottom quartile), where it is in line with peers, and notable divergences. Do NOT interpret metrics that show "n/a" for rank/percentile.
+
+---
+
+### Section 5: Credit & Concentration
+
+*Tool data:* `fdic_analyze_credit_concentration` result
+
+```
+## 5. Credit & Concentration
+*As of report date [YYYYMMDD]*
+```
+
+**Loan portfolio composition** (from tool results):
+- CRE share, C&I share, consumer share, residential share, agricultural share
+- CRE concentration relative to total capital (compare to 300% interagency guidance threshold)
+- Construction concentration relative to total capital (compare to 100% interagency guidance threshold)
+- Loan-to-asset ratio
+
+**Threshold framing rule:** Interagency guidance thresholds (300% CRE, 100% construction) are screening indicators, not automatic adverse judgments. The narrative MUST contextualize any exceedance rather than treating it mechanically. A bank can exceed these thresholds and be well-managed if risk management practices, historical performance, and capital levels support it.
+
+**Structural immateriality:** For non-lending institutions or those with structurally low loan balances, narrate the low loan portfolio as a characteristic of the institution's business model, not a data limitation. Example: "As a trust-focused institution, [Name] maintains a minimal loan portfolio, with the majority of assets held in securities and cash equivalents."
+
+**Narrative:** Interpret portfolio mix, flag concentration risks per supervisory guidance with appropriate context, and note the overall credit risk posture.
