@@ -42,6 +42,7 @@ body_class: overview-page
       Guided analyst workflows that run inside <strong>Claude Code only</strong>.
       <a href="{{ '/usage-examples/' | relative_url }}#run-a-bank-deep-dive-claude-code-skill"><code>/fdic-bank-deep-dive</code></a> chains nine tools into a ten-section institution report.
       <a href="{{ '/examiner-support/' | relative_url }}">FDIC Examiner Support</a> layers qualitative examiner knowledge onto CAMELS proxy scores.
+      <a href="{{ '/usage-examples/' | relative_url }}#run-a-portfolio-surveillance-claude-code-skill"><code>/fdic-portfolio-surveillance</code></a> screens a bank universe and produces a ranked watchlist.
     </p>
   </section>
 </div>
@@ -102,7 +103,7 @@ body_class: overview-page
   <a class="card" href="{{ '/usage-examples/' | relative_url }}#run-a-bank-deep-dive-claude-code-skill">
     <span class="card__eyebrow">Skills</span>
     <h3>Claude Code Skills</h3>
-    <p><code>/fdic-bank-deep-dive</code> chains nine tools into a ten-section institution report. <code>/fdic-examiner-overlay</code> layers qualitative knowledge onto a CAMELS proxy baseline. Claude Code only.</p>
+    <p><code>/fdic-bank-deep-dive</code> chains nine tools into a ten-section institution report. <code>/fdic-examiner-overlay</code> layers qualitative knowledge onto a CAMELS proxy baseline. <code>/fdic-portfolio-surveillance</code> screens a universe and produces a ranked watchlist. Claude Code only.</p>
   </a>
   <a class="card" href="{{ '/project-information/' | relative_url }}">
     <span class="card__eyebrow">Project &amp; Support</span>

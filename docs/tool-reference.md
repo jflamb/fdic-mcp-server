@@ -90,6 +90,7 @@ These slash commands are available in any Claude Code session with this MCP serv
 |-------|---------|-------------|
 | Bank Deep Dive | `/fdic-bank-deep-dive` | Chains nine MCP tools into a ten-section narrative report for a single institution. Accepts a bank name or CERT number with an optional quarter-end `repdte`. See [Usage Examples](usage-examples.md#run-a-bank-deep-dive-claude-code-skill) for full details. |
 | FDIC Examiner Support | `/fdic-examiner-overlay` | Layers qualitative examiner knowledge onto a `public_camels_proxy_v1` baseline. Collects structured analyst inputs for five overlay domains, computes bounded score adjustments, and produces a blended assessment with explicit provenance separation. See the [FDIC Examiner Support](examiner-support.md) page for the full walkthrough. |
+| Portfolio Surveillance | `/fdic-portfolio-surveillance` | Screens a defined universe of institutions (state, asset range, or CERT list), ranks them by emerging risk and relative health, and produces a decision-ready watchlist grouped into Escalate, Monitor, and No Immediate Concern tiers. See [Usage Examples](usage-examples.md#run-a-portfolio-surveillance-claude-code-skill) for full details. |
 
 ## Choosing The Right Tool
 
@@ -110,6 +111,7 @@ These slash commands are available in any Claude Code session with this MCP serv
 - Use `fdic_regional_context` when you need economic backdrop for interpreting bank performance.
 - Use `/fdic-bank-deep-dive` when you want a comprehensive single-institution report without constructing a multi-step prompt.
 - Use `/fdic-examiner-overlay` when you have examiner-grade qualitative knowledge to layer onto a public-data health assessment.
+- Use `/fdic-portfolio-surveillance` when you want to screen a cohort of institutions and produce a ranked watchlist with escalation drivers.
 
 ## Data Basis Reminder
 

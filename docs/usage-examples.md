@@ -277,3 +277,35 @@ What a good answer should do:
 - Offer to save the report to a file.
 
 If your MCP host shows tool activity, you may also see the model choose one or more FDIC BankFind tools behind the scenes. The public docs focus on prompt wording and result quality rather than response-format details.
+
+## Run A Portfolio Surveillance (Claude Code Skill)
+
+The `/fdic-portfolio-surveillance` skill is a Claude Code slash command that screens a defined universe of FDIC-insured institutions, ranks them by emerging risk and relative health, and produces a decision-ready watchlist. It is available in any Claude Code session with this MCP server configured.
+
+Invocations:
+
+```text
+/fdic-portfolio-surveillance WY
+```
+
+```text
+/fdic-portfolio-surveillance banks with assets between $100M and $1B
+```
+
+```text
+/fdic-portfolio-surveillance CERTs 2232, 19184, 12591, 2208, 5442
+```
+
+```text
+/fdic-portfolio-surveillance NC, emphasis on funding stress, limit 10
+```
+
+What a good answer should do:
+
+- Build a screening universe from the user's state, asset range, or CERT list.
+- Screen the universe for critical and warning-level risk signals and rank institutions by peer-relative health.
+- Confirm trend persistence via snapshot comparison across a one-year lookback (or user-specified date range).
+- Classify institutions into Escalate, Monitor, and No Immediate Concern tiers with explicit driver text for each flagged institution.
+- Perform targeted follow-through analysis on the top escalated institutions, invoking domain-specific tools only when signals implicate that domain.
+- Produce a fixed-section report: Universe Definition, Screening Summary, Ranked Watchlist, Escalated Institution Follow-Through, and Caveats / Date Basis.
+- Degrade gracefully when soft or context tools are unavailable, noting the gap without affecting triage results.
