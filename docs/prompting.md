@@ -41,6 +41,11 @@ This section covers two things: **prompt patterns** for the MCP tools that work 
     <h3>Portfolio Surveillance</h3>
     <p>Screen a universe of institutions and produce a ranked watchlist with Escalate, Monitor, and No Immediate Concern tiers. Claude Code only.</p>
   </a>
+  <a class="card" href="{{ '/usage-examples/' | relative_url }}#run-a-failure-forensics-claude-code-skill">
+    <span class="card__eyebrow">Skill</span>
+    <h3>Failure Forensics</h3>
+    <p>Reconstruct pre-failure financial timelines and identify earliest visible warning signals for a failed institution. Claude Code only.</p>
+  </a>
 </div>
 
 <section class="doc-callout doc-callout--hero">

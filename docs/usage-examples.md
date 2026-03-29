@@ -309,3 +309,35 @@ What a good answer should do:
 - Perform targeted follow-through analysis on the top escalated institutions, invoking domain-specific tools only when signals implicate that domain.
 - Produce a fixed-section report: Universe Definition, Screening Summary, Ranked Watchlist, Escalated Institution Follow-Through, and Caveats / Date Basis.
 - Degrade gracefully when soft or context tools are unavailable, noting the gap without affecting triage results.
+
+## Run A Failure Forensics (Claude Code Skill)
+
+The `/fdic-failure-forensics` skill is a Claude Code slash command that reconstructs the pre-failure financial timeline for a single failed institution, identifies the earliest visible warning signals from public data, and explains likely drivers of deterioration. It is available in any Claude Code session with this MCP server configured.
+
+Invocations:
+
+```text
+/fdic-failure-forensics Silicon Valley Bank
+```
+
+```text
+/fdic-failure-forensics 24735
+```
+
+```text
+/fdic-failure-forensics First Republic Bank, lookback 12 quarters, focus on funding
+```
+
+```text
+/fdic-failure-forensics Heartland Tri-State Bank, lookback 8 quarters
+```
+
+What a good answer should do:
+
+- Resolve the bank name or CERT to a single FDIC institution and confirm it has a failure record.
+- Derive the last reported quarter before the failure date and build a quarterly financial timeline over the lookback window (default 8 quarters).
+- Surface risk signals detected at the last reported quarter and present a CAMELS-proxy health assessment when available.
+- Produce a report with core sections that are always present (Institution Identification, Failure Event Summary, Pre-Failure Financial Timeline, Earliest Warning Signals, Likely Failure Drivers, Caveats / Limits of Public Data) and enrichment sections (Domain Analysis, Regional Context) included only when the data warrants them.
+- Tag every analytical statement in the Likely Failure Drivers section as Observed, Inferred, or Unknown from public data.
+- Invoke domain-specific tools (funding profile, credit concentration) only when the deterioration pattern implicates those domains.
+- Degrade gracefully when soft or context tools are unavailable, noting the gap without blocking the report.
