@@ -3,7 +3,7 @@ import { asNumber } from "./queryUtils.js";
 export const CREDIT_FIELDS = [
   "CERT", "REPDTE", "ASSET", "EQTOT", "EQV",
   "LNLSNET", "LNRE", "LNRERES", "LNRECONS", "LNREMULT", "LNRENRES",
-  "LNREAG", "LNRELOC", "LNCI", "LNCON", "LNAG", "LNOTH",
+  "LNREAG", "LNRELOC", "LNCI", "LNCON", "LNAG",
   "LNREDOM", "LNREFOR",
 ].join(",");
 
