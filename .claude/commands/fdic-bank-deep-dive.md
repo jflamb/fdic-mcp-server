@@ -292,7 +292,7 @@ Present the proxy assessment summary table:
 | Sensitivity Proxy | [score] | [label] | |
 | **Overall** | [proxy_score] | **[proxy_band]** | |
 
-Extract component scores and labels from `structuredContent.proxy.components`. Extract the overall score from `structuredContent.proxy.overall.score` and the overall band from `structuredContent.proxy.overall.band`.
+Extract component scores and labels from `structuredContent.proxy.component_assessment` (keys: `capital`, `asset_quality`, `earnings`, `liquidity_funding`, `sensitivity_proxy`). Extract the overall score from `structuredContent.proxy.overall.score` and the overall band from `structuredContent.proxy.overall.band`.
 
 **Risk signals:** Read the v2 signal objects from `structuredContent.proxy.risk_signals`. Summarize by severity count: "[N] risk signals ([X] critical, [Y] warning, [Z] info)". List any critical signals by name.
 
