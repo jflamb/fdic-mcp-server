@@ -253,11 +253,20 @@ Present the identity block in this fixed format:
 
 **[NAME]** (CERT [CERT])
 [CITY], [STATE] | Charter: [BKCLASS] | Regulator: [REGAGNT]
-Established: [ESTYMD] | Holding Company: [NAMHCR]
+Established: [ESTYMD]
+Holding Company: [NAMHCR]
 Total Assets: $[ASSET]K | Total Deposits: $[DEP]K | Offices: [OFFICES]
 ```
 
-**Holding company:** Show the "Holding Company:" line only if `NAMHCR` is present and non-empty in the tool response. Omit the entire line for independent institutions.
+**Holding company:** Show the "Holding Company:" line only if `NAMHCR` is present and non-empty in the tool response. Omit that line for independent institutions. The "Established:" line is always present regardless.
+
+**Date-basis caveat:** `fdic_get_institution` always returns the current FDIC record for the institution — it is not date-scoped. When `repdte` is historical (i.e., not the current quarter), add this note immediately beneath the identity block:
+
+```
+> ⚠️ **Profile note:** Institution profile fields (name, charter type, regulator, asset size, office count) reflect the current FDIC record as of today, not [YYYY-MM-DD]. Historical financial data in subsequent sections covers the period ending [YYYY-MM-DD].
+```
+
+Omit this note when `repdte` matches the current quarter-end.
 
 **Narrative:** One paragraph covering charter type, regulatory framework, size context (community bank if assets < $10B, regional if $10B-$100B, large if > $100B), and holding company relationship if applicable. Factual orientation only — no interpretive judgment.
 
@@ -283,9 +292,9 @@ Present the proxy assessment summary table:
 | Sensitivity Proxy | [score] | [label] | |
 | **Overall** | [proxy_score] | **[proxy_band]** | |
 
-Extract scores and labels from `structuredContent.proxy.components` and overall from `structuredContent.proxy.proxy_score` / `structuredContent.proxy.proxy_band`.
+Extract component scores and labels from `structuredContent.proxy.components`. Extract the overall score from `structuredContent.proxy.overall.score` and the overall band from `structuredContent.proxy.overall.band`.
 
-**Risk signals:** Summarize by severity count: "[N] risk signals ([X] critical, [Y] warning, [Z] info)". List any critical signals by name.
+**Risk signals:** Read the v2 signal objects from `structuredContent.proxy.risk_signals`. Summarize by severity count: "[N] risk signals ([X] critical, [Y] warning, [Z] info)". List any critical signals by name.
 
 **Trend insights:** Report available trend observations from the proxy assessment. Phrase as observations ("Asset quality scores have improved over the trailing four quarters") rather than guaranteed per-component trend lines.
 
@@ -348,7 +357,7 @@ Extract scores and labels from `structuredContent.proxy.components` and overall 
 | Equity Capital Ratio | | | | |
 | Loan-to-Deposit Ratio | | | | |
 
-Populate from `structuredContent.rankings`. If rank or percentile is unavailable for a specific metric (denominator differences, missing peer values), show "n/a" in that cell.
+Populate rankings (rank, percentile) from `structuredContent.subject.rankings` and peer median values from `structuredContent.peer_group.medians`. If rank or percentile is unavailable for a specific metric (denominator differences, missing peer values), show "n/a" in that cell.
 
 **Narrative:** Highlight where the institution stands out (top or bottom quartile), where it is in line with peers, and notable divergences. Do NOT interpret metrics that show "n/a" for rank/percentile.
 
