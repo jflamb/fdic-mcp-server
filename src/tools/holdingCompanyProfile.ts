@@ -103,7 +103,7 @@ const HoldingCompanyProfileSchema = z.object({
     .string()
     .optional()
     .describe(
-      'Holding company name (e.g., "JPMORGAN CHASE & CO"). Uses NAMHCR field.',
+      'Holding company name (e.g., "JPMORGAN CHASE & CO"). Uses NAMEHCR field.',
     ),
   cert: z
     .number()
