@@ -17,6 +17,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "test": "vitest run",
+    "test:live": "vitest run --config vitest.live.config.ts",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "docs:search": "pagefind --site _site",

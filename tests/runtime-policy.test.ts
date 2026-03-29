@@ -20,7 +20,7 @@ function parseMinimumNodeMajor(range: string) {
 function getValidateMatrixNodeMajors() {
   const workflowText = fs.readFileSync(ciWorkflowPath, "utf8");
   const validateMatrixMatch = workflowText.match(
-    /validate:\s*\n(?:[ \t].*\n)*?[ \t]+node:\s*\n((?:[ \t]+-\s+"[^"]+"\s*\n)+)/,
+    /validate:\s*\r?\n(?:[ \t].*\r?\n)*?[ \t]+node:\s*\r?\n((?:[ \t]+-\s+"[^"]+"\s*\r?\n)+)/,
   );
 
   if (!validateMatrixMatch) {
