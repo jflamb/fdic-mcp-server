@@ -158,3 +158,63 @@ Store the confirmed `repdte` (or null) and derived `sod_year` (or null) for all 
 **Do NOT proceed to Step 4 (tool chain) without:**
 - A confirmed CERT (from Step 2)
 - A validated `repdte` or explicit omission (from this step)
+
+---
+
+## Step 4: Execute Tool Chain
+
+Execute the following tools in order. Steps 1-3 are **hard dependencies** — if any fails, stop the report and tell the user what went wrong. Steps 4-9 are **soft/context dependencies** — execute them all after the hard dependencies succeed. Steps 4-9 have no dependencies on each other and can run concurrently where the runtime supports it.
+
+### Hard Dependencies (must succeed)
+
+| Tool Chain Step | Tool | Report Section |
+|----------------|------|---------------|
+| 1 | `fdic_get_institution` with `cert` | Section 1: Institution Profile |
+| 2 | `fdic_analyze_bank_health` with `cert`, `repdte` (if provided) | Section 2: Health Assessment |
+| 3 | `fdic_ubpr_analysis` with `cert`, `repdte` (if provided) | Section 3: Financial Performance |
+
+If any of these three calls fails, stop immediately:
+
+> "The report cannot be generated. [Tool name] failed: [brief normalized description]. Please verify the CERT number and report date, or try again later."
+
+Do NOT expose raw error messages or tool internals. Use normalized descriptions:
+- "Institution data could not be retrieved"
+- "Health assessment data is unavailable for the selected report date"
+- "Financial performance data is unavailable for the selected report date"
+
+### Soft and Context Dependencies (degrade gracefully)
+
+| Tool Chain Step | Tool | Report Section | Notes |
+|----------------|------|---------------|-------|
+| 4 | `fdic_peer_group_analysis` with `cert`, `repdte` (if provided) | Section 4: Peer Benchmarking | May return thin peer sets |
+| 5 | `fdic_analyze_credit_concentration` with `cert`, `repdte` (if provided) | Section 5: Credit & Concentration | May show zeros for non-lenders |
+| 6 | `fdic_analyze_funding_profile` with `cert`, `repdte` (if provided) | Section 6: Funding & Liquidity | Brokered deposit data may be unavailable |
+| 7 | `fdic_analyze_securities_portfolio` with `cert`, `repdte` (if provided) | Section 7: Securities Portfolio | AFS/HTM breakdown unavailable; may show minimal holdings |
+| 8 | `fdic_franchise_footprint` with `cert`, `year` (derived SOD year, or omit) | Section 8: Geographic Franchise | Annual SOD data — different temporal basis |
+| 9 | `fdic_regional_context` with `cert`, `repdte` (if provided) | Section 9: Economic Context | Depends on FRED API availability |
+
+### Degradation Rules
+
+For each soft/context dependency, handle three states:
+
+**Full data:** Render the section normally using the section template below.
+
+**Structural immateriality:** The data is legitimately zero or minimal because of the institution's business model (e.g., a pure lender with near-zero securities, a non-lending trust company). Narrate this as a **real finding about the institution**, not a data gap. Example: "This institution maintains a minimal securities portfolio, consistent with its lending-focused business model."
+
+**Data unavailable:** The tool failed or returned incomplete results. Render the section header and date basis line, then a single normalized message. Do NOT expose raw tool internals. Use messages like:
+- "Peer benchmarking data could not be retrieved for this institution."
+- "Insufficient peer institutions for meaningful comparison."
+- "Credit concentration data is unavailable for the selected report date."
+- "Funding profile data is unavailable for the selected report date."
+- "Securities portfolio data is unavailable for the selected report date."
+- "Franchise footprint data is unavailable. Annual SOD data may not yet be published for the derived year."
+- "Macro context is unavailable. The FRED economic data service did not return data for the institution's region."
+
+After all tool calls complete (or degrade), proceed to Step 5 to render the report.
+
+### Date Basis Transparency
+
+Each section in the report must explicitly state its temporal basis:
+- Quarterly financial sections (1-7): "As of report date `[YYYYMMDD]`" (or "As of most recent available quarter" if repdte was omitted)
+- Franchise footprint (8): "Using annual SOD data as of June 30, `[YEAR]`"
+- Economic context (9): "Macro context referenced to `[YYYYMMDD]`, using trailing two-year FRED series when available"
