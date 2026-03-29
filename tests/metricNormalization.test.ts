@@ -79,12 +79,12 @@ describe("extractCanonicalMetrics", () => {
     expect(result.metrics.coreDepositsToAssetsPct).toBeNull();
   });
 
-  it("derives borrowedFundsToAssetsPct from BRWDMONY/ASSET", () => {
-    const raw: Record<string, unknown> = { BRWDMONY: 25000, ASSET: 500000 };
+  it("derives borrowedFundsToAssetsPct from OTHBRF/ASSET", () => {
+    const raw: Record<string, unknown> = { OTHBRF: 25000, ASSET: 500000 };
     const result = extractCanonicalMetrics(raw);
     expect(result.metrics.borrowedFundsToAssetsPct).toBeCloseTo(5.0, 1);
     expect(result.provenance.borrowedFundsToAssetsPct?.source).toBe("derived");
-    expect(result.provenance.borrowedFundsToAssetsPct?.formula).toContain("BRWDMONY / ASSET");
+    expect(result.provenance.borrowedFundsToAssetsPct?.formula).toContain("OTHBRF / ASSET");
   });
 
   it("computes coreDepositsToDepositsPct from COREDEP/DEP", () => {
@@ -165,7 +165,7 @@ describe("CANONICAL_FIELDS", () => {
       expect(canonicalSet.has(field), `CANONICAL_FIELDS missing CAMELS field: ${field}`).toBe(true);
     }
     // Proxy-specific fields required for capital classification, sensitivity, and liquidity
-    for (const field of ["RBCT1J", "RBCRWAJ", "ASSTLT", "VOLIAB", "DEPDOM", "BRWDMONY"]) {
+    for (const field of ["RBCT1J", "RBCRWAJ", "ASSTLT", "VOLIAB", "DEPDOM", "OTHBRF"]) {
       expect(canonicalSet.has(field), `CANONICAL_FIELDS missing proxy field: ${field}`).toBe(true);
     }
   });

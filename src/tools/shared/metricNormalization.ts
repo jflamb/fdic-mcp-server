@@ -105,7 +105,7 @@ export const CANONICAL_FIELDS = [
   "SC",
   "ASSTLT",
   "VOLIAB",
-  "BRWDMONY",
+  "OTHBRF",
 ].join(",");
 
 // ---------------------------------------------------------------------------
@@ -216,7 +216,7 @@ export function extractCanonicalMetrics(
   const sc = asNumber(raw.SC);
   const asstlt = asNumber(raw.ASSTLT);
   const voliab = asNumber(raw.VOLIAB);
-  const brwdmony = asNumber(raw.BRWDMONY);
+  const othbrf = asNumber(raw.OTHBRF);
 
   const metrics: CanonicalMetrics = {
     // Amounts
@@ -291,8 +291,8 @@ export function extractCanonicalMetrics(
     ),
     borrowedFundsToAssetsPct: derived(
       "borrowedFundsToAssetsPct",
-      () => safeDivPct(brwdmony, asset),
-      "BRWDMONY / ASSET * 100",
+      () => safeDivPct(othbrf, asset),
+      "OTHBRF / ASSET * 100",
     ),
   };
 

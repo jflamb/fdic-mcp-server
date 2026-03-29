@@ -15,3 +15,4 @@ Gemfile.lock
 docs/_data/latest_release.json
 docs/_data/releases.json
 .claude/running-servers.md
+.claude/settings.local.json
