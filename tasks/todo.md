@@ -118,6 +118,41 @@ Reference: 2026-03-18 request to remove implementation-facing MCP server details
 - [x] Removed public references to `structuredContent`, `REPDTE` search hints, endpoint-specific `fields` and `sort_by` guidance, and low-level HTTP session/header details from the user-doc path.
 - [x] Expanded [reference/specification.md](../reference/specification.md) with the HTTP transport details that were removed from public onboarding pages.
 
+# Live Check Observability
+
+Reference: 2026-03-29 task to improve triage, failure reporting, and maintainer documentation for the live reliability protections (schema-drift and live smoke checks).
+
+## Goals
+
+- [x] Improve schema-drift workflow outputs for clearer, more actionable failure context.
+- [x] Improve live-smoke workflow outputs for easier failure diagnosis.
+- [x] Add a maintainer-facing runbook in reference docs covering both checks.
+- [x] Cross-link the runbook from the reference index.
+
+## Acceptance Criteria
+
+- [x] Schema-drift workflow gives a maintainer enough context to understand what changed and what to do next (diff stats, classification guide, run link).
+- [x] Live-smoke workflow gives a maintainer enough context to classify and reproduce failures (job summary, triage table, artifact upload, reproduce command).
+- [x] Reference docs include a concise runbook for both checks, linked from `reference/README.md`.
+- [x] Successful runs remain clean; diagnostics are richer only on failure.
+- [x] Standard validation passes locally.
+
+## Validation
+
+- [x] `npm run typecheck` �� clean
+- [x] `npm test` �� 37 files, 423 tests passed
+- [x] `npm run build` — success
+
+## Review / Results
+
+- [x] Branch: `feat/live-check-observability`
+- [x] Schema-drift workflow: added diff stats (hunks/added/removed), classification table, run link in issue body, `::warning` annotations, date-stamped artifact names.
+- [x] Live-smoke workflow: added verbose+JSON reporter, job summary with failed test details and triage table, artifact upload on failure, reproduce-locally command.
+- [x] Maintainer runbook: `reference/live-reliability-runbook.md` covers both checks with common failure modes, reproduce steps, and remediation paths.
+- [x] Cross-linked from `reference/README.md` under new Operations section.
+
+---
+
 # Live Contract Verification
 
 Reference: 2026-03-29 task to add automated upstream FDIC API schema drift detection and live smoke testing.
@@ -152,3 +187,33 @@ Reference: 2026-03-29 task to add automated upstream FDIC API schema drift detec
 - [x] Nightly CI: `.github/workflows/fdic-live-smoke.yml` runs live tests on schedule and manual dispatch.
 - [x] Post-deploy: added real `tools/call` for `fdic_search_institutions` with CERT:3511, validating structuredContent fields.
 - [x] Bonus: fixed pre-existing `runtime-policy.test.ts` Windows line-ending regex failure.
+
+# Deploy Cloud Run #110 Failure
+
+Reference: 2026-03-29 investigation of failed GitHub Actions workflow `Deploy Cloud Run` run number `#110`.
+
+## Goals
+
+- [x] Inspect the failed run log and isolate the exact failing step.
+- [x] Determine whether the failure came from the Cloud Run deploy itself or from post-deploy verification.
+- [x] Fix the stale smoke-test assertion to match the current MCP HTTP tool-call contract.
+- [x] Re-run local validation relevant to the workflow change.
+
+## Acceptance Criteria
+
+- [x] Root cause is documented with the exact failed assertion and workflow step.
+- [x] The post-deploy smoke check validates `fdic_search_institutions` using `structuredContent` and text content instead of expecting `content[].type == "resource"`.
+- [x] Validation demonstrates the workflow assertion now matches the tested server contract.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Run `Deploy Cloud Run #110` failed in `Run post-deploy smoke checks`, not in container build or Cloud Run deployment.
+- [x] Exact failure: `AssertionError: No resource content in tool response`.
+- [x] Root cause: workflow assumed an older MCP tool result shape even though the server and tests now return text `content` plus JSON `structuredContent`.
+- [x] Updated `.github/workflows/deploy-cloud-run.yml` so the post-deploy tool-call check asserts the live contract already covered by `tests/live/mcp-live-smoke.test.ts` and `tests/mcp-http.test.ts`.

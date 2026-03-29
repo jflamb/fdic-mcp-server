@@ -9,6 +9,10 @@ This section holds repository-rendered technical documentation for maintainers a
 - [Key Decisions](./decisions.md)
 - [Cloud Run Deployment](./cloud-run-deployment.md)
 
+## Operations
+
+- [Live Reliability Checks Runbook](./live-reliability-runbook.md) — Schema drift detection and live smoke test triage
+
 ## Plans And Design Notes
 
 - [Plans Index](./plans/README.md)

@@ -42,7 +42,17 @@ jobs:
             echo "No schema drift detected."
           else
             echo "drift=true" >> "$GITHUB_OUTPUT"
-            echo "Schema drift detected. Diff:"
+
+            # Compute diff stats for the summary
+            ADDED=$(grep -c '^+[^+]' /tmp/metadata-diff.txt || true)
+            REMOVED=$(grep -c '^-[^-]' /tmp/metadata-diff.txt || true)
+            HUNKS=$(grep -c '^@@' /tmp/metadata-diff.txt || true)
+            echo "added=$ADDED" >> "$GITHUB_OUTPUT"
+            echo "removed=$REMOVED" >> "$GITHUB_OUTPUT"
+            echo "hunks=$HUNKS" >> "$GITHUB_OUTPUT"
+
+            echo "Schema drift detected — $HUNKS change region(s), +$ADDED / -$REMOVED lines."
+            echo "::warning::Schema drift detected — $HUNKS change region(s), +$ADDED / -$REMOVED lines. See diff artifact."
             cat /tmp/metadata-diff.txt
           fi
 
@@ -50,11 +60,11 @@ jobs:
         if: steps.diff.outputs.drift == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: fdic-schema-drift-diff
+          name: fdic-schema-drift-${{ github.run_id }}
           path: /tmp/metadata-diff.txt
           retention-days: 30
 
-      - name: Open drift issue
+      - name: Open or update drift issue
         if: steps.diff.outputs.drift == 'true'
         uses: actions/github-script@v7
         with:
@@ -62,13 +72,19 @@ jobs:
             const fs = require('fs');
             const diff = fs.readFileSync('/tmp/metadata-diff.txt', 'utf8');
 
+            const added = '${{ steps.diff.outputs.added }}';
+            const removed = '${{ steps.diff.outputs.removed }}';
+            const hunks = '${{ steps.diff.outputs.hunks }}';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const today = new Date().toISOString().slice(0, 10);
+
             // Truncate diff for issue body if very large
             const maxLen = 60000;
             const truncated = diff.length > maxLen
               ? diff.slice(0, maxLen) + '\n\n... (truncated, see workflow artifact for full diff)'
               : diff;
 
-            const title = `FDIC upstream schema drift detected (${new Date().toISOString().slice(0, 10)})`;
+            const title = `FDIC upstream schema drift detected (${today})`;
 
             // Check for an existing open issue to avoid duplicates
             const existing = await github.rest.issues.listForRepo({
@@ -79,13 +95,32 @@ jobs:
               per_page: 1,
             });
 
+            // Concise summary block reused in both issue creation and comment updates
+            const summaryBlock = [
+              `**Detected:** ${today}  `,
+              `**Diff stats:** ${hunks} change region(s), +${added} / -${removed} lines  `,
+              `**Workflow run:** [View logs](${runUrl})`,
+            ].join('\n');
+
             if (existing.data.length > 0) {
               // Comment on existing issue instead of opening a new one
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existing.data[0].number,
-                body: `Schema drift still present as of ${new Date().toISOString().slice(0, 10)}.\n\n<details><summary>Diff</summary>\n\n\`\`\`diff\n${truncated}\n\`\`\`\n\n</details>`,
+                body: [
+                  `### Schema drift still present`,
+                  '',
+                  summaryBlock,
+                  '',
+                  '<details><summary>Diff</summary>',
+                  '',
+                  '```diff',
+                  truncated,
+                  '```',
+                  '',
+                  '</details>',
+                ].join('\n'),
               });
               console.log(`Commented on existing issue #${existing.data[0].number}`);
               return;
@@ -99,15 +134,32 @@ jobs:
               body: [
                 '## FDIC Upstream Schema Drift Detected',
                 '',
-                'The FDIC API documentation has changed in a way that affects the generated endpoint metadata.',
+                summaryBlock,
+                '',
+                '---',
+                '',
+                '### What this means',
+                '',
+                'The FDIC API documentation has changed in a way that affects the generated endpoint metadata in `src/fdicEndpointMetadata.ts`.',
                 'This may indicate added, removed, or renamed fields that could affect tool behavior.',
+                '',
+                '### How to classify',
+                '',
+                '| Pattern | Likely cause | Severity |',
+                '|---------|-------------|----------|',
+                '| New fields added, existing fields unchanged | FDIC expanded the API | Low — commit the update |',
+                '| Field renamed or removed | FDIC restructured the endpoint | Medium — review tool field refs |',
+                '| Description/title text changed only | FDIC updated docs | Low — commit the update |',
+                '| Wholesale endpoint reshape | FDIC major revision | High — coordinate a migration |',
                 '',
                 '### What to do',
                 '',
                 '1. Run `npm run fdic-schema:sync` locally to regenerate the metadata.',
-                '2. Review the diff for impact on tool schemas, field references, and test expectations.',
-                '3. If the changes are benign, commit the updated metadata.',
-                '4. If the changes break tool contracts, coordinate a migration.',
+                '2. Inspect the diff: `git diff src/fdicEndpointMetadata.ts`',
+                '3. Classify using the table above.',
+                '4. If the changes are benign (new fields, doc text), commit the updated metadata.',
+                '5. If the changes affect tool contracts (removed or renamed fields), coordinate a migration.',
+                '6. Run `npm test` to check for regressions before merging.',
                 '',
                 '### Diff',
                 '',
@@ -125,5 +177,5 @@ jobs:
       - name: Fail workflow on drift
         if: steps.diff.outputs.drift == 'true'
         run: |
-          echo "::error::FDIC upstream schema drift detected. See diff artifact and issue."
+          echo "::error::FDIC upstream schema drift detected — ${{ steps.diff.outputs.hunks }} change region(s), +${{ steps.diff.outputs.added }} / -${{ steps.diff.outputs.removed }} lines. See issue and artifact."
           exit 1
