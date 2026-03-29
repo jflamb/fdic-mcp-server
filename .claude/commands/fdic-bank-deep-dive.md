@@ -374,3 +374,137 @@ Populate from `structuredContent.rankings`. If rank or percentile is unavailable
 **Structural immateriality:** For non-lending institutions or those with structurally low loan balances, narrate the low loan portfolio as a characteristic of the institution's business model, not a data limitation. Example: "As a trust-focused institution, [Name] maintains a minimal loan portfolio, with the majority of assets held in securities and cash equivalents."
 
 **Narrative:** Interpret portfolio mix, flag concentration risks per supervisory guidance with appropriate context, and note the overall credit risk posture.
+
+---
+
+### Section 6: Funding & Liquidity
+
+*Tool data:* `fdic_analyze_funding_profile` result
+
+```
+## 6. Funding & Liquidity
+*As of report date [YYYYMMDD]*
+```
+
+**Key metrics** (from tool results):
+- Core deposit share, brokered deposit share, foreign deposit share
+- Wholesale funding reliance (as % of assets)
+- FHLB advances relative to assets
+- Cash ratio
+
+**Data distinction rule:** Distinguish between "brokered deposit data unavailable" (tool returned incomplete data — degradation) and "zero brokered deposits" (the institution does not use brokered funding — real finding). The same applies to foreign deposits and wholesale funding.
+
+**Narrative:** Interpret funding stability, flag brokered deposit reliance or wholesale funding concentration if present, and contextualize the institution's liquidity position.
+
+---
+
+### Section 7: Securities Portfolio
+
+*Tool data:* `fdic_analyze_securities_portfolio` result
+
+```
+## 7. Securities Portfolio
+*As of report date [YYYYMMDD]*
+```
+
+**Key metrics** (from tool results):
+- Securities relative to total assets
+- Securities relative to capital
+- MBS concentration within the portfolio
+- Note: AFS/HTM breakdown is not available from the FDIC API.
+
+**Structural immateriality:** For institutions with minimal securities holdings, frame as a structural characteristic. Example: "This institution maintains a minimal securities portfolio at [X]% of total assets, consistent with its lending-focused business model. Securities concentration risk is not a material factor."
+
+**Narrative:** Interpret portfolio size and concentration risk. For institutions with significant holdings, discuss MBS concentration and potential interest-rate exposure.
+
+---
+
+### Section 8: Geographic Franchise
+
+*Tool data:* `fdic_franchise_footprint` result
+
+```
+## 8. Geographic Franchise
+*Using annual SOD data as of June 30, [YEAR]*
+```
+
+**Reconciliation warning** (always include): *"Note: Annual SOD deposit totals are branch-level figures as of June 30 and may not reconcile exactly to quarterly balance-sheet deposits reported in other sections of this report."*
+
+**Key metrics** (from tool results):
+- Total branch count
+- Total deposits (SOD basis)
+- Number of markets (MSAs)
+- Market-by-market breakdown (top markets sorted by deposits): market name, branch count, deposit total, share of institution's total deposits
+
+**Narrative:** Describe geographic concentration or diversification, identify primary markets, and note any single-market dependency (e.g., if one MSA holds > 50% of deposits).
+
+---
+
+### Section 9: Economic Context
+
+*Tool data:* `fdic_regional_context` result
+
+```
+## 9. Economic Context
+*Macro context referenced to [YYYYMMDD], using trailing two-year FRED series when available*
+```
+
+**When FRED data is available:**
+- State unemployment rate and trend (improving / stable / deteriorating)
+- National unemployment rate and trend
+- Federal funds rate and rate environment classification
+- Narrative: How the macro environment affects this institution's operating conditions given its geographic footprint and business model.
+
+**When FRED data is unavailable (fallback):**
+
+Render the section with:
+
+> *FRED economic data is currently unavailable. This section provides limited context based on the institution's geographic footprint without macro time series.*
+
+Then provide a brief narrative based solely on the institution's primary state and geographic footprint (from Section 1 and Section 8 data). Do NOT improvise macro data from undefined sources. Do NOT speculate about economic conditions without FRED data to support the claims.
+
+---
+
+### Section 10: Risk Summary & Outlook
+
+*No tool — synthesized from all preceding sections.*
+
+```
+## 10. Risk Summary & Outlook
+```
+
+**Structure (always follow this order):**
+
+1. **Strengths** — 2-3 bullet points drawn from evidence in preceding sections. Examples: strong capital position, above-peer profitability, stable funding base, improving asset quality trend, well-diversified franchise.
+
+2. **Risks & Watchpoints** — 2-3 bullet points drawn from evidence in preceding sections. Examples: critical risk signals, CRE concentration exceeding guidance thresholds, declining NIM trend, brokered deposit reliance, thin peer cohort, single-market franchise dependency, adverse macro trends.
+
+3. **Outlook** — A short paragraph (3-5 sentences) synthesizing the overall picture. Is the institution on a stable trajectory, improving, or facing headwinds? What conditions would change the assessment?
+
+**Evidence-bounded rule:** Every strength, risk, and outlook statement MUST be traceable to a specific finding in the preceding sections. Do NOT introduce new analysis, speculative catalyst language, or forward-looking claims unsupported by the data. If context sections (8-9) degraded, the outlook MUST acknowledge the gaps rather than speculating past available data.
+
+---
+
+### Report Footer
+
+End the report with:
+
+```
+---
+*Source: FDIC BankFind Suite API, FRED | Analytical model: public_camels_proxy_v1*
+*This report reflects publicly available data as of the dates noted in each section.*
+*It is not an official regulatory assessment and should not be used as the sole basis for financial decisions.*
+```
+
+---
+
+## Step 6: Optional Save
+
+The report renders inline in the conversation by default. Do NOT automatically save to a file.
+
+If the user asks to save the report, write it as a markdown file:
+
+- If `repdte` was provided: `[CERT]-deep-dive-[repdte].md` (e.g., `3511-deep-dive-20251231.md`)
+- If `repdte` was omitted: `[CERT]-deep-dive-latest.md` (e.g., `3511-deep-dive-latest.md`)
+
+Save to the current working directory. Confirm the filename and path to the user after saving.
