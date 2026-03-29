@@ -120,7 +120,7 @@ export function buildSubsidiaryRecord(
   return {
     cert: typeof inst.CERT === "number" ? inst.CERT : 0,
     name: String(inst.NAME ?? ""),
-    hc_name: inst.NAMHCR ? String(inst.NAMHCR) : null,
+    hc_name: inst.NAMEHCR ? String(inst.NAMEHCR) : null,
     total_assets: typeof inst.ASSET === "number" ? inst.ASSET : 0,
     total_deposits: typeof inst.DEP === "number" ? inst.DEP : 0,
     roa: financials ? asNumber(financials.ROA) : null,
