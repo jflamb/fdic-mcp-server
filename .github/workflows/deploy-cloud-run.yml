@@ -251,16 +251,16 @@ jobs:
           result = payload["result"]
           content = result["content"]
           assert isinstance(content, list) and len(content) > 0, "Empty tool content"
+          text_items = [c for c in content if c.get("type") == "text"]
+          assert text_items, "No text content in tool response"
+          assert isinstance(text_items[0].get("text"), str) and text_items[0]["text"], payload
 
-          # Find structured content with the FDIC data
-          resource_items = [c for c in content if c.get("type") == "resource"]
-          assert resource_items, "No resource content in tool response"
+          data = result["structuredContent"]
+          assert isinstance(data, dict), f"Missing structuredContent object: {result}"
+          assert "institutions" in data, f"Missing institutions key: {list(data.keys())}"
+          assert len(data["institutions"]) == 1, f"Expected 1 institution, got {len(data['institutions'])}"
 
-          data = json.loads(resource_items[0]["resource"]["text"])
-          assert "records" in data, f"Missing records key: {list(data.keys())}"
-          assert len(data["records"]) == 1, f"Expected 1 record, got {len(data['records'])}"
-
-          record = data["records"][0]["data"]
+          record = data["institutions"][0]
           assert record["CERT"] == 3511, f"Wrong CERT: {record.get('CERT')}"
           assert isinstance(record["NAME"], str) and record["NAME"], "Missing NAME"
           assert isinstance(record["STALP"], str) and record["STALP"], "Missing STALP"
