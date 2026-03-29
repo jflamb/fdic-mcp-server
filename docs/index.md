@@ -40,7 +40,8 @@ body_class: overview-page
     <h3>Claude Code Skills</h3>
     <p>
       Guided analyst workflows that run inside <strong>Claude Code only</strong>.
-      <a href="{{ '/examiner-support/' | relative_url }}">FDIC Examiner Support</a> layers qualitative examiner knowledge onto CAMELS proxy scores. More skills are planned.
+      <a href="{{ '/usage-examples/' | relative_url }}#run-a-bank-deep-dive-claude-code-skill"><code>/fdic-bank-deep-dive</code></a> chains nine tools into a ten-section institution report.
+      <a href="{{ '/examiner-support/' | relative_url }}">FDIC Examiner Support</a> layers qualitative examiner knowledge onto CAMELS proxy scores.
     </p>
   </section>
 </div>
@@ -98,10 +99,10 @@ body_class: overview-page
     <h3>Find the right MCP tool</h3>
     <p>Pick the right search, lookup, comparison, or peer-analysis tool before you start prompting.</p>
   </a>
-  <a class="card" href="{{ '/examiner-support/' | relative_url }}">
+  <a class="card" href="{{ '/usage-examples/' | relative_url }}#run-a-bank-deep-dive-claude-code-skill">
     <span class="card__eyebrow">Skills</span>
-    <h3>FDIC Examiner Support</h3>
-    <p>A Claude Code skill that guides examiners through layering qualitative knowledge onto a public-data CAMELS proxy baseline.</p>
+    <h3>Claude Code Skills</h3>
+    <p><code>/fdic-bank-deep-dive</code> chains nine tools into a ten-section institution report. <code>/fdic-examiner-overlay</code> layers qualitative knowledge onto a CAMELS proxy baseline. Claude Code only.</p>
   </a>
   <a class="card" href="{{ '/project-information/' | relative_url }}">
     <span class="card__eyebrow">Project &amp; Support</span>

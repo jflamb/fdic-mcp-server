@@ -82,11 +82,14 @@ These tools produce analytical assessments based on public financial data. They 
 |------|-------------|-------|
 | `fdic_regional_context` | You want macro/regional economic context for a bank's operating environment | Uses FRED data for unemployment and interest rate trends. Gracefully degrades if FRED is unavailable. |
 
-## FDIC Examiner Support Skill (Claude Code)
+## Claude Code Skills
 
-If you are using Claude Code with this MCP server, the `/fdic-examiner-overlay` command guides you through layering qualitative examiner knowledge onto a `public_camels_proxy_v1` baseline. It collects structured analyst inputs for five overlay domains, computes bounded score adjustments, and produces a blended assessment with explicit provenance separation.
+These slash commands are available in any Claude Code session with this MCP server configured.
 
-See the [FDIC Examiner Support](examiner-support.md) page for the full walkthrough, adjustment rules, and output format.
+| Skill | Command | Description |
+|-------|---------|-------------|
+| Bank Deep Dive | `/fdic-bank-deep-dive` | Chains nine MCP tools into a ten-section narrative report for a single institution. Accepts a bank name or CERT number with an optional quarter-end `repdte`. See [Usage Examples](usage-examples.md#run-a-bank-deep-dive-claude-code-skill) for full details. |
+| FDIC Examiner Support | `/fdic-examiner-overlay` | Layers qualitative examiner knowledge onto a `public_camels_proxy_v1` baseline. Collects structured analyst inputs for five overlay domains, computes bounded score adjustments, and produces a blended assessment with explicit provenance separation. See the [FDIC Examiner Support](examiner-support.md) page for the full walkthrough. |
 
 ## Choosing The Right Tool
 
@@ -105,6 +108,7 @@ See the [FDIC Examiner Support](examiner-support.md) page for the full walkthrou
 - Use `fdic_franchise_footprint` when you want to map where an institution operates and how its deposits are distributed.
 - Use `fdic_holding_company_profile` when you want to understand the parent-subsidiary structure and consolidated metrics.
 - Use `fdic_regional_context` when you need economic backdrop for interpreting bank performance.
+- Use `/fdic-bank-deep-dive` when you want a comprehensive single-institution report without constructing a multi-step prompt.
 - Use `/fdic-examiner-overlay` when you have examiner-grade qualitative knowledge to layer onto a public-data health assessment.
 
 ## Data Basis Reminder
