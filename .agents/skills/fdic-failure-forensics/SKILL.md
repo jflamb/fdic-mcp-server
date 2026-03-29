@@ -37,7 +37,6 @@ Do **not** activate for:
 | Parameter | Required | Default | Description |
 |---|---|---|---|
 | Institution identity | Yes | — | Failed bank name or FDIC CERT number |
-| Failure date | No | Derived from failure record | Used to anchor the lookback window |
 | Pre-failure report date | No | Last quarter-end before failure date | The most recent Call Report quarter before the failure |
 | Lookback window | No | 8 quarters | Number of quarters before the pre-failure report date to include in the timeline |
 | Focus area | No | Overall failure narrative | Optional: `funding`, `credit`, `earnings`, or `overall` |
@@ -186,7 +185,7 @@ If the call fails, note: "Structural event history unavailable." Omit this conte
 Invoke domain tools **only when the risk signals or financial timeline implicate that domain:**
 
 - **Funding stress signals present** OR deposits declined > 15% in the lookback window → call `fdic_analyze_funding_profile` with `cert`, `repdte: <last_repdte>`
-- **Credit signals present** OR noncurrent loans rose significantly → call `fdic_analyze_credit_concentration` with `cert`, `repdte: <last_repdte>`
+- **Credit signals present** (e.g., `credit_deterioration`, `credit_deterioration_trending`, or `reserve_coverage_low` from `fdic_detect_risk_signals`) OR net loans (`LNLSNET`) grew > 20% while earnings declined in the lookback window → call `fdic_analyze_credit_concentration` with `cert`, `repdte: <last_repdte>`
 
 If neither domain is implicated, skip these calls.
 

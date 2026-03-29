@@ -113,6 +113,7 @@ These slash commands are available in any Claude Code session with this MCP serv
 - Use `/fdic-bank-deep-dive` when you want a comprehensive single-institution report without constructing a multi-step prompt.
 - Use `/fdic-examiner-overlay` when you have examiner-grade qualitative knowledge to layer onto a public-data health assessment.
 - Use `/fdic-portfolio-surveillance` when you want to screen a cohort of institutions and produce a ranked watchlist with escalation drivers.
+- Use `/fdic-failure-forensics` when you want to reconstruct the pre-failure timeline and identify public-data warning signals for a failed institution.
 
 ## Data Basis Reminder
 
