@@ -352,7 +352,7 @@ The synthesis adapts to data quality. If context sections (8-9) degraded, the ou
 
 ```
 # Bank Deep Dive: [Institution Name]
-*Generated [current date] from public FDIC data*
+*Generated [current date] from public data sources*
 
 > This report is generated from public FDIC data and, where available,
 > FRED macroeconomic data using the public_camels_proxy_v1 analytical
