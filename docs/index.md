@@ -40,10 +40,10 @@ body_class: overview-page
     <h3>Claude Code Skills</h3>
     <p>
       Guided analyst workflows that run inside <strong>Claude Code only</strong>.
-      <a href="{{ '/usage-examples/' | relative_url }}#run-a-bank-deep-dive-claude-code-skill"><code>/fdic-bank-deep-dive</code></a> chains nine tools into a ten-section institution report.
-      <a href="{{ '/examiner-support/' | relative_url }}">FDIC Examiner Support</a> layers qualitative examiner knowledge onto CAMELS proxy scores.
-      <a href="{{ '/usage-examples/' | relative_url }}#run-a-portfolio-surveillance-claude-code-skill"><code>/fdic-portfolio-surveillance</code></a> screens a bank universe and produces a ranked watchlist.
-      <a href="{{ '/usage-examples/' | relative_url }}#run-a-failure-forensics-claude-code-skill"><code>/fdic-failure-forensics</code></a> reconstructs pre-failure timelines for case-study review.
+      <a href="{{ '/skills/bank-deep-dive/' | relative_url }}">Bank Deep Dive</a> chains nine tools into a ten-section institution report.
+      <a href="{{ '/skills/examiner-support/' | relative_url }}">Examiner Support</a> layers qualitative examiner knowledge onto CAMELS proxy scores.
+      <a href="{{ '/skills/portfolio-surveillance/' | relative_url }}">Portfolio Surveillance</a> screens a bank universe and produces a ranked watchlist.
+      <a href="{{ '/skills/failure-forensics/' | relative_url }}">Failure Forensics</a> reconstructs pre-failure timelines for case-study review.
     </p>
   </section>
 </div>
@@ -56,15 +56,15 @@ body_class: overview-page
     <h3>Choose the fastest setup path</h3>
     <p>Start with the hosted MCP URL when your host accepts remote servers. Use the local install path only when your host requires stdio.</p>
   </a>
+  <a class="card" href="{{ '/choose-a-workflow/' | relative_url }}">
+    <span class="card__eyebrow">Navigate</span>
+    <h3>Choose a workflow</h3>
+    <p>Decide whether to use an MCP tool or a Claude Code skill based on what you're analyzing and which client you're using.</p>
+  </a>
   <a class="card" href="{{ '/clients/' | relative_url }}">
     <span class="card__eyebrow">Connect</span>
     <h3>Find your MCP host instructions</h3>
-    <p>Use the right setup steps for Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI.</p>
-  </a>
-  <a class="card" href="{{ '/prompting/' | relative_url }}">
-    <span class="card__eyebrow">Use It Well</span>
-    <h3>Learn the prompting patterns</h3>
-    <p>Use copy-pasteable prompt patterns that stay explicit about dates, metrics, and dataset boundaries.</p>
+    <p>Use the right setup steps for Claude Code, Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI.</p>
   </a>
 </div>
 
@@ -91,20 +91,25 @@ body_class: overview-page
     <h3>Install and configure</h3>
     <p>Installation, client setup for popular MCP hosts, and troubleshooting.</p>
   </a>
+  <a class="card" href="{{ '/choose-a-workflow/' | relative_url }}">
+    <span class="card__eyebrow">Navigate</span>
+    <h3>Choose a workflow</h3>
+    <p>Tool vs skill, single bank vs portfolio, active vs failed. Find the right path for your analysis goal.</p>
+  </a>
+  <a class="card" href="{{ '/tool-reference/' | relative_url }}">
+    <span class="card__eyebrow">Reference</span>
+    <h3>MCP Tool Reference</h3>
+    <p>Quick reference for all 20+ MCP tools — what each does and when to use it. Works in any MCP client.</p>
+  </a>
+  <a class="card" href="{{ '/skills/' | relative_url }}">
+    <span class="card__eyebrow">Claude Code</span>
+    <h3>Skills</h3>
+    <p>Bank Deep Dive, Examiner Support, Portfolio Surveillance, and Failure Forensics. Guided multi-tool workflows. Claude Code only.</p>
+  </a>
   <a class="card" href="{{ '/prompting/' | relative_url }}">
     <span class="card__eyebrow">Prompting</span>
     <h3>Write effective prompts</h3>
     <p>Prompt patterns, copyable examples, and guidance on dates, metrics, and dataset boundaries.</p>
-  </a>
-  <a class="card" href="{{ '/tool-reference/' | relative_url }}">
-    <span class="card__eyebrow">Choose Tools</span>
-    <h3>Find the right MCP tool</h3>
-    <p>Pick the right search, lookup, comparison, or peer-analysis tool before you start prompting.</p>
-  </a>
-  <a class="card" href="{{ '/usage-examples/' | relative_url }}#run-a-bank-deep-dive-claude-code-skill">
-    <span class="card__eyebrow">Skills</span>
-    <h3>Claude Code Skills</h3>
-    <p><code>/fdic-bank-deep-dive</code> chains nine tools into a ten-section institution report. <code>/fdic-examiner-overlay</code> layers qualitative knowledge onto a CAMELS proxy baseline. <code>/fdic-portfolio-surveillance</code> screens a universe and produces a ranked watchlist. <code>/fdic-failure-forensics</code> reconstructs pre-failure timelines for case-study review. Claude Code only.</p>
   </a>
   <a class="card" href="{{ '/project-information/' | relative_url }}">
     <span class="card__eyebrow">Project &amp; Support</span>
@@ -124,7 +129,7 @@ body_class: overview-page
   <a class="card" href="{{ '/usage-examples/' | relative_url }}">
     <span class="card__eyebrow">Examples</span>
     <h3>Usage Examples</h3>
-    <p>Use narrower prompts and clearer result expectations for search, comparisons, and peer benchmarking.</p>
+    <p>Copyable prompts with expected answer shapes for search, comparisons, and peer benchmarking.</p>
   </a>
   <a class="card" href="{{ '/support/' | relative_url }}">
     <span class="card__eyebrow">Support</span>

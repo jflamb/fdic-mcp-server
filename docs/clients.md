@@ -57,9 +57,9 @@ Add the marketplace and install:
 
 This gives you:
 - **MCP tools** — the hosted endpoint at `https://bankfind.jflamb.com/mcp`, giving you all 20+ search, analysis, and comparison tools that work in any MCP client
-- **Claude Code skills** — guided analyst workflows like [FDIC Examiner Support](/examiner-support/), which layers qualitative examiner knowledge onto CAMELS proxy scores (Claude Code only)
+- **Claude Code skills** — guided analyst workflows like [Bank Deep Dive](/skills/bank-deep-dive/), [Examiner Support](/skills/examiner-support/), [Portfolio Surveillance](/skills/portfolio-surveillance/), and [Failure Forensics](/skills/failure-forensics/) (Claude Code only)
 
-Skills complement the MCP tools. Tools give you raw data access; skills build structured, multi-step workflows on top of those tools.
+Skills complement the MCP tools. Tools give you raw data access; skills build structured, multi-step workflows on top of those tools. See [Skills](/skills/) for details.
 
 To use a local server instead, override the MCP config after installing the plugin:
 

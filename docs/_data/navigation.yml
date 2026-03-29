@@ -8,6 +8,9 @@ primary:
   - key: prompting
     title: Prompting
     url: /prompting/
+  - key: skills
+    title: Skills
+    url: /skills/
   - key: project
     title: Project & Support
     url: /project-information/
@@ -32,14 +35,28 @@ sections:
   prompting:
     title: Prompting
     items:
+      - title: Choose A Workflow
+        url: /choose-a-workflow/
       - title: Prompting Guide
         url: /prompting-guide/
       - title: Usage Examples
         url: /usage-examples/
       - title: Tool Reference
         url: /tool-reference/
+  skills:
+    title: Skills
+    items:
+      - title: Claude Code Skills
+        short_title: Overview
+        url: /skills/
+      - title: Bank Deep Dive
+        url: /skills/bank-deep-dive/
       - title: FDIC Examiner Support
-        url: /examiner-support/
+        url: /skills/examiner-support/
+      - title: Portfolio Surveillance
+        url: /skills/portfolio-surveillance/
+      - title: Failure Forensics
+        url: /skills/failure-forensics/
   project:
     title: Project & Support
     items:

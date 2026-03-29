@@ -2,7 +2,7 @@
 title: Usage Examples
 nav_group: prompting
 kicker: Prompting
-summary: Copyable prompts for institution search, financial retrieval, snapshot comparison, and peer analysis, plus what a good answer should cover.
+summary: Copyable prompts for institution search, financial retrieval, snapshot comparison, peer analysis, and more — with expected answer shapes.
 breadcrumbs:
   - title: Overview
     url: /
@@ -10,11 +10,11 @@ breadcrumbs:
     url: /prompting/
 ---
 
-The examples below are phrased as natural-language prompts, followed by the kind of answer you should expect.
+The examples below are natural-language prompts you can copy into any MCP client, followed by what a good answer should cover. These examples cover the **MCP tools** that work in any client.
+
+For Claude Code skill examples, see the individual skill pages: [Bank Deep Dive]({{ '/skills/bank-deep-dive/' | relative_url }}), [Examiner Support]({{ '/skills/examiner-support/' | relative_url }}), [Portfolio Surveillance]({{ '/skills/portfolio-surveillance/' | relative_url }}), [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}).
 
 ## Search Institutions
-
-Prompt:
 
 ```text
 Find active FDIC-insured banks in North Carolina with more than $1 billion in assets.
@@ -26,8 +26,6 @@ What a good answer should do:
 
 ## Look Up A Known CERT
 
-Prompt:
-
 ```text
 Get institution details for CERT 3511.
 ```
@@ -37,8 +35,6 @@ What a good answer should do:
 - Return the institution record for the requested CERT.
 
 ## Review Bank Failures
-
-Prompt:
 
 ```text
 List the 10 costliest bank failures since January 1, 2000.
@@ -50,19 +46,16 @@ What a good answer should do:
 
 ## Pull Quarterly Financials
 
-Prompt:
-
 ```text
 Show quarterly financials for CERT 3511 during 2023.
 ```
 
 What a good answer should do:
 
-- Return quarterly financial records for the requested bank over the requested year.
+- Return quarterly Call Report records for the requested bank over the requested year.
+- Financials are quarterly data identified by `REPDTE`. Dollar amounts are in thousands.
 
 ## Compare Growth Across Two Dates
-
-Prompt:
 
 ```text
 Compare North Carolina banks between 20211231 and 20250630 and rank them by asset growth.
@@ -74,8 +67,6 @@ What a good answer should do:
 
 ## Run A Time-Series Analysis
 
-Prompt:
-
 ```text
 Analyze North Carolina banks from 20211231 through 20250630 and identify sustained asset-growth streaks.
 ```
@@ -85,8 +76,6 @@ What a good answer should do:
 - Look across the full date range and identify banks with repeated or sustained growth, not just a one-date change.
 
 ## Build A Peer Group
-
-Prompt:
 
 ```text
 Build a peer group for CERT 29846 at 20241231 and rank it against peers on ROA and efficiency ratio.
@@ -98,8 +87,6 @@ What a good answer should do:
 
 ## Analyze Bank Health
 
-Prompt:
-
 ```text
 Run a CAMELS-style health assessment for CERT 3511 as of December 31, 2024 with 8 quarters of trend data.
 ```
@@ -107,15 +94,13 @@ Run a CAMELS-style health assessment for CERT 3511 as of December 31, 2024 with 
 What a good answer should do:
 
 - Return composite and component ratings (Capital, Asset Quality, Earnings, Liquidity, Sensitivity) with individual metric scores.
-- Include the public_camels_proxy_v1 assessment with overall band (strong/satisfactory/weak/high_risk).
-- Show PCA-style capital categorization (well capitalized, adequately capitalized, etc.).
+- Include the `public_camels_proxy_v1` assessment with overall band.
+- Show PCA-style capital categorization.
 - Show trend analysis for key metrics across prior quarters.
-- Flag risk signals using standardized codes with neutral, supervisory-safe language.
-- Note that this is an analytical assessment, not an official regulatory rating.
+- Flag risk signals using standardized codes.
+- Note that this is an analytical proxy, not an official regulatory rating.
 
 ## Compare Peer Health
-
-Prompt:
 
 ```text
 Compare CAMELS health scores for all active banks in Wyoming, sorted by composite rating.
@@ -124,12 +109,10 @@ Compare CAMELS health scores for all active banks in Wyoming, sorted by composit
 What a good answer should do:
 
 - Score each institution using CAMELS-style analysis.
-- Rank institutions by composite rating (or a specific component if requested).
-- Show component breakdowns and flag any institutions with concerning scores.
+- Rank institutions by composite rating.
+- Show component breakdowns and flag institutions with concerning scores.
 
 ## Detect Risk Signals
-
-Prompt:
 
 ```text
 Scan active banks in North Carolina with under $500 million in assets for risk signals. Show critical and warning flags only.
@@ -138,12 +121,10 @@ Scan active banks in North Carolina with under $500 million in assets for risk s
 What a good answer should do:
 
 - Screen the matched institutions for early warning indicators.
-- Categorize signals by severity (critical, warning) and CAMELS category (capital, earnings, liquidity, etc.).
-- Rank flagged institutions by severity count so the most concerning appear first.
+- Categorize signals by severity (critical, warning).
+- Rank flagged institutions by severity count.
 
 ## Analyze Credit Concentration
-
-Prompt:
 
 ```text
 Analyze the credit concentration for CERT 3511 as of December 31, 2024.
@@ -157,8 +138,6 @@ What a good answer should do:
 
 ## Analyze Funding Profile
 
-Prompt:
-
 ```text
 Analyze the funding profile for CERT 628 at the latest available quarter.
 ```
@@ -167,11 +146,9 @@ What a good answer should do:
 
 - Show deposit composition: core, brokered, and foreign deposits.
 - Compute wholesale funding reliance and FHLB advances as a percentage of assets.
-- Flag any funding risks: high brokered deposits, low core deposits, high wholesale funding.
+- Flag funding risks: high brokered deposits, low core deposits, high wholesale funding.
 
 ## Run UBPR-Equivalent Analysis
-
-Prompt:
 
 ```text
 Run a UBPR-equivalent ratio analysis for CERT 29846 as of December 31, 2024.
@@ -186,7 +163,7 @@ What a good answer should do:
 
 ## Analyze Deposit Market Share
 
-`fdic_market_share_analysis` requires either a numeric MSABR code (`msa`) or a city name and state (`city` + `state`). To find an MSABR code, use `fdic_search_sod` and filter by institution or state to retrieve the `MSABR` field for branches in the target market.
+`fdic_market_share_analysis` requires either a numeric MSABR code (`msa`) or a city name and state (`city` + `state`). To find an MSABR code, use `fdic_search_sod` and filter by institution or state to retrieve the `MSABR` field.
 
 Prompt (MSA by code):
 
@@ -203,12 +180,9 @@ Show the deposit market share for banks in Austin, TX.
 What a good answer should do:
 
 - List the top institutions by deposit share in the specified market.
-- Show total market deposits and Herfindahl-Hirschman Index (HHI) with concentration classification.
-- If a specific institution is highlighted, show its rank and share.
+- Show total market deposits and HHI with concentration classification.
 
 ## Map Franchise Footprint
-
-Prompt:
 
 ```text
 Map the franchise footprint for CERT 628.
@@ -216,13 +190,11 @@ Map the franchise footprint for CERT 628.
 
 What a good answer should do:
 
-- Show all markets where the institution has branches, grouped by MSA code (`MSA <code>`) or `Non-MSA / Rural` for non-metro branches, with deposit totals and branch counts per market.
-- Sort markets by deposit size descending.
-- Summarize total branches and total deposits across all markets.
+- Show all markets where the institution has branches, grouped by MSA, with deposit totals and branch counts per market.
+- Sort by deposit size descending.
+- Summarize total branches and deposits across all markets.
 
 ## Profile Holding Company
-
-Prompt:
 
 ```text
 Profile the holding company for CERT 3511.
@@ -231,12 +203,9 @@ Profile the holding company for CERT 3511.
 What a good answer should do:
 
 - Identify the holding company and list all FDIC-insured subsidiaries.
-- Show aggregated metrics: total assets, total deposits, asset-weighted ROA and equity ratio.
-- Compare individual subsidiary performance within the holding company.
+- Show aggregated metrics: total assets, deposits, asset-weighted ROA and equity ratio.
 
 ## Regional Economic Context
-
-Prompt:
 
 ```text
 What is the regional economic context for banks in California?
@@ -244,100 +213,47 @@ What is the regional economic context for banks in California?
 
 What a good answer should do:
 
-- Show state unemployment rate and trend (rising, falling, stable).
-- Compare state unemployment to the national rate.
-- Classify the interest rate environment based on the federal funds rate.
-- Provide a narrative summary of how economic conditions may affect bank performance.
+- Show state unemployment rate and trend.
+- Compare to the national rate.
+- Classify the interest rate environment.
+- Summarize how economic conditions may affect bank performance.
 
-## Run A Bank Deep Dive (Claude Code Skill)
+## Multi-Tool Analysis Prompts
 
-The `/fdic-bank-deep-dive` skill is a Claude Code slash command that chains nine FDIC MCP tools into a ten-section narrative report for a single institution. It is available in any Claude Code session with this MCP server configured.
+These prompts chain multiple tools for deeper analysis. They work best when the model can make several tool calls in sequence.
 
-Invocations:
-
-```text
-/fdic-bank-deep-dive Coastal Community Bank
-```
+### Snapshot with profitability follow-through
 
 ```text
-/fdic-bank-deep-dive 34403
+Compare active North Carolina banks between December 31, 2021 and June 30, 2025. Rank by deposit growth percentage, return the top 10, and call out which also improved ROA and reduced office counts.
 ```
+
+### Health deep-dive with peer context
 
 ```text
-/fdic-bank-deep-dive Signature Bank 20221231
+Run a health assessment for CERT 3511 as of December 31, 2024 using 8 quarters of trend history. Then compare its health scores against peer banks in the same state and asset range.
 ```
 
-What a good answer should do:
-
-- Resolve the bank name or CERT to a single FDIC institution, with disambiguation if multiple matches are found.
-- Validate the report date as a quarter-end (`0331`, `0630`, `0930`, `1231`) and default to the latest available quarter if omitted.
-- For inactive institutions, automatically scope the analysis to the institution's last reported quarter rather than the current quarter.
-- Produce a structured ten-section report: Institution Profile, Health Assessment, Financial Performance, Peer Benchmarking, Credit & Concentration, Funding & Liquidity, Securities Portfolio, Geographic Franchise, Economic Context, and Summary.
-- Degrade gracefully for sections where data is unavailable, narrating the gap rather than omitting the section.
-- Offer to save the report to a file.
-
-If your MCP host shows tool activity, you may also see the model choose one or more FDIC BankFind tools behind the scenes. The public docs focus on prompt wording and result quality rather than response-format details.
-
-## Run A Portfolio Surveillance (Claude Code Skill)
-
-The `/fdic-portfolio-surveillance` skill is a Claude Code slash command that screens a defined universe of FDIC-insured institutions, ranks them by emerging risk and relative health, and produces a decision-ready watchlist. It is available in any Claude Code session with this MCP server configured.
-
-Invocations:
+### Risk screening with follow-through
 
 ```text
-/fdic-portfolio-surveillance WY
+Scan all active banks in Wyoming for risk signals. For any bank with critical signals, also run a full health assessment and explain what is driving the concern.
 ```
+
+### Failure analysis (manual multi-tool approach)
 
 ```text
-/fdic-portfolio-surveillance banks with assets between $100M and $1B
+Which bank failures since 2008 had the highest estimated losses? For the top 3, show their quarterly financials from the year before they failed and identify which risk signals were present.
 ```
 
-```text
-/fdic-portfolio-surveillance CERTs 2232, 19184, 12591, 2208, 5442
-```
+For a more structured failure analysis workflow, use the [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}) skill in Claude Code.
 
-```text
-/fdic-portfolio-surveillance NC, emphasis on funding stress, limit 10
-```
+## Prompting Tips
 
-What a good answer should do:
+- **Be explicit about dates**: State the quarter-end date (e.g., `December 31, 2024` or `20241231`) rather than "latest" when precision matters.
+- **Name your ranking metric**: "Find the best banks" is too vague. Say "rank by ROA" or "sort by deposit growth."
+- **Scope your universe**: "Compare all banks" may exceed API limits. Add a state, asset range, or CERT list.
+- **Don't mix cadences unintentionally**: Quarterly financials and annual SOD data have different date bases. Be explicit if you need both.
+- **Ask follow-up questions**: After a comparison, ask "Which of those also improved profitability?" or "Run a health assessment for the lowest-ranked bank."
 
-- Build a screening universe from the user's state, asset range, or CERT list.
-- Screen the universe for critical and warning-level risk signals and rank institutions by peer-relative health.
-- Confirm trend persistence via snapshot comparison across a one-year lookback (or user-specified date range).
-- Classify institutions into Escalate, Monitor, and No Immediate Concern tiers with explicit driver text for each flagged institution.
-- Perform targeted follow-through analysis on the top escalated institutions, invoking domain-specific tools only when signals implicate that domain.
-- Produce a fixed-section report: Universe Definition, Screening Summary, Ranked Watchlist, Escalated Institution Follow-Through, and Caveats / Date Basis.
-- Degrade gracefully when soft or context tools are unavailable, noting the gap without affecting triage results.
-
-## Run A Failure Forensics (Claude Code Skill)
-
-The `/fdic-failure-forensics` skill is a Claude Code slash command that reconstructs the pre-failure financial timeline for a single failed institution, identifies the earliest visible warning signals from public data, and explains likely drivers of deterioration. It is available in any Claude Code session with this MCP server configured.
-
-Invocations:
-
-```text
-/fdic-failure-forensics Silicon Valley Bank
-```
-
-```text
-/fdic-failure-forensics 24735
-```
-
-```text
-/fdic-failure-forensics First Republic Bank, lookback 12 quarters, focus on funding
-```
-
-```text
-/fdic-failure-forensics Heartland Tri-State Bank, lookback 8 quarters
-```
-
-What a good answer should do:
-
-- Resolve the bank name or CERT to a single FDIC institution and confirm it has a failure record.
-- Derive the last reported quarter before the failure date and build a quarterly financial timeline over the lookback window (default 8 quarters).
-- Surface risk signals detected at the last reported quarter and present a CAMELS-proxy health assessment when available.
-- Produce a report with core sections that are always present (Institution Identification, Failure Event Summary, Pre-Failure Financial Timeline, Earliest Warning Signals, Likely Failure Drivers, Caveats / Limits of Public Data) and enrichment sections (Domain Analysis, Regional Context) included only when the data warrants them.
-- Tag every analytical statement in the Likely Failure Drivers section as Observed, Inferred, or Unknown from public data.
-- Invoke domain-specific tools (funding profile, credit concentration) only when the deterioration pattern implicates those domains.
-- Degrade gracefully when soft or context tools are unavailable, noting the gap without blocking the report.
+For more on prompt structure and date rules, see the [Prompting Guide]({{ '/prompting-guide/' | relative_url }}).
