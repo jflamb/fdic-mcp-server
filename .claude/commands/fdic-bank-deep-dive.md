@@ -173,6 +173,18 @@ Execute the following tools in order. Steps 1-3 are **hard dependencies** — if
 | 2 | `fdic_analyze_bank_health` with `cert`, `repdte` (if provided) | Section 2: Health Assessment |
 | 3 | `fdic_ubpr_analysis` with `cert`, `repdte` (if provided) | Section 3: Financial Performance |
 
+**After Step 1 succeeds — inactive institution date derivation:**
+
+If the institution record has `ACTIVE = 0` (inactive) and the user did not supply a `repdte`:
+
+1. Read the `REPDTE` field from the `fdic_get_institution` response. It is formatted `MM/DD/YYYY`.
+2. Convert it to `YYYYMMDD` (e.g., `"12/31/2022"` → `"20221231"`).
+3. Use this derived value as `repdte` for **all** subsequent tool calls in Steps 2–9. Do not override a user-supplied `repdte`.
+4. If `REPDTE` is absent or cannot be parsed, stop and ask:
+   > "This institution is inactive and no report date was provided. What date would you like to analyze? Please provide a quarter-end date (e.g., 20221231)."
+
+This ensures all financial tools are called against a date when the institution actually reported, not the current quarter-end which will return "no data" errors.
+
 If any of these three calls fails, stop immediately:
 
 > "The report cannot be generated. [Tool name] failed: [brief normalized description]. Please verify the CERT number and report date, or try again later."
