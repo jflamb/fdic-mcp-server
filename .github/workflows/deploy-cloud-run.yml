@@ -225,6 +225,47 @@ jobs:
           assert any(tool.get("name") == "fdic_search_institutions" for tool in tools), payload
           PY
 
+          # --- Real FDIC-backed tool call: verify end-to-end upstream integration ---
+          tool_call_response="$(mktemp)"
+          trap 'rm -f "$health_response" "$chat_status_response" "$init_headers" "$init_response" "$initialized_response" "$mcp_response" "$tool_call_response"' EXIT
+
+          curl --fail --silent --show-error \
+            "$PUBLIC_MCP_URL" \
+            -H 'content-type: application/json' \
+            -H 'accept: application/json, text/event-stream' \
+            -H "mcp-session-id: $session_id" \
+            -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"fdic_search_institutions","arguments":{"filters":"CERT:3511","fields":"CERT,NAME,STALP","limit":1}}}' \
+            --output "$tool_call_response"
+
+          python3 - "$tool_call_response" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          payload = json.loads(pathlib.Path(sys.argv[1]).read_text())
+
+          assert payload["jsonrpc"] == "2.0", payload
+          assert payload["id"] == 2, payload
+          assert "error" not in payload, f"Tool call returned error: {payload}"
+
+          result = payload["result"]
+          content = result["content"]
+          assert isinstance(content, list) and len(content) > 0, "Empty tool content"
+
+          # Find structured content with the FDIC data
+          resource_items = [c for c in content if c.get("type") == "resource"]
+          assert resource_items, "No resource content in tool response"
+
+          data = json.loads(resource_items[0]["resource"]["text"])
+          assert "records" in data, f"Missing records key: {list(data.keys())}"
+          assert len(data["records"]) == 1, f"Expected 1 record, got {len(data['records'])}"
+
+          record = data["records"][0]["data"]
+          assert record["CERT"] == 3511, f"Wrong CERT: {record.get('CERT')}"
+          assert isinstance(record["NAME"], str) and record["NAME"], "Missing NAME"
+          assert isinstance(record["STALP"], str) and record["STALP"], "Missing STALP"
+          PY
+
       - name: Show deployed URL
         run: |
           echo "Cloud Run service URL: ${{ steps.deploy.outputs.url }}"

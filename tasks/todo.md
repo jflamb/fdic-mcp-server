@@ -117,3 +117,38 @@ Reference: 2026-03-18 request to remove implementation-facing MCP server details
 - [x] Rewrote public docs to explain dataset mismatches, setup paths, and expected results in user terms rather than endpoint or payload-contract terms.
 - [x] Removed public references to `structuredContent`, `REPDTE` search hints, endpoint-specific `fields` and `sort_by` guidance, and low-level HTTP session/header details from the user-doc path.
 - [x] Expanded [reference/specification.md](../reference/specification.md) with the HTTP transport details that were removed from public onboarding pages.
+
+# Live Contract Verification
+
+Reference: 2026-03-29 task to add automated upstream FDIC API schema drift detection and live smoke testing.
+
+## Goals
+
+- [x] Add a scheduled GitHub Actions workflow that detects FDIC upstream schema drift.
+- [x] Add a live FDIC smoke test suite exercising representative real API-backed tool paths.
+- [x] Enhance post-deploy smoke checks to verify at least one real FDIC-backed MCP tool call.
+- [x] Update repo docs and task tracking.
+
+## Acceptance Criteria
+
+- [x] A scheduled workflow regenerates `src/fdicEndpointMetadata.ts` and fails or reports when the output differs from the committed version.
+- [x] A live smoke test suite (`tests/live/`) validates institution search, financials query, summary, demographics, SOD, failures, and bank health analysis with stable assertions on response shape.
+- [x] Post-deploy smoke checks call `tools/call` for `fdic_search_institutions` and verify a non-empty result with expected fields.
+- [x] The live smoke test suite is excluded from `npm test` (PR runs) and wired to schedule/manual triggers.
+- [x] Standard validation passes: `npm run typecheck && npm test && npm run build`.
+
+## Validation
+
+- [x] `npm run typecheck` — clean
+- [x] `npm test` — 37 files, 423 tests passed
+- [x] `npm run build` — success
+- [x] `npm run test:live` — 2 files, 13 tests passed (against real FDIC API)
+
+## Review / Results
+
+- [x] Branch: `feat/live-contract-verification`
+- [x] Schema drift detection: weekly scheduled workflow (`.github/workflows/fdic-schema-drift.yml`) regenerates metadata, opens/comments on issue with `fdic-schema-drift` label, and fails the workflow on drift.
+- [x] Live smoke tests: `tests/live/mcp-live-smoke.test.ts` (7 MCP tool-path tests) and `tests/live/fdic-upstream-live.test.ts` (6 direct upstream connectivity tests). Run via `npm run test:live` with separate vitest config.
+- [x] Nightly CI: `.github/workflows/fdic-live-smoke.yml` runs live tests on schedule and manual dispatch.
+- [x] Post-deploy: added real `tools/call` for `fdic_search_institutions` with CERT:3511, validating structuredContent fields.
+- [x] Bonus: fixed pre-existing `runtime-policy.test.ts` Windows line-ending regex failure.
