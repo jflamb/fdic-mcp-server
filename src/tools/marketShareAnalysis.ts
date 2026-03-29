@@ -17,7 +17,7 @@ import {
 } from "./shared/marketShare.js";
 
 const SOD_FIELDS =
-  "CERT,UNINAME,DEPSUMBR,BRNUM,MSANAMEBR,CNTYBR,STALPBR,YEAR";
+  "CERT,NAMEFULL,DEPSUMBR,BRNUM,MSABR,STALPBR,YEAR";
 const SOD_FETCH_LIMIT = 10000;
 
 export interface MarketShareSummary {
@@ -94,21 +94,23 @@ function getDefaultSodYear(): number {
 
 const MarketShareInputSchema = z.object({
   msa: z
-    .string()
+    .number()
+    .int()
+    .positive()
     .optional()
     .describe(
-      'MSA name to filter (e.g., "Dallas-Fort Worth-Arlington"). Use MSANAMEBR field.',
+      "FDIC MSABR numeric code for the Metropolitan Statistical Area (e.g., 19100 for Dallas-Fort Worth-Arlington, 42660 for Seattle-Tacoma-Bellevue). Use fdic_search_sod with MSABR to look up codes.",
     ),
-  county: z
+  city: z
     .string()
     .optional()
-    .describe('County name (e.g., "Travis"). Requires state.'),
+    .describe('City name (e.g., "Austin"). Requires state.'),
   state: z
     .string()
     .length(2)
     .optional()
     .describe(
-      "Two-letter state abbreviation (e.g., TX). Required when using county filter.",
+      "Two-letter state abbreviation (e.g., TX). Required when using city filter.",
     ),
   year: z
     .number()
@@ -129,17 +131,21 @@ export function registerMarketShareAnalysisTools(server: McpServer): void {
     "fdic_market_share_analysis",
     {
       title: "Deposit Market Share Analysis",
-      description: `Analyze deposit market share and concentration for an MSA or county market using FDIC Summary of Deposits (SOD) data.
+      description: `Analyze deposit market share and concentration for an MSA or city market using FDIC Summary of Deposits (SOD) data.
 
 Computes market share for all institutions in a geographic market, ranks them by deposits, and calculates the Herfindahl-Hirschman Index (HHI) for market concentration analysis per DOJ/FTC merger guidelines.
 
+Two entry modes:
+  - MSA market: provide msa as the numeric MSABR code (e.g., msa: 19100 for Dallas-Fort Worth-Arlington, msa: 42660 for Seattle-Tacoma-Bellevue). Use fdic_search_sod to look up MSABR codes.
+  - City market: provide city (branch city name, e.g., "Austin") and state (two-letter code, e.g., "TX").
+
 Output includes:
   - Market overview with total deposits, institution count, and HHI classification
-  - Optional highlighted institution showing rank and share
+  - Optional highlighted institution showing rank and share (provide cert)
   - Top institutions ranked by deposit market share
   - Structured JSON for programmatic consumption
 
-Requires at least one of: msa, or county + state.`,
+Requires at least one of: msa (numeric MSABR code), or city + state.`,
       inputSchema: MarketShareInputSchema,
       annotations: {
         readOnlyHint: true,
@@ -155,17 +161,17 @@ Requires at least one of: msa, or county + state.`,
 
       try {
         // Validate inputs
-        if (!rawParams.msa && !rawParams.county) {
+        if (!rawParams.msa && !rawParams.city) {
           return formatToolError(
             new Error(
-              "At least one of 'msa' or 'county' (with 'state') must be provided.",
+              "At least one of 'msa' (numeric MSABR code) or 'city' (with 'state') must be provided.",
             ),
           );
         }
-        if (rawParams.county && !rawParams.state) {
+        if (rawParams.city && !rawParams.state) {
           return formatToolError(
             new Error(
-              "'state' is required when using 'county' filter.",
+              "'state' is required when using 'city' filter.",
             ),
           );
         }
@@ -177,11 +183,11 @@ Requires at least one of: msa, or county + state.`,
         let marketName: string;
 
         if (rawParams.msa) {
-          filterStr = `MSANAMEBR:"${rawParams.msa}" AND YEAR:${year}`;
-          marketName = rawParams.msa;
+          filterStr = `MSABR:${rawParams.msa} AND YEAR:${year}`;
+          marketName = `MSA ${rawParams.msa}`;
         } else {
-          filterStr = `CNTYBR:"${rawParams.county}" AND STALPBR:${rawParams.state} AND YEAR:${year}`;
-          marketName = `${rawParams.county} County, ${rawParams.state}`;
+          filterStr = `CITYBR:"${rawParams.city}" AND STALPBR:${rawParams.state} AND YEAR:${year}`;
+          marketName = `${rawParams.city}, ${rawParams.state}`;
         }
 
         await sendProgressNotification(
@@ -223,7 +229,7 @@ Requires at least one of: msa, or county + state.`,
         // Convert to BranchRecord array
         const branches = records.map((r) => ({
           cert: Number(r.CERT),
-          name: String(r.UNINAME ?? ""),
+          name: String(r.NAMEFULL ?? ""),
           deposits: typeof r.DEPSUMBR === "number" ? r.DEPSUMBR : 0,
         }));
 

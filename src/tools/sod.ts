@@ -44,19 +44,16 @@ Common filter examples:
   - Branches in a state: STALPBR:CA
   - Branches in a city: CITYBR:"Austin"
   - High-deposit branches: DEPSUMBR:[1000000 TO *]
-  - By metro area: MSANAMEBR:"Dallas-Fort Worth-Arlington"
+  - By metro area (MSA code): MSABR:19100
 
 Key returned fields:
   - YEAR: Report year (as of June 30)
   - CERT: FDIC Certificate Number
   - BRNUM: Branch number (0 = main office)
-  - UNINAME: Institution name
-  - NAMEFULL: Full branch name
+  - NAMEFULL: Branch or institution name
   - ADDRESBR, CITYBR, STALPBR, ZIPBR: Branch address
-  - CNTYBR: County
   - DEPSUMBR: Total deposits at branch ($thousands)
-  - MSABR: Metropolitan Statistical Area code
-  - MSANAMEBR: MSA name
+  - MSABR: Metropolitan Statistical Area code (numeric; 0 = non-MSA)
   - LATITUDE, LONGITUDE: Coordinates
 
 Args:
