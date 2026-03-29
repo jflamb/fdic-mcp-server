@@ -43,59 +43,61 @@ jobs:
       - name: Generate job summary
         if: always()
         run: |
-          echo "## Live FDIC Smoke Test Results" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Live FDIC Smoke Test Results"
+            echo ""
 
-          if [ "${{ steps.smoke.outcome }}" = "success" ]; then
-            echo "**Status:** All tests passed" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "**Status:** One or more tests failed" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
+            if [ "${{ steps.smoke.outcome }}" = "success" ]; then
+              echo "**Status:** All tests passed"
+              echo ""
+            else
+              echo "**Status:** One or more tests failed"
+              echo ""
 
-            # Extract failure details from JSON output if available
-            if [ -f /tmp/live-smoke-results.json ]; then
-              echo "### Failed tests" >> "$GITHUB_STEP_SUMMARY"
-              echo "" >> "$GITHUB_STEP_SUMMARY"
+              # Extract failure details from JSON output if available
+              if [ -f /tmp/live-smoke-results.json ]; then
+                echo "### Failed tests"
+                echo ""
 
-              # List each failed test with its error message
-              node -e "
-                const r = require('/tmp/live-smoke-results.json');
-                const failed = (r.testResults || [])
-                  .flatMap(f => (f.assertionResults || []).filter(a => a.status === 'failed'))
-                  .map(a => ({
-                    name: a.ancestorTitles.concat(a.title).join(' > '),
-                    message: (a.failureMessages || []).join('\n').slice(0, 500),
-                  }));
+                # List each failed test with its error message
+                node -e "
+                  const r = require('/tmp/live-smoke-results.json');
+                  const failed = (r.testResults || [])
+                    .flatMap(f => (f.assertionResults || []).filter(a => a.status === 'failed'))
+                    .map(a => ({
+                      name: a.ancestorTitles.concat(a.title).join(' > '),
+                      message: (a.failureMessages || []).join('\n').slice(0, 500),
+                    }));
 
-                if (failed.length === 0) {
-                  console.log('No individual assertion failures extracted.');
-                } else {
-                  for (const f of failed) {
-                    console.log('#### \`' + f.name + '\`\n');
-                    console.log('\`\`\`');
-                    console.log(f.message);
-                    console.log('\`\`\`\n');
+                  if (failed.length === 0) {
+                    console.log('No individual assertion failures extracted.');
+                  } else {
+                    for (const f of failed) {
+                      console.log('#### \`' + f.name + '\`\n');
+                      console.log('\`\`\`');
+                      console.log(f.message);
+                      console.log('\`\`\`\n');
+                    }
                   }
-                }
-              " >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
-            fi
+                " 2>/dev/null || true
+              fi
 
-            echo "### Triage guide" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "| Failure pattern | Likely layer | Next step |" >> "$GITHUB_STEP_SUMMARY"
-            echo "|----------------|-------------|-----------|" >> "$GITHUB_STEP_SUMMARY"
-            echo "| All upstream tests fail, MCP tests fail | FDIC API outage or rate limit | Re-run after 1 hour; check [FDIC status](https://api.fdic.gov) |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| Upstream tests pass, MCP tests fail | Server integration bug | Reproduce locally: \`npm run build && npm run test:live\` |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| One endpoint fails, others pass | Endpoint-specific FDIC issue | Check if the endpoint responds at \`api.fdic.gov\` directly |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| structuredContent shape changed | Contract drift | Compare expected fields in test with tool output |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| Timeout / ECONNREFUSED | Network / infra issue | Transient — re-run workflow manually |" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "**Reproduce locally:**" >> "$GITHUB_STEP_SUMMARY"
-            echo "\`\`\`bash" >> "$GITHUB_STEP_SUMMARY"
-            echo "npm run build && npm run test:live" >> "$GITHUB_STEP_SUMMARY"
-            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
-          fi
+              echo "### Triage guide"
+              echo ""
+              echo "| Failure pattern | Likely layer | Next step |"
+              echo "|----------------|-------------|-----------|"
+              echo "| All upstream tests fail, MCP tests fail | FDIC API outage or rate limit | Re-run after 1 hour; check [FDIC status](https://api.fdic.gov) |"
+              echo "| Upstream tests pass, MCP tests fail | Server integration bug | Reproduce locally: \`npm run build && npm run test:live\` |"
+              echo "| One endpoint fails, others pass | Endpoint-specific FDIC issue | Check if the endpoint responds at \`api.fdic.gov\` directly |"
+              echo "| structuredContent shape changed | Contract drift | Compare expected fields in test with tool output |"
+              echo "| Timeout / ECONNREFUSED | Network / infra issue | Transient — re-run workflow manually |"
+              echo ""
+              echo "**Reproduce locally:**"
+              echo "\`\`\`bash"
+              echo "npm run build && npm run test:live"
+              echo "\`\`\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
           # Compact pass/fail counts
           if [ -f /tmp/live-smoke-results.json ]; then

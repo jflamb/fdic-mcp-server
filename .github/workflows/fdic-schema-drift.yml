@@ -41,15 +41,17 @@ jobs:
             echo "drift=false" >> "$GITHUB_OUTPUT"
             echo "No schema drift detected."
           else
-            echo "drift=true" >> "$GITHUB_OUTPUT"
-
             # Compute diff stats for the summary
             ADDED=$(grep -c '^+[^+]' /tmp/metadata-diff.txt || true)
             REMOVED=$(grep -c '^-[^-]' /tmp/metadata-diff.txt || true)
             HUNKS=$(grep -c '^@@' /tmp/metadata-diff.txt || true)
-            echo "added=$ADDED" >> "$GITHUB_OUTPUT"
-            echo "removed=$REMOVED" >> "$GITHUB_OUTPUT"
-            echo "hunks=$HUNKS" >> "$GITHUB_OUTPUT"
+
+            {
+              echo "drift=true"
+              echo "added=$ADDED"
+              echo "removed=$REMOVED"
+              echo "hunks=$HUNKS"
+            } >> "$GITHUB_OUTPUT"
 
             echo "Schema drift detected — $HUNKS change region(s), +$ADDED / -$REMOVED lines."
             echo "::warning::Schema drift detected — $HUNKS change region(s), +$ADDED / -$REMOVED lines. See diff artifact."
