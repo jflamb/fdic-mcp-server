@@ -5,9 +5,27 @@ import { resolve } from 'node:path';
 
 const ROOT = resolve(__dirname, '..', '..');
 const ADAPTERS_DIR = resolve(ROOT, 'adapters');
+const SCHEMAS_PATH = resolve(ROOT, 'extensions', 'shared', 'tool-schemas.json');
 
 describe('Adapter build', () => {
+  // Read the registry content from git HEAD (not the working tree) so the
+  // staleness check cannot be masked by a local regeneration that was never
+  // committed.  Falls back to the on-disk file when not running inside a git
+  // repo (e.g. published tarball).
+  let committedSchemasContent: string;
+  try {
+    committedSchemasContent = execSync(
+      'git show HEAD:extensions/shared/tool-schemas.json',
+      { cwd: ROOT, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] },
+    );
+  } catch {
+    committedSchemasContent = existsSync(SCHEMAS_PATH) ? readFileSync(SCHEMAS_PATH, 'utf-8') : '';
+  }
+
   beforeAll(() => {
+    // Extract tool schemas from TypeScript source (public MCP API, no dist required),
+    // then build adapters from the static registry.
+    execSync('npm run extensions:extract-schemas', { cwd: ROOT, stdio: 'pipe' });
     execSync('node scripts/extensions/build-adapters.mjs', { cwd: ROOT, stdio: 'pipe' });
   });
 
@@ -21,11 +39,27 @@ describe('Adapter build', () => {
       expect(content).toContain('extensions/personas/fdic-skill-builder/');
     });
 
-    it('generates Gemini Gem', () => {
+    it('generates Gemini Gem markdown', () => {
       const gemPath = resolve(ADAPTERS_DIR, 'gemini', 'gems', 'fdic-skill-builder.md');
       expect(existsSync(gemPath)).toBe(true);
       const content = readFileSync(gemPath, 'utf-8');
       expect(content).toContain('Gemini Gem');
+    });
+
+    it('generates Gemini Gem YAML with required fields', () => {
+      const gemPath = resolve(ADAPTERS_DIR, 'gemini', 'gems', 'fdic-skill-builder.yaml');
+      expect(existsSync(gemPath)).toBe(true);
+      const content = readFileSync(gemPath, 'utf-8');
+      expect(content).toContain('title:');
+      expect(content).toContain('prompt:');
+      expect(content).toContain('source: extensions/personas/fdic-skill-builder/');
+      expect(content).toContain('recommended_first_prompt:');
+    });
+
+    it('Gemini Gem YAML prompt includes inlined shared context', () => {
+      const gemPath = resolve(ADAPTERS_DIR, 'gemini', 'gems', 'fdic-skill-builder.yaml');
+      const content = readFileSync(gemPath, 'utf-8');
+      expect(content).toContain('FDIC Date Basis Rules');
     });
   });
 
@@ -46,6 +80,16 @@ describe('Adapter build', () => {
         expect(existsSync(path)).toBe(true);
         const content = readFileSync(path, 'utf-8');
         expect(content).toContain('OpenAI Connector');
+        expect(content).not.toContain('Full connector spec stub');
+      });
+
+      it('OpenAI connector includes function definitions from the tool schema registry', () => {
+        const path = resolve(ADAPTERS_DIR, 'openai', 'connectors', `${toolId}.md`);
+        const content = readFileSync(path, 'utf-8');
+        expect(content).toContain('## Function Definitions');
+        expect(content).toContain('"type": "function"');
+        expect(content).toContain('"parameters"');
+        expect(content).not.toContain('"$schema"');
       });
 
       it('generates Gemini integration', () => {
@@ -96,14 +140,56 @@ describe('Adapter build', () => {
         expect(content).toContain(`extensions/workflows/${id}/`);
       });
 
+      it('OpenAI prompt pack inlines shared context content', () => {
+        const path = resolve(ADAPTERS_DIR, 'openai', 'prompt-packs', `${id}.md`);
+        const content = readFileSync(path, 'utf-8');
+        // Shared context files are inlined, not just referenced as HTML comments
+        expect(content).toContain('FDIC Date Basis Rules');
+        expect(content).toContain('Temporal Accuracy Policy');
+        expect(content).not.toMatch(/<!--.*fdic-date-basis.*-->/);
+      });
+
       it('generates Gemini agent guide with workflow source', () => {
         const path = resolve(ADAPTERS_DIR, 'gemini', 'agent-guides', `${id}.md`);
         expect(existsSync(path)).toBe(true);
         const content = readFileSync(path, 'utf-8');
         expect(content).toContain(`extensions/workflows/${id}/`);
       });
+
+      it('Gemini agent guide inlines shared context content', () => {
+        const path = resolve(ADAPTERS_DIR, 'gemini', 'agent-guides', `${id}.md`);
+        const content = readFileSync(path, 'utf-8');
+        expect(content).toContain('FDIC Date Basis Rules');
+        expect(content).toContain('Temporal Accuracy Policy');
+      });
+
+      it('generates Gemini Gem YAML with required fields', () => {
+        const path = resolve(ADAPTERS_DIR, 'gemini', 'gems', `${id}.yaml`);
+        expect(existsSync(path)).toBe(true);
+        const content = readFileSync(path, 'utf-8');
+        expect(content).toContain('title:');
+        expect(content).toContain('prompt:');
+        expect(content).toContain(`source: extensions/workflows/${id}/`);
+        expect(content).toContain('recommended_first_prompt:');
+      });
+
+      it('Gemini Gem YAML prompt includes inlined shared context', () => {
+        const path = resolve(ADAPTERS_DIR, 'gemini', 'gems', `${id}.yaml`);
+        const content = readFileSync(path, 'utf-8');
+        expect(content).toContain('FDIC Date Basis Rules');
+      });
     });
   }
+
+  // ── Tool schema registry staleness ──────────────────────────────────────
+  it('committed tool-schemas.json matches freshly extracted output (not stale)', () => {
+    // Compares git HEAD content against freshly extracted schemas.  If this
+    // fails, a tool inputSchema changed without re-running:
+    //   npm run extensions:extract-schemas
+    // and committing the updated extensions/shared/tool-schemas.json.
+    const fresh = readFileSync(SCHEMAS_PATH, 'utf-8');
+    expect(fresh).toBe(committedSchemasContent);
+  });
 
   // ── Determinism ──────────────────────────────────────────────────────────
   it('produces deterministic output across runs', () => {
