@@ -5,7 +5,7 @@
 
 # FDIC Analysis MCP Tools
 
-> **Kind:** Tool (OpenAI Connector / App)
+> **Kind:** Tool (OpenAI Connector)
 
 FDIC analytical and comparison tool bundle. Provides health assessment, peer benchmarking, risk signal detection, credit concentration, funding profile, securities portfolio, UBPR analysis, market share, franchise footprint, holding company profile, and regional context tools.
 
@@ -25,4 +25,591 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
 - `fdic_holding_company_profile`
 - `fdic_regional_context`
 
-> Full connector spec stub — TBD.
+## Function Definitions
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_analyze_bank_health",
+    "description": "Produce a CAMELS-style analytical assessment for a single FDIC-insured institution using the public off-site proxy model.\n\nScores five components — Capital (C), Asset Quality (A), Earnings (E), Liquidity (L), Sensitivity (S) — using published FDIC financial data and derives a weighted composite rating (1=Strong to 5=Unsatisfactory), plus a proxy model overall band (1.0–4.0 scale).\n\nOutput includes:\n  - Composite and component ratings with individual metric scores\n  - Proxy model overall assessment band with capital classification\n  - Management overlay assessment (inferred from public data patterns)\n  - Trend analysis across prior quarters for key metrics\n  - Risk signals flagging critical and warning-level concerns\n  - Structured JSON for programmatic consumption (legacy + proxy fields)\n\nNOTE: Management (M) is omitted from component scoring — cannot be assessed from public data. Sensitivity (S) uses proxy metrics (NIM trend, securities concentration). This is a public off-site analytical proxy, not an official CAMELS rating.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "FDIC Certificate Number of the institution to analyze."
+        },
+        "repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter likely to have published data."
+        },
+        "quarters": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 8,
+          "description": "Number of prior quarters to fetch for trend analysis (default 8)."
+        }
+      },
+      "required": [
+        "cert"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_compare_peer_health",
+    "description": "Compare CAMELS-style health scores across a group of FDIC-insured institutions.\n\nThree usage modes:\n  - Explicit list: provide certs (up to 50) for a specific comparison set\n  - State-wide scan: provide state to compare all active institutions in that state\n  - Asset-based: provide asset_min/asset_max to compare institutions by size\n\nOptionally provide cert to highlight a subject institution's position in the ranking.\n\nOutput: Ranked list with per-institution proxy_score (1-4 scale) and proxy_band, sorted by composite or any individual component. When a subject cert is provided, includes peer percentile context, asset-weighted peer averages, and the subject's full proxy assessment. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.\n\nNOTE: Public off-site analytical proxy — not official supervisory ratings.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "Subject institution CERT to highlight in the ranking. Optional."
+        },
+        "certs": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "maxItems": 50,
+          "description": "Explicit list of CERTs to compare (max 50)."
+        },
+        "state": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "Two-letter state code to select all active institutions (e.g., \"WY\")."
+        },
+        "asset_min": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Minimum total assets ($thousands) for peer selection."
+        },
+        "asset_max": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Maximum total assets ($thousands) for peer selection."
+        },
+        "repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter."
+        },
+        "sort_by": {
+          "type": "string",
+          "enum": [
+            "composite",
+            "capital",
+            "asset_quality",
+            "earnings",
+            "liquidity",
+            "sensitivity"
+          ],
+          "default": "composite",
+          "description": "Sort results by composite or a specific CAMELS component rating."
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25,
+          "description": "Max institutions to return in the response."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_detect_risk_signals",
+    "description": "Scan FDIC-insured institutions for early warning risk signals using the public_camels_proxy_v1 analytical engine.\n\nStandardized signal codes with severity levels:\n  - Critical: capital_undercapitalized (PCA breach), earnings_loss (ROA < 0), reserve_coverage_low (< 50%)\n  - Warning: capital_buffer_erosion, credit_deterioration, credit_deterioration_trending, earnings_pressure, margin_compression, funding_stress, funding_ltd_stretched, rate_risk_proxy_elevated, wholesale_funding_elevated\n  - Info: merger_distorted_trend, stale_reporting_period\n\nThree scan modes:\n  - State-wide: provide state to scan all active institutions\n  - Explicit list: provide certs (up to 50)\n  - Asset-based: provide asset_min/asset_max\n\nOutput: Per-institution risk signals ranked by severity count. The proxy engine drives signal generation internally; the output is signal-shaped, not assessment-shaped.\n\nNOTE: Public off-site analytical proxy — not official supervisory ratings.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "Scan all active institutions in this state."
+        },
+        "certs": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "maxItems": 50,
+          "description": "Specific CERTs to scan (max 50)."
+        },
+        "asset_min": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Minimum total assets ($thousands) filter."
+        },
+        "asset_max": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Maximum total assets ($thousands) filter."
+        },
+        "repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter."
+        },
+        "min_severity": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "default": "warning",
+          "description": "Minimum severity level to include in results (default: warning)."
+        },
+        "quarters": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12,
+          "default": 4,
+          "description": "Prior quarters to fetch for trend analysis (default 4)."
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25,
+          "description": "Max flagged institutions to return."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_compare_bank_snapshots",
+    "description": "Compare FDIC reporting snapshots across a set of institutions and rank the results by growth, profitability, or efficiency changes.\n\nThis tool is designed for heavier analytical prompts that would otherwise require many separate MCP calls. It batches institution roster lookup, financial snapshots, optional office-count snapshots, and can also fetch a quarterly time series inside the server.\n\nGood uses:\n  - Identify North Carolina banks with the strongest asset growth from 2021 to 2025\n  - Compare whether deposit growth came with branch expansion or profitability improvement\n  - Rank a specific cert list by ROA, ROE, asset-per-office, or deposit-to-asset changes\n  - Pull a quarterly trend series and highlight inflection points, streaks, and structural shifts\n\nInputs:\n  - state or certs: choose a geographic roster or provide a direct comparison set\n  - start_repdte, end_repdte: Report Dates (REPDTE) in YYYYMMDD format — must be quarter-end dates (0331, 0630, 0930, 1231)\n  - analysis_mode: snapshot or timeseries\n  - institution_filters: optional extra institution filter when building the roster\n  - active_only: default true\n  - include_demographics: default true, adds office-count comparisons when available\n  - sort_by: ranking field (default: asset_growth). All options: asset_growth, asset_growth_pct, dep_growth, dep_growth_pct, netinc_change, netinc_change_pct, roa_change, roe_change, offices_change, assets_per_office_change, deposits_per_office_change, deposits_to_assets_change\n  - sort_order: ASC or DESC\n  - limit: maximum ranked results to return\n\nReturns concise comparison text plus structured deltas, derived metrics, and insight tags for each institution.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "description": "State name for the institution roster filter. Example: \"North Carolina\""
+        },
+        "certs": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "maxItems": 100,
+          "description": "Optional list of FDIC certificate numbers to compare directly. Max 100."
+        },
+        "institution_filters": {
+          "type": "string",
+          "description": "Additional institution-level filter used when building the comparison set. Example: BKCLASS:N or CITY:\"Charlotte\""
+        },
+        "active_only": {
+          "type": "boolean",
+          "default": true,
+          "description": "Limit the comparison set to currently active institutions."
+        },
+        "start_repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Starting Report Date (REPDTE) in YYYYMMDD format. Must be a quarter-end date: March 31 (0331), June 30 (0630), September 30 (0930), or December 31 (1231). Example: 20210331 for Q1 2021. If omitted, defaults to the same quarter one year before end_repdte."
+        },
+        "end_repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Ending Report Date (REPDTE) in YYYYMMDD format. Must be a quarter-end date: March 31 (0331), June 30 (0630), September 30 (0930), or December 31 (1231). Must be later than start_repdte. Example: 20251231 for Q4 2025. If omitted, defaults to the most recent quarter-end date with published data (~90-day lag)."
+        },
+        "analysis_mode": {
+          "type": "string",
+          "enum": [
+            "snapshot",
+            "timeseries"
+          ],
+          "default": "snapshot",
+          "description": "Use snapshot for two-point comparison or timeseries for quarterly trend analysis across the date range."
+        },
+        "include_demographics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include office-count changes from the demographics dataset when available."
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10,
+          "description": "Maximum number of ranked comparisons to return."
+        },
+        "sort_by": {
+          "type": "string",
+          "enum": [
+            "asset_growth",
+            "asset_growth_pct",
+            "dep_growth",
+            "dep_growth_pct",
+            "netinc_change",
+            "netinc_change_pct",
+            "roa_change",
+            "roe_change",
+            "offices_change",
+            "assets_per_office_change",
+            "deposits_per_office_change",
+            "deposits_to_assets_change"
+          ],
+          "default": "asset_growth",
+          "description": "Comparison field used to rank institutions. Valid options: asset_growth, asset_growth_pct, dep_growth, dep_growth_pct, netinc_change, netinc_change_pct, roa_change, roe_change, offices_change, assets_per_office_change, deposits_per_office_change, deposits_to_assets_change."
+        },
+        "sort_order": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "DESC",
+          "description": "Sort direction for the ranked comparisons."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_peer_group_analysis",
+    "description": "Build a peer group for an FDIC-insured institution and rank it against peers on financial and efficiency metrics at a single report date.\n\nThree usage modes:\n  - Subject-driven: provide cert and repdte — auto-derives peer criteria from the subject's asset size and charter class\n  - Explicit criteria: provide repdte plus asset_min/asset_max, charter_classes, state, or raw_filter\n  - Subject with overrides: provide cert plus explicit criteria to override auto-derived defaults\n\nMetrics ranked (fixed order):\n  - Total Assets, Total Deposits, ROA, ROE, Net Interest Margin\n  - Equity Capital Ratio, Efficiency Ratio, Loan-to-Deposit Ratio\n  - Deposits-to-Assets Ratio, Non-Interest Income Share\n\nRankings use competition rank (1, 2, 2, 4). Rank, denominator, and percentile all use the same comparison set: matched peers plus the subject institution.\n\nOutput includes:\n  - Subject rankings and percentiles (when cert provided)\n  - Peer group medians\n  - Peer list with CERTs (pass to fdic_compare_bank_snapshots for trend analysis)\n  - Metric definitions with directionality metadata\n\nOverride precedence: cert derives defaults, then explicit params override them.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "Subject institution CERT number. When provided, auto-derives peer criteria and ranks this bank against peers."
+        },
+        "repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Report Date (REPDTE) in YYYYMMDD format. FDIC data is published quarterly on: March 31, June 30, September 30, and December 31. Example: 20231231 for Q4 2023. If omitted, defaults to the most recent quarter-end date likely to have published data (~90-day lag)."
+        },
+        "asset_min": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Minimum total assets ($thousands) for peer selection. Defaults to 50% of subject's report-date assets when cert is provided."
+        },
+        "asset_max": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Maximum total assets ($thousands) for peer selection. Defaults to 200% of subject's report-date assets when cert is provided."
+        },
+        "charter_classes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Charter class codes to include (e.g., [\"N\", \"SM\"]). Defaults to the subject's charter class when cert is provided."
+        },
+        "state": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "Two-letter state code (e.g., \"NC\", \"TX\")."
+        },
+        "raw_filter": {
+          "type": "string",
+          "description": "Advanced: raw ElasticSearch query string appended to peer selection criteria with AND."
+        },
+        "active_only": {
+          "type": "boolean",
+          "default": true,
+          "description": "Limit to institutions where ACTIVE:1 (currently operating, FDIC-insured)."
+        },
+        "extra_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional FDIC field names to include as raw values in the response. Does not affect peer selection."
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500,
+          "default": 50,
+          "description": "Max peer records returned in the response. All matched peers are used for ranking regardless of this limit."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_analyze_credit_concentration",
+    "description": "Analyze loan portfolio composition and credit concentration risk for an FDIC-insured institution. Computes CRE concentration relative to capital (per 2006 interagency guidance), loan-type breakdown, and flags concentration risks.\n\nOutput includes:\n  - Loan portfolio composition (CRE, C&I, consumer, residential, agricultural shares)\n  - CRE and construction concentration relative to total capital\n  - Loan-to-asset ratio\n  - Concentration risk signals based on interagency guidance thresholds\n  - Structured JSON for programmatic consumption\n\nNOTE: This is an analytical tool based on public financial data.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "FDIC Certificate Number"
+        },
+        "repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Report date (YYYYMMDD). Defaults to most recent quarter."
+        }
+      },
+      "required": [
+        "cert"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_analyze_funding_profile",
+    "description": "Analyze deposit composition, wholesale funding reliance, and funding risk for an FDIC-insured institution.\n\nOutput includes:\n  - Deposit composition (core, brokered, foreign deposit shares)\n  - Wholesale funding reliance and FHLB advances relative to assets\n  - Cash ratio for near-term liquidity\n  - Funding risk signals based on supervisory thresholds\n  - Structured JSON for programmatic consumption\n\nNOTE: This is an analytical tool based on public financial data.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "FDIC Certificate Number"
+        },
+        "repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Report date (YYYYMMDD). Defaults to most recent quarter."
+        }
+      },
+      "required": [
+        "cert"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_analyze_securities_portfolio",
+    "description": "Analyze securities portfolio size, composition, and concentration risk for an FDIC-insured institution.\n\nOutput includes:\n  - Securities relative to total assets and capital\n  - MBS concentration within the securities portfolio\n  - AFS/HTM breakdown (when available)\n  - Risk signals for portfolio concentration and interest rate exposure\n  - Structured JSON for programmatic consumption\n\nNOTE: This is an analytical tool based on public financial data. AFS/HTM breakdown is not currently available from the FDIC API.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "FDIC Certificate Number"
+        },
+        "repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Report date (YYYYMMDD). Defaults to most recent quarter."
+        }
+      },
+      "required": [
+        "cert"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_ubpr_analysis",
+    "description": "Compute UBPR-equivalent ratio analysis for an FDIC-insured institution. Includes summary ratios (ROA, ROE, NIM, efficiency), loan mix, capital adequacy, liquidity metrics, and year-over-year growth rates. Ratios are computed from Call Report data and are UBPR-equivalent, not official FFIEC UBPR output.\n\nOutput includes:\n  - Summary ratios: ROA, ROE, NIM, efficiency ratio, pretax ROA\n  - Loan mix: real estate, commercial, consumer, agricultural shares\n  - Capital adequacy: Tier 1 leverage, Tier 1 risk-based, equity ratio\n  - Liquidity: loan-to-deposit, core deposit ratio, brokered deposits, cash ratio\n  - Year-over-year growth: assets, loans, deposits\n  - Structured JSON for programmatic consumption\n\nNOTE: This is an analytical tool based on public financial data.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "FDIC Certificate Number"
+        },
+        "repdte": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 8,
+          "description": "Report date (YYYYMMDD). Defaults to most recent quarter."
+        }
+      },
+      "required": [
+        "cert"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_market_share_analysis",
+    "description": "Analyze deposit market share and concentration for an MSA or city market using FDIC Summary of Deposits (SOD) data.\n\nComputes market share for all institutions in a geographic market, ranks them by deposits, and calculates the Herfindahl-Hirschman Index (HHI) for market concentration analysis per DOJ/FTC merger guidelines.\n\nTwo entry modes:\n  - MSA market: provide msa as the numeric MSABR code (e.g., msa: 19100 for Dallas-Fort Worth-Arlington, msa: 42660 for Seattle-Tacoma-Bellevue). Use fdic_search_sod to look up MSABR codes.\n  - City market: provide city (branch city name, e.g., \"Austin\") and state (two-letter code, e.g., \"TX\").\n\nOutput includes:\n  - Market overview with total deposits, institution count, and HHI classification\n  - Optional highlighted institution showing rank and share (provide cert)\n  - Top institutions ranked by deposit market share\n  - Structured JSON for programmatic consumption\n\nRequires at least one of: msa (numeric MSABR code), or city + state.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "msa": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "FDIC MSABR numeric code for the Metropolitan Statistical Area (e.g., 19100 for Dallas-Fort Worth-Arlington, 42660 for Seattle-Tacoma-Bellevue). Use fdic_search_sod with MSABR to look up codes."
+        },
+        "city": {
+          "type": "string",
+          "description": "City name (e.g., \"Austin\"). Requires state."
+        },
+        "state": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2,
+          "description": "Two-letter state abbreviation (e.g., TX). Required when using city filter."
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1994,
+          "description": "SOD report year (1994-present). Defaults to most recent."
+        },
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "Highlight a specific institution in the results."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_franchise_footprint",
+    "description": "Analyze the geographic franchise footprint of an FDIC-insured institution using Summary of Deposits (SOD) data.\n\nShows how an institution's branches and deposits are distributed across metropolitan statistical areas (MSAs), providing a market-by-market breakdown of branch count, deposit totals, and percentage of the institution's total deposits.\n\nOutput includes:\n  - Total branch count, deposits, and market count\n  - Market-by-market breakdown sorted by deposits\n  - Structured JSON for programmatic consumption\n\nBranches outside MSAs are grouped under \"Non-MSA / Rural\".",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "FDIC Certificate Number"
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1994,
+          "description": "SOD report year. Defaults to most recent."
+        }
+      },
+      "required": [
+        "cert"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_holding_company_profile",
+    "description": "Profile a bank holding company by grouping its FDIC-insured subsidiaries and aggregating financial metrics. Look up by holding company name or by any subsidiary's CERT number.\n\nOutput includes:\n  - Consolidated summary with total assets, deposits, and asset-weighted ROA/equity ratio\n  - List of all FDIC-insured subsidiaries with individual metrics\n  - Structured JSON for programmatic consumption\n\nNOTE: This is an analytical tool based on public financial data.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "hc_name": {
+          "type": "string",
+          "description": "Holding company name (e.g., \"JPMORGAN CHASE & CO\"). Uses NAMEHCR field."
+        },
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "CERT of any subsidiary — looks up its holding company, then profiles the entire HC."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "fdic_regional_context",
+    "description": "Overlay macro/regional economic data on a bank's geographic context. Uses FRED (Federal Reserve Economic Data) for state unemployment, national unemployment, and federal funds rate. Provides trend analysis and narrative context for bank performance assessment. Gracefully degrades if FRED API is unavailable.\n\nOutput includes:\n  - State and national unemployment rates with trend analysis\n  - Federal funds rate and rate environment classification\n  - Narrative assessment of macro conditions for bank performance\n  - Structured JSON for programmatic consumption\n\nNOTE: Requires FRED_API_KEY environment variable for reliable data access. Degrades gracefully without it.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cert": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "FDIC Certificate Number — auto-detects state from institution record."
+        },
+        "state": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2,
+          "description": "Two-letter state abbreviation (e.g., TX). Alternative to cert-based lookup."
+        },
+        "repdte": {
+          "type": "string",
+          "pattern": "^\\d{8}$",
+          "description": "Reference report date (YYYYMMDD). FRED data fetched for 2 years before this date."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```
