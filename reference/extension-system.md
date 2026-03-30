@@ -254,8 +254,10 @@ FDIC data rules are shared, not duplicated. Extensions reference these files by 
 
 ## Migration Status
 
-### Canonical (new kind-aware model)
-| ID | Kind | Location |
+### Canonical — live today, source of record
+All five entries below exist on disk now under their canonical paths. These are the authoritative source files; adapters are generated from them.
+
+| ID | Kind | Canonical path (live today) |
 |---|---|---|
 | `fdic-skill-builder` | `persona` | `extensions/personas/fdic-skill-builder/` |
 | `fdic-core-mcp` | `tool` | `extensions/tools/fdic-core-mcp/` |
@@ -263,22 +265,24 @@ FDIC data rules are shared, not duplicated. Extensions reference these files by 
 | `fdic-failure-forensics` | `workflow` | `extensions/workflows/fdic-failure-forensics/` |
 | `fdic-portfolio-surveillance` | `workflow` | `extensions/workflows/fdic-portfolio-surveillance/` |
 
-### Transitional (legacy capability layout)
-| ID | Location | Status |
+### Retained for backward compatibility only
+These `capabilities/` paths also exist on disk today but are **not** the source of record. They exist solely so that any tooling that references the old layout continues to work. The adapter builder runs them first, then overwrites with the canonical output above.
+
+| ID | Legacy path | Source of record |
 |---|---|---|
-| `fdic-failure-forensics` | `extensions/capabilities/fdic-failure-forensics/` | Superseded by canonical workflow |
-| `fdic-portfolio-surveillance` | `extensions/capabilities/fdic-portfolio-surveillance/` | Superseded by canonical workflow |
-| `fdic-skill-builder` | `extensions/capabilities/fdic-skill-builder/` | Superseded by canonical persona |
+| `fdic-failure-forensics` | `extensions/capabilities/fdic-failure-forensics/` | `extensions/workflows/fdic-failure-forensics/` |
+| `fdic-portfolio-surveillance` | `extensions/capabilities/fdic-portfolio-surveillance/` | `extensions/workflows/fdic-portfolio-surveillance/` |
+| `fdic-skill-builder` | `extensions/capabilities/fdic-skill-builder/` | `extensions/personas/fdic-skill-builder/` |
 
 ### Not yet migrated
 | ID | Location | Notes |
 |---|---|---|
 | `fdic-mcp-server` | `.agents/skills/fdic-mcp-server/` | Repo conventions skill; may not need migration |
 
-### Transitional rules
-- Legacy `capabilities/` entries continue to validate and generate adapters. Do not add new entries there.
-- For any ID that exists in both canonical and legacy locations, the canonical adapter wins (generated last, overwrites legacy output).
-- When the canonical equivalents are validated as complete, `capabilities/` entries can be removed.
+### Rules
+- Do not add new entries to `extensions/capabilities/`. All new extensions go in the canonical kind directories.
+- For any ID that exists in both locations, the canonical adapter wins (builder runs legacy first, canonical last, last write wins).
+- Once the canonical equivalents are confirmed complete, the `capabilities/` entries can be deleted.
 
 ---
 
