@@ -31,7 +31,9 @@
     "issues:batch": "node scripts/prepare-issue-batches.mjs",
     "start": "node dist/index.js",
     "dev": "tsx src/cli.ts",
-    "deploy:local": "bash scripts/deploy-local.sh"
+    "deploy:local": "bash scripts/deploy-local.sh",
+    "extensions:validate": "node scripts/extensions/validate-extensions.mjs",
+    "extensions:build": "node scripts/extensions/build-adapters.mjs"
   },
   "repository": {
     "type": "git",

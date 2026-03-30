@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "workflow.schema.json",
+  "title": "Workflow Extension Manifest",
+  "description": "A multi-step procedural capability. Composes personas and tools into an ordered execution flow. Maps to Claude/Codex skill-like operating guides and multi-step prompt surfaces.",
+  "type": "object",
+  "required": ["id", "kind", "version", "title", "summary", "inputs", "outputs", "workflow"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "kind": {
+      "type": "string",
+      "const": "workflow"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "title": { "type": "string" },
+    "summary": { "type": "string" },
+    "owners": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "composition": {
+      "type": "object",
+      "description": "References to canonical personas and tools this workflow composes.",
+      "additionalProperties": false,
+      "properties": {
+        "personas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Persona IDs from extensions/personas/."
+        },
+        "tools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tool IDs from extensions/tools/."
+        }
+      }
+    },
+    "instructions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "Relative path to the primary instructions markdown file."
+        },
+        "shared_context": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "policies": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "default": {},
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "type": "string" },
+        "format": { "type": "string" }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "tools": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "required": { "type": "boolean" }
+            }
+          }
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "examples": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evals": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "adapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Vendor-specific adapter configuration.",
+      "properties": {
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "skill_name": { "type": "string" }
+          }
+        },
+        "codex": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "skill_name": { "type": "string" }
+          }
+        },
+        "openai": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "prompt_pack": { "type": "string" }
+          }
+        },
+        "gemini": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "guide_name": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

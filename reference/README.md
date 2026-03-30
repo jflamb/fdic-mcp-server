@@ -13,6 +13,10 @@ This section holds repository-rendered technical documentation for maintainers a
 
 - [Live Reliability Checks Runbook](./live-reliability-runbook.md) — Schema drift detection and live smoke test triage
 
+## Extension System
+
+- [Extension System](./extension-system.md) — Vendor-neutral cross-model extension definitions, adapter generation, and migration from `.agents/skills/`
+
 ## Plans And Design Notes
 
 - [Plans Index](./plans/README.md)

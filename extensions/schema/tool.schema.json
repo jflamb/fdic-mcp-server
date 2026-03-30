@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tool.schema.json",
+  "title": "Tool Extension Manifest",
+  "description": "A reusable tool or integration bundle. Maps to Claude Connectors, Claude Desktop Extensions, ChatGPT Apps/Connectors, and similar tool-surface products.",
+  "type": "object",
+  "required": ["id", "kind", "version", "title", "summary", "tools"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "kind": {
+      "type": "string",
+      "const": "tool"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "title": { "type": "string" },
+    "summary": { "type": "string" },
+    "owners": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tools": {
+      "type": "object",
+      "required": ["mcp"],
+      "additionalProperties": false,
+      "properties": {
+        "mcp": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "toolsets": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Relative paths to shared toolset JSON files."
+            },
+            "preferred": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Tool names this bundle prefers to use."
+            },
+            "forbidden": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Tool names this bundle must never call."
+            }
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "string",
+      "description": "Relative path to a usage guide markdown file."
+    },
+    "auth": {
+      "description": "Authentication requirements, or null if none.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "description": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "transport": {
+      "type": "string",
+      "description": "Transport protocol (e.g., stdio, http, sse)."
+    },
+    "safety": {
+      "type": "object",
+      "description": "Safety constraints for this tool bundle.",
+      "additionalProperties": {}
+    },
+    "runtime_constraints": {
+      "type": "object",
+      "description": "Runtime constraints (e.g., rate limits, timeouts).",
+      "additionalProperties": {}
+    },
+    "evals": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "adapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Vendor-specific adapter configuration.",
+      "properties": {
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "connector_name": { "type": "string" },
+            "extension_name": { "type": "string" }
+          }
+        },
+        "openai": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "connector_name": { "type": "string" },
+            "app_name": { "type": "string" }
+          }
+        },
+        "gemini": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "integration_name": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

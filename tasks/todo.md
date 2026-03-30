@@ -1,3 +1,111 @@
+# Kind-Aware Extension System Evolution
+
+Reference: 2026-03-29 evolution of the first-pass extension system into an explicit persona/tool/workflow model. Branch: `feat/extension-system` (continued).
+
+## Goals
+
+- [x] Add kind-aware schemas: `persona.schema.json`, `tool.schema.json`, `workflow.schema.json`.
+- [x] Evolve `extension.schema.json` description to mark it as legacy/compat.
+- [x] Create canonical persona: `extensions/personas/fdic-skill-builder/`.
+- [x] Create canonical tools: `extensions/tools/fdic-core-mcp/` and `extensions/tools/fdic-analysis-mcp/`.
+- [x] Create canonical workflows: `extensions/workflows/fdic-failure-forensics/` and `extensions/workflows/fdic-portfolio-surveillance/`.
+- [x] Workflow manifests declare `composition.personas[]` and `composition.tools[]`.
+- [x] Update validator for kind-aware manifests, cross-reference checking, and legacy compat.
+- [x] Update adapter builder for kind-aware generation (persona → Gem, tool → connector, workflow → guide).
+- [x] Canonical adapters run after legacy so canonical source wins for same adapter target.
+- [x] Add tests: `persona-schema.test.ts`, `tool-schema.test.ts`, `workflow-schema.test.ts`, `cross-reference.test.ts`.
+- [x] Update `adapter-build.test.ts` for canonical source path assertions.
+- [x] Update `reference/extension-system.md`, `extensions/README.md`, `AGENTS.md`.
+
+## Acceptance Criteria
+
+- [x] 3 explicit kinds: persona, tool, workflow — each with a schema and at least one canonical definition.
+- [x] Seeded set reclassified: `fdic-skill-builder` → persona; `fdic-failure-forensics` + `fdic-portfolio-surveillance` → workflows; `fdic-core-mcp` + `fdic-analysis-mcp` → tools.
+- [x] Validator is kind-aware and verifies cross-references.
+- [x] Adapter generation is kind-aware; canonical wins over legacy.
+- [x] Documentation explains the new model, kinds, product analogs, composition, and migration.
+- [x] 94 extension-specific tests pass across 6 test files.
+- [x] Full repo validation passes: typecheck, 517 tests (43 files), build, extensions:validate.
+
+## Validation Results
+
+```bash
+npm run typecheck           # ✓ clean
+npm test                    # ✓ 517 tests passed (43 files)
+npm run build               # ✓ success
+npm run extensions:validate # ✓ all extensions valid (1 persona, 2 tools, 2 workflows, 3 legacy)
+npm run extensions:build    # ✓ 28 adapter outputs from 8 extensions
+```
+
+## Residual Work
+
+- TODO: Wire `extensions:validate` into CI pipeline
+- TODO: Full adapter generation for Codex skills (currently real content for workflows; stubs for legacy)
+- TODO: Full Gemini Gem, OpenAI Connector generation (currently structural stubs for tool/persona)
+- TODO: Remove legacy `capabilities/` entries once canonical equivalents are validated as complete
+- TODO: Migrate `fdic-mcp-server` (repo conventions skill) if applicable
+
+---
+
+# Vendor-Neutral Extension System (First Pass)
+
+Reference: 2026-03-29 design and implementation of a cross-model extension system using existing `.agents/skills/*` as the migration starting point. Branch: `feat/extension-system`.
+
+## Goals
+
+- [x] Define canonical `extensions/` directory structure with schemas, shared files, and capabilities.
+- [x] Create JSON schemas for extension manifests, eval fixtures, and toolsets.
+- [x] Create shared context files (date basis, units, CERT identity, tool contracts).
+- [x] Create shared policy files (temporal accuracy, graceful degradation, source attribution).
+- [x] Create shared toolset files (fdic-core, fdic-analysis).
+- [x] Migrate 3 FDIC skills into canonical `extensions/capabilities/` (failure-forensics, portfolio-surveillance, skill-builder).
+- [x] Implement `validate-extensions.mjs` — validates manifests, references, tool names.
+- [x] Implement `build-adapters.mjs` — generates Claude SKILL.md + vendor stubs from canonical definitions.
+- [x] Add tests for schema validation and adapter build determinism.
+- [x] Update documentation: `reference/extension-system.md`, `extensions/README.md`, `reference/README.md`, `AGENTS.md`.
+- [x] Wire `extensions:validate` and `extensions:build` as package scripts.
+
+## Acceptance Criteria
+
+- [x] Canonical `extensions/` structure exists with 3 JSON schemas, 4 shared context files, 3 policy files, 2 toolset files, and 3 seeded capabilities.
+- [x] Validator catches broken manifests, missing references, and invalid tool names.
+- [x] Adapter build generates Claude skill files with generated-file banners and vendor stubs.
+- [x] Documentation updated for maintainer authoring, validation, and migration.
+- [x] 25 extension-specific tests pass (11 schema + 14 adapter build).
+- [x] Full repo validation passes: typecheck, 448 tests, build.
+
+## Validation
+
+```bash
+npm run typecheck       # ✓ clean
+npm test                # ✓ 448 tests passed (39 files)
+npm run build           # ✓ success
+npm run extensions:validate  # ✓ all extensions valid
+npm run extensions:build     # ✓ 12 adapter outputs from 3 extensions
+```
+
+## Review / Results
+
+### What was delivered
+- **Canonical source files:** 3 schemas, 7 shared files, 3 capability manifests with instructions/examples/evals
+- **Scripts:** `validate-extensions.mjs` and `build-adapters.mjs`
+- **Generated outputs:** 12 adapter files (3 Claude skills, 3 Codex stubs, 3 OpenAI stubs, 3 Gemini stubs)
+- **Tests:** `extension-schema.test.ts` (11 tests) and `adapter-build.test.ts` (14 tests)
+- **Docs:** `reference/extension-system.md`, `extensions/README.md`, updated `reference/README.md` and `AGENTS.md`
+- **Package scripts:** `extensions:validate` and `extensions:build`
+
+### Migration status
+- 3 of 4 `.agents/skills/` entries migrated to canonical form: failure-forensics, portfolio-surveillance, skill-builder
+- `fdic-mcp-server` (repo conventions skill) not migrated — it's not an FDIC analysis workflow
+- `.agents/skills/` remains authoritative during transition; generated `adapters/claude/skills/` available but not yet replacing the originals
+
+### Residual work
+- TODO: Wire `extensions:validate` into CI pipeline
+- TODO: Full adapter generation for Codex, OpenAI, Gemini (currently stubs)
+- TODO: Replace `.agents/skills/` with generated output once adapter equivalence is validated
+
+---
+
 # Docs Migration To Reference
 
 Reference: 2026-03-18 request to move repo-oriented documentation out of the public Pages site into a repo-rendered `reference/` area while keeping the public site focused on end users.

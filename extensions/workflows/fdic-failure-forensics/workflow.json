@@ -1,0 +1,121 @@
+{
+  "id": "fdic-failure-forensics",
+  "kind": "workflow",
+  "version": "1.0.0",
+  "title": "FDIC Failure Forensics",
+  "summary": "Retrospective failure-forensics workflow for a single FDIC-insured institution. Reconstructs the pre-failure financial timeline from public FDIC data, identifies the earliest visible warning signals, and explains likely drivers of deterioration.",
+  "owners": ["fdic-mcp-maintainers"],
+  "tags": ["fdic", "failure", "forensics", "post-mortem", "retrospective"],
+  "composition": {
+    "personas": ["fdic-skill-builder"],
+    "tools": ["fdic-core-mcp", "fdic-analysis-mcp"]
+  },
+  "instructions": {
+    "system": "instructions.md",
+    "shared_context": [
+      "../../shared/context/fdic-date-basis.md",
+      "../../shared/context/fdic-units.md",
+      "../../shared/context/fdic-cert-identity.md",
+      "../../shared/context/repo-tool-contracts.md"
+    ],
+    "policies": [
+      "../../shared/policies/temporal-accuracy.md",
+      "../../shared/policies/graceful-degradation.md",
+      "../../shared/policies/source-attribution.md"
+    ]
+  },
+  "inputs": {
+    "required": [
+      {
+        "name": "institution_identity",
+        "type": "string",
+        "description": "Failed bank name or FDIC CERT number"
+      }
+    ],
+    "optional": [
+      {
+        "name": "pre_failure_report_date",
+        "type": "string",
+        "description": "Last quarter-end before failure date (YYYYMMDD)",
+        "default": "auto-derived from failure date"
+      },
+      {
+        "name": "lookback_window",
+        "type": "number",
+        "description": "Number of quarters before the pre-failure report date",
+        "default": 8
+      },
+      {
+        "name": "focus_area",
+        "type": "string",
+        "description": "Optional domain focus: funding, credit, earnings, or overall",
+        "default": "overall"
+      }
+    ]
+  },
+  "outputs": {
+    "primary": "Failure forensics report with financial timeline, warning signals, and likely failure drivers",
+    "format": "markdown"
+  },
+  "workflow": {
+    "steps": [
+      {
+        "name": "Institution Resolution and Failure Confirmation",
+        "description": "Resolve CERT, confirm failure record, derive date parameters",
+        "tools": ["fdic_search_institutions", "fdic_get_institution_failure"],
+        "required": true
+      },
+      {
+        "name": "Data Collection",
+        "description": "Build financial timeline, detect risk signals, collect health assessment and structural history",
+        "tools": ["fdic_search_financials", "fdic_detect_risk_signals", "fdic_analyze_bank_health", "fdic_search_history"],
+        "required": true
+      },
+      {
+        "name": "Domain Follow-Up",
+        "description": "Conditional funding/credit analysis based on signals",
+        "tools": ["fdic_analyze_funding_profile", "fdic_analyze_credit_concentration"],
+        "required": false
+      },
+      {
+        "name": "Regional Context",
+        "description": "Macro/regional economic backdrop",
+        "tools": ["fdic_regional_context"],
+        "required": false
+      },
+      {
+        "name": "Report Assembly",
+        "description": "Produce 8-section forensics report with observed/inferred/unknown labeling",
+        "tools": [],
+        "required": true
+      }
+    ],
+    "stop_conditions": [
+      "Institution not found in FDIC data",
+      "No failure record exists for the identified CERT",
+      "No financial data in the lookback window",
+      "Hard-dependency tool failure"
+    ]
+  },
+  "examples": [
+    "examples/basic.md",
+    "examples/edge-cases.md"
+  ],
+  "evals": [
+    "evals/happy-path.eval.json"
+  ],
+  "adapters": {
+    "claude": {
+      "skill_name": "fdic-failure-forensics"
+    },
+    "codex": {
+      "skill_name": "fdic-failure-forensics"
+    },
+    "openai": {
+      "prompt_pack": "fdic-failure-forensics"
+    },
+    "gemini": {
+      "guide_name": "fdic-failure-forensics"
+    }
+  }
+}
