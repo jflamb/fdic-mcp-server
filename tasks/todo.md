@@ -1,3 +1,34 @@
+# Public Legal Pages For App Directory
+
+Reference: 2026-03-30 request to add a Privacy Policy URL and Terms of Service URL for the public OpenAI app submission.
+
+## Goals
+
+- [x] Add public privacy policy and terms pages under `docs/`.
+- [x] Link the new legal pages from the public docs navigation and footer.
+- [x] Validate the docs changes locally.
+- [x] Provide stable public URLs for the app submission form via branch-backed GitHub links pending merge to `main`.
+
+## Acceptance Criteria
+
+- [x] `docs/privacy.md` and `docs/terms.md` exist with clear, public-facing copy.
+- [x] The new pages are reachable from the public project/support docs section.
+- [ ] The expected GitHub Pages URLs are deterministic and ready to use after the change is pushed to `main`.
+
+Pending external publish step: the branch-backed GitHub document URLs are live now, and the GitHub Pages URLs will become live after merge to `main`.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Added public legal pages for the app directory submission.
+- [x] Exposed the pages through the docs site navigation and footer.
+- [x] Confirmed the docs site builds are published from `main`, so the final GitHub Pages URLs are deterministic once the change is pushed and merged.
+
 # Kind-Aware Extension System Evolution
 
 Reference: 2026-03-29 evolution of the first-pass extension system into an explicit persona/tool/workflow model. Branch: `feat/extension-system` (continued).

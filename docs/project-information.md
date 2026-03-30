@@ -38,4 +38,14 @@ Detailed architecture, specification, deployment, and planning notes now live in
     <h3>Security</h3>
     <p>Supported versions, private reporting expectations, and the security-sensitive areas of the project.</p>
   </a>
+  <a class="card" href="{{ '/privacy/' | relative_url }}">
+    <span class="card__eyebrow">Legal</span>
+    <h3>Privacy Policy</h3>
+    <p>What data the hosted service may receive, how it is used, and what changes if you self-host it.</p>
+  </a>
+  <a class="card" href="{{ '/terms/' | relative_url }}">
+    <span class="card__eyebrow">Legal</span>
+    <h3>Terms of Service</h3>
+    <p>The usage rules, disclaimers, and service expectations for the hosted app and docs.</p>
+  </a>
 </div>

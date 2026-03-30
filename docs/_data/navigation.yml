@@ -74,3 +74,9 @@ sections:
         url: /security/
       - title: Release Notes
         url: /release-notes/
+      - title: Privacy Policy
+        short_title: Privacy
+        url: /privacy/
+      - title: Terms of Service
+        short_title: Terms
+        url: /terms/
