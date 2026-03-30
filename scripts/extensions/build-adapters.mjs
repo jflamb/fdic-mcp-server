@@ -22,12 +22,21 @@
  * Output is deterministic given the same inputs.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
-import { glob } from 'node:fs/promises';
 
 const ROOT = resolve(import.meta.dirname, '..', '..');
 const ADAPTERS_DIR = join(ROOT, 'adapters');
+
+// ── File discovery helper ────────────────────────────────────────────────
+
+function listSubdirFiles(baseDir, filename) {
+  if (!existsSync(baseDir)) return [];
+  return readdirSync(baseDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => join(baseDir, d.name, filename))
+    .filter(f => existsSync(f));
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -53,7 +62,7 @@ function relativeSource(kind, id) {
 }
 
 function generatedBanner(kind, id) {
-  return `<!-- ⚠️ GENERATED FILE — DO NOT EDIT MANUALLY
+  return `<!-- \u26a0\ufe0f GENERATED FILE \u2014 DO NOT EDIT MANUALLY
      Source: ${relativeSource(kind, id)}
      Generator: scripts/extensions/build-adapters.mjs
      Edit the canonical extension definition and re-run: npm run extensions:build -->
@@ -163,7 +172,7 @@ function buildToolOpenAIConnector(manifest) {
     `${manifest.summary}\n\n`,
     `## Tools Exposed\n\n`,
     toolList + '\n\n',
-    `> Full connector spec stub — TBD.\n`,
+    `> Full connector spec stub \u2014 TBD.\n`,
   ].join('');
 
   return { path: join(ADAPTERS_DIR, 'openai', 'connectors', `${connectorName}.md`), content };
@@ -176,7 +185,7 @@ function buildToolGeminiIntegration(manifest) {
 
   const content = generatedBanner('tool', id)
     + `# ${manifest.title}\n\n`
-    + `> **Kind:** Tool (Gemini Integration) — stub. Full generation TBD.\n\n`
+    + `> **Kind:** Tool (Gemini Integration) \u2014 stub. Full generation TBD.\n\n`
     + `${manifest.summary}\n`;
 
   return { path: join(ADAPTERS_DIR, 'gemini', 'integrations', `${integName}.md`), content };
@@ -317,13 +326,13 @@ function writeOutput(result, description) {
   ensureDir(dirname(result.path));
   writeFileSync(result.path, result.content, 'utf-8');
   const relPath = result.path.replace(ROOT + '\\', '').replace(ROOT + '/', '');
-  console.log(`  → ${relPath}${description ? ` (${description})` : ''}`);
+  console.log(`  \u2192 ${relPath}${description ? ` (${description})` : ''}`);
   return 1;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────
 
-async function main() {
+function main() {
   console.log('Building adapters from canonical extensions...\n');
   let total = 0;
 
@@ -331,10 +340,7 @@ async function main() {
   // Note: canonical adapters below deliberately overwrite legacy outputs for
   // any id that has been migrated to personas/workflows. This ensures the
   // canonical source wins without requiring manual cleanup of legacy entries.
-  const legacyFiles = [];
-  for await (const f of glob('extensions/capabilities/*/extension.json', { cwd: ROOT })) {
-    legacyFiles.push(join(ROOT, f));
-  }
+  const legacyFiles = listSubdirFiles(join(ROOT, 'extensions', 'capabilities'), 'extension.json');
   if (legacyFiles.length > 0) {
     console.log('\nLegacy capabilities (transitional):');
     for (const mf of legacyFiles) {
@@ -349,9 +355,9 @@ async function main() {
         ensureDir(dirname(outPath));
         writeFileSync(outPath,
           generatedBanner(null, manifest.id)
-          + `# ${manifest.title}\n\n> Codex adapter — stub. Full generation TBD.\n\n${manifest.summary}\n`,
+          + `# ${manifest.title}\n\n> Codex adapter \u2014 stub. Full generation TBD.\n\n${manifest.summary}\n`,
           'utf-8');
-        console.log(`  → adapters/codex/skills/${manifest.adapters.codex.skill_name}/SKILL.md (Codex stub, legacy)`);
+        console.log(`  \u2192 adapters/codex/skills/${manifest.adapters.codex.skill_name}/SKILL.md (Codex stub, legacy)`);
         total++;
       }
       // OpenAI stub
@@ -360,9 +366,9 @@ async function main() {
         ensureDir(dirname(outPath));
         writeFileSync(outPath,
           generatedBanner(null, manifest.id)
-          + `# ${manifest.title}\n\n> OpenAI prompt pack — stub. Full generation TBD.\n\n${manifest.summary}\n`,
+          + `# ${manifest.title}\n\n> OpenAI prompt pack \u2014 stub. Full generation TBD.\n\n${manifest.summary}\n`,
           'utf-8');
-        console.log(`  → adapters/openai/prompt-packs/${manifest.adapters.openai.prompt_pack}.md (OpenAI stub, legacy)`);
+        console.log(`  \u2192 adapters/openai/prompt-packs/${manifest.adapters.openai.prompt_pack}.md (OpenAI stub, legacy)`);
         total++;
       }
       // Gemini stub
@@ -371,19 +377,16 @@ async function main() {
         ensureDir(dirname(outPath));
         writeFileSync(outPath,
           generatedBanner(null, manifest.id)
-          + `# ${manifest.title}\n\n> Gemini agent guide — stub. Full generation TBD.\n\n${manifest.summary}\n`,
+          + `# ${manifest.title}\n\n> Gemini agent guide \u2014 stub. Full generation TBD.\n\n${manifest.summary}\n`,
           'utf-8');
-        console.log(`  → adapters/gemini/agent-guides/${manifest.adapters.gemini.guide_name}.md (Gemini stub, legacy)`);
+        console.log(`  \u2192 adapters/gemini/agent-guides/${manifest.adapters.gemini.guide_name}.md (Gemini stub, legacy)`);
         total++;
       }
     }
   }
 
   // ── 2. Personas (run after legacy so canonical wins for same skill names)
-  const personaFiles = [];
-  for await (const f of glob('extensions/personas/*/persona.json', { cwd: ROOT })) {
-    personaFiles.push(join(ROOT, f));
-  }
+  const personaFiles = listSubdirFiles(join(ROOT, 'extensions', 'personas'), 'persona.json');
   if (personaFiles.length > 0) {
     console.log('\nPersonas (canonical):');
     for (const mf of personaFiles) {
@@ -396,10 +399,7 @@ async function main() {
   }
 
   // ── 3. Tools
-  const toolFiles = [];
-  for await (const f of glob('extensions/tools/*/tool.json', { cwd: ROOT })) {
-    toolFiles.push(join(ROOT, f));
-  }
+  const toolFiles = listSubdirFiles(join(ROOT, 'extensions', 'tools'), 'tool.json');
   if (toolFiles.length > 0) {
     console.log('\nTools (canonical):');
     for (const mf of toolFiles) {
@@ -413,10 +413,7 @@ async function main() {
   }
 
   // ── 4. Workflows (run last so canonical wins over legacy for same skill names)
-  const workflowFiles = [];
-  for await (const f of glob('extensions/workflows/*/workflow.json', { cwd: ROOT })) {
-    workflowFiles.push(join(ROOT, f));
-  }
+  const workflowFiles = listSubdirFiles(join(ROOT, 'extensions', 'workflows'), 'workflow.json');
   if (workflowFiles.length > 0) {
     console.log('\nWorkflows (canonical):');
     for (const mf of workflowFiles) {
@@ -431,10 +428,7 @@ async function main() {
   }
 
   const sources = personaFiles.length + toolFiles.length + workflowFiles.length + legacyFiles.length;
-  console.log(`\n✓ Generated ${total} adapter output(s) from ${sources} extension(s).`);
+  console.log(`\n\u2713 Generated ${total} adapter output(s) from ${sources} extension(s).`);
 }
 
-main().catch((err) => {
-  console.error('Build failed:', err);
-  process.exit(1);
-});
+main();

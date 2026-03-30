@@ -14,12 +14,44 @@
  *   extensions/capabilities/<id>/extension.json — legacy (no kind required)
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
-import { glob } from 'node:fs/promises';
 
 const ROOT = resolve(import.meta.dirname, '..', '..');
 const EXT_DIR = join(ROOT, 'extensions');
+
+// ── File discovery helpers ───────────────────────────────────────────────
+
+function listSubdirFiles(baseDir, filename) {
+  if (!existsSync(baseDir)) return [];
+  return readdirSync(baseDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => join(baseDir, d.name, filename))
+    .filter(f => existsSync(f));
+}
+
+function listDirFiles(dir, ext) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter(f => f.endsWith(ext))
+    .map(f => join(dir, f));
+}
+
+function listEvalFiles(...baseDirs) {
+  const results = [];
+  for (const baseDir of baseDirs) {
+    if (!existsSync(baseDir)) continue;
+    for (const sub of readdirSync(baseDir, { withFileTypes: true })) {
+      if (!sub.isDirectory()) continue;
+      const evalsDir = join(baseDir, sub.name, 'evals');
+      if (!existsSync(evalsDir)) continue;
+      for (const f of readdirSync(evalsDir)) {
+        if (f.endsWith('.eval.json')) results.push(join(evalsDir, f));
+      }
+    }
+  }
+  return results;
+}
 
 // ── Known MCP tools exposed by this repo ────────────────────────────────
 const KNOWN_TOOLS = new Set([
@@ -51,16 +83,16 @@ const KNOWN_TOOLS = new Set([
 let errors = 0;
 
 function error(file, msg) {
-  console.error(`  ✗ ${file}: ${msg}`);
+  console.error(`  \u2717 ${file}: ${msg}`);
   errors++;
 }
 
 function warn(file, msg) {
-  console.warn(`  ⚠ ${file}: ${msg}`);
+  console.warn(`  \u26a0 ${file}: ${msg}`);
 }
 
 function info(msg) {
-  console.log(`  ✓ ${msg}`);
+  console.log(`  \u2713 ${msg}`);
 }
 
 function rel(filePath) {
@@ -258,24 +290,18 @@ function validateToolset(filePath) {
 
 // ── Main ────────────────────────────────────────────────────────────────
 
-async function main() {
+function main() {
   console.log('Validating extensions...\n');
 
   // 1. Toolsets
   console.log('Toolsets:');
-  const toolsetFiles = [];
-  for await (const f of glob('extensions/shared/toolsets/*.json', { cwd: ROOT })) {
-    toolsetFiles.push(join(ROOT, f));
-  }
+  const toolsetFiles = listDirFiles(join(EXT_DIR, 'shared', 'toolsets'), '.json');
   if (toolsetFiles.length === 0) error('extensions/shared/toolsets/', 'No toolset files found');
   for (const f of toolsetFiles) { validateToolset(f); info(rel(f)); }
 
   // 2. Personas
   console.log('\nPersonas:');
-  const personaFiles = [];
-  for await (const f of glob('extensions/personas/*/persona.json', { cwd: ROOT })) {
-    personaFiles.push(join(ROOT, f));
-  }
+  const personaFiles = listSubdirFiles(join(EXT_DIR, 'personas'), 'persona.json');
   const personaIds = new Set();
   for (const f of personaFiles) {
     const manifest = validatePersona(f);
@@ -286,10 +312,7 @@ async function main() {
 
   // 3. Tools
   console.log('\nTools:');
-  const toolFiles = [];
-  for await (const f of glob('extensions/tools/*/tool.json', { cwd: ROOT })) {
-    toolFiles.push(join(ROOT, f));
-  }
+  const toolFiles = listSubdirFiles(join(EXT_DIR, 'tools'), 'tool.json');
   const toolDefIds = new Set();
   for (const f of toolFiles) {
     const manifest = validateTool(f);
@@ -300,10 +323,7 @@ async function main() {
 
   // 4. Workflows
   console.log('\nWorkflows:');
-  const workflowFiles = [];
-  for await (const f of glob('extensions/workflows/*/workflow.json', { cwd: ROOT })) {
-    workflowFiles.push(join(ROOT, f));
-  }
+  const workflowFiles = listSubdirFiles(join(EXT_DIR, 'workflows'), 'workflow.json');
   const workflowIds = new Set();
   for (const f of workflowFiles) {
     const manifest = validateWorkflow(f, personaIds, toolDefIds);
@@ -316,10 +336,7 @@ async function main() {
   if (workflowFiles.length === 0) console.log('  (none yet)');
 
   // 5. Legacy capabilities (backward compat)
-  const legacyFiles = [];
-  for await (const f of glob('extensions/capabilities/*/extension.json', { cwd: ROOT })) {
-    legacyFiles.push(join(ROOT, f));
-  }
+  const legacyFiles = listSubdirFiles(join(EXT_DIR, 'capabilities'), 'extension.json');
   if (legacyFiles.length > 0) {
     console.log('\nLegacy capabilities (transitional):');
     const seenLegacyIds = new Set();
@@ -335,19 +352,21 @@ async function main() {
 
   // 6. Eval fixtures (all directories)
   console.log('\nEval fixtures:');
-  const evalFiles = [];
-  for await (const f of glob('extensions/{personas,tools,workflows,capabilities}/*/evals/*.eval.json', { cwd: ROOT })) {
-    evalFiles.push(join(ROOT, f));
-  }
+  const evalFiles = listEvalFiles(
+    join(EXT_DIR, 'personas'),
+    join(EXT_DIR, 'tools'),
+    join(EXT_DIR, 'workflows'),
+    join(EXT_DIR, 'capabilities'),
+  );
   for (const f of evalFiles) { validateEvalFixture(f); info(rel(f)); }
   if (evalFiles.length === 0) console.log('  (none yet)');
 
   // Summary
-  console.log(`\n${errors === 0 ? '✓ All extensions valid.' : `✗ ${errors} error(s) found.`}`);
+  const summary = errors === 0
+    ? '\u2713 All extensions valid.'
+    : `\u2717 ${errors} error(s) found.`;
+  console.log(`\n${summary}`);
   process.exit(errors > 0 ? 1 : 0);
 }
 
-main().catch((err) => {
-  console.error('Validation failed:', err);
-  process.exit(1);
-});
+main();
