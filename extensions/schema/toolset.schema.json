@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "toolset.schema.json",
+  "title": "Extension Toolset",
+  "description": "A named group of MCP tools used by extensions.",
+  "type": "object",
+  "required": ["name", "description", "tools"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique name for this toolset."
+    },
+    "description": {
+      "type": "string",
+      "description": "What this group of tools covers."
+    },
+    "tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "MCP tool name strings exposed by this repo."
+    }
+  }
+}

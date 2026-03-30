@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "persona.schema.json",
+  "title": "Persona Extension Manifest",
+  "description": "A reusable instruction bundle that defines how an AI model should behave or reason in a domain. Maps to Gemini Gems, Claude/Codex skill personas, and similar instruction-first surfaces.",
+  "type": "object",
+  "required": ["id", "kind", "version", "title", "summary", "instructions"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique kebab-case identifier."
+    },
+    "kind": {
+      "type": "string",
+      "const": "persona",
+      "description": "Must be 'persona'."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "title": { "type": "string" },
+    "summary": { "type": "string" },
+    "owners": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "instructions": {
+      "type": "object",
+      "required": ["system"],
+      "additionalProperties": false,
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "Relative path to the primary instructions markdown file."
+        },
+        "shared_context": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Relative paths to shared context files to prepend."
+        },
+        "policies": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Relative paths to behavioral policy files."
+        }
+      }
+    },
+    "output_style": {
+      "type": "string",
+      "description": "Description of the expected output style (e.g., 'supervisory-safe markdown')."
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Default parameter values for this persona.",
+      "additionalProperties": {}
+    },
+    "anti_patterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Behaviors this persona must never exhibit."
+    },
+    "examples": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative paths to example files."
+    },
+    "evals": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative paths to eval fixture files."
+    },
+    "adapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Vendor-specific adapter configuration.",
+      "properties": {
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "skill_name": { "type": "string" }
+          }
+        },
+        "codex": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "skill_name": { "type": "string" }
+          }
+        },
+        "openai": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "prompt_pack": { "type": "string" }
+          }
+        },
+        "gemini": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "gem_name": { "type": "string" },
+            "guide_name": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

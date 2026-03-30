@@ -1,0 +1,108 @@
+{
+  "id": "fdic-skill-builder",
+  "version": "1.0.0",
+  "title": "FDIC Skill Builder",
+  "summary": "Meta-extension for building or modifying FDIC BankFind extensions that call FDIC BankFind MCP tools. Enforces contract verification, FDIC date-basis rules, dependency-tier modeling, graceful degradation, and documentation alignment.",
+  "owners": ["fdic-mcp-maintainers"],
+  "tags": ["fdic", "meta", "skill-builder", "development", "tooling"],
+  "instructions": {
+    "system": "instructions.md",
+    "shared_context": [
+      "../../shared/context/fdic-date-basis.md",
+      "../../shared/context/fdic-units.md",
+      "../../shared/context/fdic-cert-identity.md",
+      "../../shared/context/repo-tool-contracts.md"
+    ],
+    "policies": [
+      "../../shared/policies/temporal-accuracy.md",
+      "../../shared/policies/graceful-degradation.md",
+      "../../shared/policies/source-attribution.md"
+    ]
+  },
+  "inputs": {
+    "required": [
+      {
+        "name": "skill_scope",
+        "type": "string",
+        "description": "Description of the new or modified FDIC extension to build"
+      }
+    ],
+    "optional": [
+      {
+        "name": "target_tools",
+        "type": "array",
+        "description": "Specific MCP tools the extension will use"
+      }
+    ]
+  },
+  "outputs": {
+    "primary": "A validated extension definition with instructions, dependency table, and documentation updates",
+    "format": "markdown"
+  },
+  "tools": {
+    "mcp": {
+      "toolsets": [
+        "../../shared/toolsets/fdic-core.json",
+        "../../shared/toolsets/fdic-analysis.json"
+      ],
+      "preferred": [],
+      "forbidden": []
+    }
+  },
+  "workflow": {
+    "steps": [
+      {
+        "name": "Contract Verification",
+        "description": "Live tool probe and field catalog cross-check",
+        "tools": [],
+        "required": true
+      },
+      {
+        "name": "FDIC Data Rules Application",
+        "description": "Apply date-basis, identity, and three-outcome-state rules",
+        "tools": [],
+        "required": true
+      },
+      {
+        "name": "Implementation",
+        "description": "Dependency tier modeling, output path fidelity, skill-vs-server responsibility",
+        "tools": [],
+        "required": true
+      },
+      {
+        "name": "Validation",
+        "description": "Typecheck, test suite, end-to-end smoke test",
+        "tools": [],
+        "required": true
+      },
+      {
+        "name": "Documentation Alignment",
+        "description": "Update docs to match the new extension",
+        "tools": [],
+        "required": true
+      }
+    ],
+    "stop_conditions": [
+      "Hard-dependency tool returns field validation error (fix server first)",
+      "Typecheck or test suite fails"
+    ]
+  },
+  "examples": [
+    "examples/new-skill.md"
+  ],
+  "evals": [],
+  "adapters": {
+    "claude": {
+      "skill_name": "fdic-skill-builder"
+    },
+    "codex": {
+      "skill_name": "fdic-skill-builder"
+    },
+    "openai": {
+      "prompt_pack": "fdic-skill-builder"
+    },
+    "gemini": {
+      "guide_name": "fdic-skill-builder"
+    }
+  }
+}

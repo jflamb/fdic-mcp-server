@@ -1,0 +1,19 @@
+{
+  "name": "fdic-analysis",
+  "description": "FDIC analytical and comparison tools for health assessment, peer benchmarking, risk detection, and domain-specific analysis.",
+  "tools": [
+    "fdic_analyze_bank_health",
+    "fdic_compare_peer_health",
+    "fdic_detect_risk_signals",
+    "fdic_compare_bank_snapshots",
+    "fdic_peer_group_analysis",
+    "fdic_analyze_credit_concentration",
+    "fdic_analyze_funding_profile",
+    "fdic_analyze_securities_portfolio",
+    "fdic_ubpr_analysis",
+    "fdic_market_share_analysis",
+    "fdic_franchise_footprint",
+    "fdic_holding_company_profile",
+    "fdic_regional_context"
+  ]
+}

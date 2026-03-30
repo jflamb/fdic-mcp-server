@@ -1,0 +1,16 @@
+{
+  "name": "fdic-core",
+  "description": "Core FDIC BankFind data retrieval tools for institution lookup, financials, failures, locations, history, SOD, demographics, and summaries.",
+  "tools": [
+    "fdic_search_institutions",
+    "fdic_get_institution",
+    "fdic_search_failures",
+    "fdic_get_institution_failure",
+    "fdic_search_financials",
+    "fdic_search_summary",
+    "fdic_search_locations",
+    "fdic_search_history",
+    "fdic_search_sod",
+    "fdic_search_demographics"
+  ]
+}

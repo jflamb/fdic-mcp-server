@@ -1,0 +1,24 @@
+{
+  "id": "portfolio-surveillance-cohort-triage",
+  "prompt": "Screen all Wyoming banks and build a risk watchlist",
+  "expect": {
+    "must_include": [
+      "Universe",
+      "Screening Summary",
+      "Watchlist",
+      "Escalate",
+      "Monitor",
+      "Caveats",
+      "proxy"
+    ],
+    "must_not_include": [
+      "official CAMELS rating"
+    ],
+    "required_tools": [
+      "fdic_search_institutions",
+      "fdic_detect_risk_signals",
+      "fdic_compare_peer_health",
+      "fdic_compare_bank_snapshots"
+    ]
+  }
+}

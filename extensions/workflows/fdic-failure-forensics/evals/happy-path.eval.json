@@ -1,0 +1,27 @@
+{
+  "id": "failure-forensics-happy-path",
+  "prompt": "Analyze the failure of Silicon Valley Bank (CERT 24735)",
+  "expect": {
+    "must_include": [
+      "Failure Forensics",
+      "CERT",
+      "Failure Event Summary",
+      "Pre-Failure Financial Timeline",
+      "Earliest Warning Signals",
+      "Likely Failure Drivers",
+      "Caveats",
+      "[Observed]",
+      "[Inferred]"
+    ],
+    "must_not_include": [
+      "the bank should have",
+      "official CAMELS rating"
+    ],
+    "required_tools": [
+      "fdic_search_institutions",
+      "fdic_get_institution_failure",
+      "fdic_search_financials",
+      "fdic_detect_risk_signals"
+    ]
+  }
+}

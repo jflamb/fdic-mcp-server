@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "eval.schema.json",
+  "title": "Extension Eval Fixture",
+  "description": "A single evaluation case for an extension capability.",
+  "type": "object",
+  "required": ["id", "prompt", "expect"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique kebab-case identifier for this eval case."
+    },
+    "prompt": {
+      "type": "string",
+      "description": "The user prompt that triggers this evaluation."
+    },
+    "expect": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "must_include": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Strings that must appear in the output."
+        },
+        "must_not_include": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Strings that must not appear in the output."
+        },
+        "required_tools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "MCP tool names that must be called during evaluation."
+        }
+      }
+    }
+  }
+}

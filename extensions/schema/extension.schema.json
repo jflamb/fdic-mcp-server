@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "extension.schema.json",
+  "title": "Extension Manifest",
+  "description": "Legacy capability manifest for a cross-model AI extension. New extensions should use persona.schema.json, tool.schema.json, or workflow.schema.json. This schema is retained for backward compatibility with extensions/capabilities/* entries.",
+  "type": "object",
+  "required": ["id", "version", "title", "summary", "instructions", "tools", "workflow"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique kebab-case identifier for this extension."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semver version of this extension definition."
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title."
+    },
+    "summary": {
+      "type": "string",
+      "description": "One-paragraph summary of what this extension does."
+    },
+    "owners": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "GitHub handles or team names responsible for this extension."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Categorization tags for discovery."
+    },
+    "instructions": {
+      "type": "object",
+      "required": ["system"],
+      "additionalProperties": false,
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "Relative path to the primary instructions markdown file."
+        },
+        "shared_context": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Relative paths to shared context files to prepend."
+        },
+        "policies": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Relative paths to policy files that constrain behavior."
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "default": {},
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": {
+          "type": "string",
+          "description": "Description of the primary output artifact."
+        },
+        "format": {
+          "type": "string",
+          "description": "Output format, e.g. markdown, json, table."
+        }
+      }
+    },
+    "tools": {
+      "type": "object",
+      "required": ["mcp"],
+      "additionalProperties": false,
+      "properties": {
+        "mcp": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "toolsets": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "References to shared toolset files (relative paths)."
+            },
+            "preferred": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Tool names the extension prefers to use."
+            },
+            "forbidden": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Tool names the extension must never call."
+            }
+          }
+        }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "tools": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "required": { "type": "boolean" }
+            }
+          }
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions under which the workflow must halt."
+        }
+      }
+    },
+    "examples": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative paths to example files."
+    },
+    "evals": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative paths to eval fixture files."
+    },
+    "adapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "skill_name": { "type": "string" }
+          }
+        },
+        "codex": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "skill_name": { "type": "string" }
+          }
+        },
+        "openai": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "prompt_pack": { "type": "string" }
+          }
+        },
+        "gemini": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "guide_name": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

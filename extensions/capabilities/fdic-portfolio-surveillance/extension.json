@@ -1,0 +1,139 @@
+{
+  "id": "fdic-portfolio-surveillance",
+  "version": "1.0.0",
+  "title": "FDIC Portfolio Surveillance",
+  "summary": "Comprehensive portfolio-level FDIC surveillance workflow. Screens a defined universe of institutions, ranks them by emerging risk and relative health, and produces a decision-ready watchlist grouped into Escalate, Monitor, and No Immediate Concern tiers.",
+  "owners": ["fdic-mcp-maintainers"],
+  "tags": ["fdic", "surveillance", "watchlist", "screening", "portfolio", "risk"],
+  "instructions": {
+    "system": "instructions.md",
+    "shared_context": [
+      "../../shared/context/fdic-date-basis.md",
+      "../../shared/context/fdic-units.md",
+      "../../shared/context/fdic-cert-identity.md",
+      "../../shared/context/repo-tool-contracts.md"
+    ],
+    "policies": [
+      "../../shared/policies/temporal-accuracy.md",
+      "../../shared/policies/graceful-degradation.md",
+      "../../shared/policies/source-attribution.md"
+    ]
+  },
+  "inputs": {
+    "required": [
+      {
+        "name": "universe_definition",
+        "type": "string",
+        "description": "State (two-letter code), asset range, or explicit CERT list"
+      }
+    ],
+    "optional": [
+      {
+        "name": "repdte",
+        "type": "string",
+        "description": "Report date in YYYYMMDD format",
+        "default": "most recent quarter"
+      },
+      {
+        "name": "start_repdte",
+        "type": "string",
+        "description": "Comparison start date for trend analysis",
+        "default": "same quarter one year prior"
+      },
+      {
+        "name": "ranking_emphasis",
+        "type": "string",
+        "description": "Focus: capital, earnings, funding, growth, or overall",
+        "default": "overall"
+      },
+      {
+        "name": "limit",
+        "type": "number",
+        "description": "Maximum institutions in the ranked watchlist",
+        "default": 25
+      }
+    ]
+  },
+  "outputs": {
+    "primary": "Decision-ready watchlist with Escalate/Monitor/No Immediate Concern tiers and escalation drivers",
+    "format": "markdown"
+  },
+  "tools": {
+    "mcp": {
+      "toolsets": [
+        "../../shared/toolsets/fdic-core.json",
+        "../../shared/toolsets/fdic-analysis.json"
+      ],
+      "preferred": [
+        "fdic_search_institutions",
+        "fdic_detect_risk_signals",
+        "fdic_compare_peer_health",
+        "fdic_compare_bank_snapshots",
+        "fdic_analyze_bank_health",
+        "fdic_analyze_funding_profile",
+        "fdic_analyze_credit_concentration",
+        "fdic_ubpr_analysis",
+        "fdic_regional_context"
+      ],
+      "forbidden": []
+    }
+  },
+  "workflow": {
+    "steps": [
+      {
+        "name": "Universe Construction",
+        "description": "Build institution roster and derive date parameters",
+        "tools": ["fdic_search_institutions"],
+        "required": true
+      },
+      {
+        "name": "Risk Screening and Ranking",
+        "description": "Parallel risk signals, peer health, and snapshot comparison",
+        "tools": ["fdic_detect_risk_signals", "fdic_compare_peer_health", "fdic_compare_bank_snapshots"],
+        "required": true
+      },
+      {
+        "name": "Triage and Categorization",
+        "description": "Merge results and classify into Escalate/Monitor/No Immediate Concern",
+        "tools": [],
+        "required": true
+      },
+      {
+        "name": "Targeted Follow-Through",
+        "description": "Detailed analysis of top escalated institutions",
+        "tools": ["fdic_analyze_bank_health", "fdic_analyze_funding_profile", "fdic_analyze_credit_concentration", "fdic_ubpr_analysis"],
+        "required": false
+      },
+      {
+        "name": "Report Assembly",
+        "description": "Produce 5-section surveillance report",
+        "tools": ["fdic_regional_context"],
+        "required": true
+      }
+    ],
+    "stop_conditions": [
+      "Universe returns zero institutions",
+      "Hard-dependency tool failure"
+    ]
+  },
+  "examples": [
+    "examples/state-watchlist.md"
+  ],
+  "evals": [
+    "evals/cohort-triage.eval.json"
+  ],
+  "adapters": {
+    "claude": {
+      "skill_name": "fdic-portfolio-surveillance"
+    },
+    "codex": {
+      "skill_name": "fdic-portfolio-surveillance"
+    },
+    "openai": {
+      "prompt_pack": "fdic-portfolio-surveillance"
+    },
+    "gemini": {
+      "guide_name": "fdic-portfolio-surveillance"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "id": "fdic-core-mcp",
+  "kind": "tool",
+  "version": "1.0.0",
+  "title": "FDIC Core MCP Tools",
+  "summary": "Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, financial data, failure records, locations, history, branch deposits, demographics, and financial summaries. Required by all FDIC analysis workflows.",
+  "owners": ["fdic-mcp-maintainers"],
+  "tags": ["fdic", "mcp", "data-retrieval", "core"],
+  "tools": {
+    "mcp": {
+      "toolsets": [
+        "../../shared/toolsets/fdic-core.json"
+      ],
+      "preferred": [
+        "fdic_search_institutions",
+        "fdic_get_institution",
+        "fdic_search_failures",
+        "fdic_get_institution_failure",
+        "fdic_search_financials",
+        "fdic_search_summary",
+        "fdic_search_locations",
+        "fdic_search_history",
+        "fdic_search_sod",
+        "fdic_search_demographics"
+      ],
+      "forbidden": []
+    }
+  },
+  "usage": "usage.md",
+  "auth": null,
+  "transport": "stdio",
+  "evals": [],
+  "adapters": {
+    "claude": {
+      "connector_name": "fdic-core-mcp",
+      "extension_name": "fdic-core-mcp"
+    },
+    "openai": {
+      "connector_name": "fdic-core-mcp"
+    },
+    "gemini": {
+      "integration_name": "fdic-core-mcp"
+    }
+  }
+}
