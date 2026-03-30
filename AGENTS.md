@@ -157,6 +157,25 @@ Follow this sequence for substantive repo work unless the user explicitly asks f
 - For ranking or comparison logic, test exact metric behavior and edge cases around missing data, date ranges, and null handling.
 - If you cannot run tests, say so explicitly.
 
+## Extension System
+
+The extension system uses three canonical kinds. New extension work must choose one:
+
+| Kind | Use when... | Location |
+|---|---|---|
+| `persona` | Defining behavioral rules, output style, or reasoning constraints | `extensions/personas/<id>/persona.json` |
+| `tool` | Exposing a group of MCP tools as a reusable integration bundle | `extensions/tools/<id>/tool.json` |
+| `workflow` | Describing a multi-step procedure that composes personas and tools | `extensions/workflows/<id>/workflow.json` |
+
+Rules:
+- `extensions/personas/`, `extensions/tools/`, `extensions/workflows/` are canonical. Edit here.
+- `extensions/capabilities/` is transitional/legacy. Do not add new entries there.
+- `adapters/` is generated. Do not hand-edit. Run `npm run extensions:build` to regenerate.
+- `.agents/skills/*/SKILL.md` may be generated. Check for a generated-file banner before editing.
+- Shared FDIC data rules live in `extensions/shared/` — reference them, do not duplicate.
+- Validate with `npm run extensions:validate` before opening a PR.
+- See [reference/extension-system.md](reference/extension-system.md) for the full design and migration guide.
+
 ## Multi-Agent Support
 
 - `AGENTS.md` is the single source of truth for repository instructions.
