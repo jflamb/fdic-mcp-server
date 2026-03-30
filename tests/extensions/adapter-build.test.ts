@@ -8,10 +8,19 @@ const ADAPTERS_DIR = resolve(ROOT, 'adapters');
 const SCHEMAS_PATH = resolve(ROOT, 'extensions', 'shared', 'tool-schemas.json');
 
 describe('Adapter build', () => {
-  // Capture the committed registry content BEFORE extraction so we can verify
-  // it matches freshly extracted output. If they differ, the committed file is
-  // stale (a tool schema changed without re-running extensions:extract-schemas).
-  let committedSchemasContent = existsSync(SCHEMAS_PATH) ? readFileSync(SCHEMAS_PATH, 'utf-8') : '';
+  // Read the registry content from git HEAD (not the working tree) so the
+  // staleness check cannot be masked by a local regeneration that was never
+  // committed.  Falls back to the on-disk file when not running inside a git
+  // repo (e.g. published tarball).
+  let committedSchemasContent: string;
+  try {
+    committedSchemasContent = execSync(
+      'git show HEAD:extensions/shared/tool-schemas.json',
+      { cwd: ROOT, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] },
+    );
+  } catch {
+    committedSchemasContent = existsSync(SCHEMAS_PATH) ? readFileSync(SCHEMAS_PATH, 'utf-8') : '';
+  }
 
   beforeAll(() => {
     // Extract tool schemas from TypeScript source (public MCP API, no dist required),
@@ -173,8 +182,9 @@ describe('Adapter build', () => {
   }
 
   // ── Tool schema registry staleness ──────────────────────────────────────
-  it('tool-schemas.json is up-to-date with TypeScript source (not stale)', () => {
-    // If this fails, a tool inputSchema changed without re-running:
+  it('committed tool-schemas.json matches freshly extracted output (not stale)', () => {
+    // Compares git HEAD content against freshly extracted schemas.  If this
+    // fails, a tool inputSchema changed without re-running:
     //   npm run extensions:extract-schemas
     // and committing the updated extensions/shared/tool-schemas.json.
     const fresh = readFileSync(SCHEMAS_PATH, 'utf-8');
