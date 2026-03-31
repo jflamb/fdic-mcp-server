@@ -30,7 +30,7 @@ export const DEFAULT_CHAT_RATE_LIMIT_MAX_REQUESTS = 10;
 export const DEFAULT_CHAT_RATE_LIMIT_WINDOW_MS = 60_000;
 export const DEFAULT_CHAT_MAX_MESSAGES = 20;
 export const DEFAULT_CHAT_MAX_MESSAGE_LENGTH = 500;
-export const DEFAULT_CHAT_MAX_TOOL_ROUNDS = 5;
+export const DEFAULT_CHAT_MAX_TOOL_ROUNDS = 15;
 export const DEFAULT_CHAT_GENERATE_RETRIES = 2;
 
 export interface ChatContent {
@@ -448,7 +448,11 @@ async function runConversation(
     return { history: contents, reply };
   }
 
-  throw new Error("Chat tool-call limit exceeded");
+  return {
+    history: contents,
+    reply:
+      "I used several tools but couldn\u2019t reach a final answer. Try a more specific question.",
+  };
 }
 
 export function sweepIdleChatSessions(
@@ -568,8 +572,7 @@ export function createChatRouter(options: ChatRouterOptions): Router {
       });
       const message =
         error instanceof Error ? error.message : "Failed to process chat request";
-      const status = message === "Chat tool-call limit exceeded" ? 502 : 500;
-      res.status(status).json({ error: message });
+      res.status(500).json({ error: message });
     }
   });
 

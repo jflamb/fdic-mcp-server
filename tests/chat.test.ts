@@ -304,7 +304,7 @@ describe("chat routes", () => {
     expect(secondCallRequest.contents[2]).toMatchObject({ role: "user" });
   });
 
-  it("returns 502 when the tool-call loop exceeds the safety cap", async () => {
+  it("returns a graceful fallback reply when the tool-call loop exceeds the safety cap", async () => {
     const { app, callToolMock } = createTestApp();
     generateContentMock.mockResolvedValue({
       functionCalls: [
@@ -322,9 +322,9 @@ describe("chat routes", () => {
       .set("Origin", ALLOWED_ORIGIN)
       .send({ messages: [{ role: "user", content: "Loop forever" }] });
 
-    expect(response.status).toBe(502);
-    expect(response.body.error).toContain("limit");
-    expect(callToolMock).toHaveBeenCalledTimes(5);
+    expect(response.status).toBe(200);
+    expect(response.body.reply).toContain("couldn\u2019t reach a final answer");
+    expect(callToolMock).toHaveBeenCalledTimes(15);
   });
 
   it("retries transient generateContent failures before succeeding", async () => {
