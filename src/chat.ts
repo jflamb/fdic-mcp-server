@@ -401,7 +401,7 @@ async function runConversation(
         tools: [{ functionDeclarations }],
         toolConfig: {
           functionCallingConfig: {
-            mode: "ANY",
+            mode: round === 0 ? "ANY" : "AUTO",
           },
         },
       },
