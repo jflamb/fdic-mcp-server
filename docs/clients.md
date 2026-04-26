@@ -149,10 +149,60 @@ In ChatGPT:
 3. Use `https://bankfind.jflamb.com/mcp`.
 4. Refresh tools from the app details page if needed.
 
+### Local ChatGPT App Validation
+
+Use this loop when changing tool descriptors, app resources, widget HTML, or ChatGPT-specific metadata.
+
+Build and start the HTTP server:
+
+```bash
+npm install
+npm run build
+TRANSPORT=http PORT=3000 node dist/index.js
+```
+
+Inspect the local endpoint with MCP Inspector before opening ChatGPT:
+
+```text
+http://127.0.0.1:3000/mcp
+```
+
+Then expose the local server through HTTPS:
+
+```bash
+ngrok http 3000
+```
+
+Create or update the ChatGPT Developer Mode app with:
+
+```text
+https://<your-ngrok-host>/mcp
+```
+
+After any change to tool descriptors, input schemas, app resources, CSP metadata, or widget URI versions, refresh the app/tools from the ChatGPT app details page. ChatGPT may cache widget resources by URI, so use a new `ui://widget/...-vN.html` URI for breaking widget changes.
+
+Suggested smoke prompts:
+
+- `Search for Bank of America and cite the result.`
+- `Fetch institution:3511.`
+- `Show a deep dive for CERT 3511.`
+- `Show branches for CERT 3511.`
+- `What data date basis are you using?`
+
+Before submitting a public ChatGPT app, confirm the production endpoint and app materials are ready:
+
+- stable public HTTPS `/mcp` endpoint
+- app name, description, icon, and screenshots
+- privacy policy and support URLs
+- test prompts and expected outputs for review
+- clear disclosure that public health scoring is not an official CAMELS rating
+- production logs or alerts for tool errors and latency
+
 Notes:
 - ChatGPT supports streaming HTTP and SSE for MCP apps.
 - ChatGPT Developer Mode availability depends on plan and workspace settings.
 - For Business and Enterprise/Edu workspaces, admins may need to allow custom apps first.
+- The `search` and `fetch` tools are always on for ChatGPT-compatible retrieval, including institution, failure, branch, and schema results.
 
 Official docs:
 - [OpenAI Developer Mode](https://developers.openai.com/api/docs/guides/developer-mode)

@@ -16,50 +16,8 @@ export function registerInstitutionTools(server: McpServer): void {
     "fdic_search_institutions",
     {
       title: "Search FDIC Institutions",
-      description: `Search for FDIC-insured financial institutions (banks and savings institutions) using flexible filters.
-
-Returns institution profile data including name, location, charter class, asset size, deposit totals, profitability metrics, and regulatory status.
-
-Common filter examples:
-  - By state: STNAME:"California"
-  - Active banks only: ACTIVE:1
-  - Large banks: ASSET:[10000000 TO *]  (assets in $thousands)
-  - By bank class: BKCLASS:N (national bank), BKCLASS:SM (state member bank), BKCLASS:NM (state non-member)
-  - By name: NAME:"Wells Fargo"
-  - Commercial banks: CB:1
-  - Savings institutions: MUTUAL:1
-  - Recently established: ESTYMD:[2010-01-01 TO *]
-
-Charter class codes (BKCLASS):
-  N = National commercial bank (OCC-supervised)
-  SM = State-chartered, Federal Reserve member
-  NM = State-chartered, non-member (FDIC-supervised)
-  SB = Federal savings bank (OCC-supervised)
-  SA = State savings association
-  OI = Insured branch of foreign bank
-
-Key returned fields:
-  - CERT: FDIC Certificate Number (unique ID)
-  - NAME: Institution name
-  - CITY, STALP (two-letter state code), STNAME (full state name): Location
-  - ASSET: Total assets ($thousands)
-  - DEP: Total deposits ($thousands)
-  - BKCLASS: Charter class code (see above)
-  - ACTIVE: 1 if currently active, 0 if inactive
-  - ROA, ROE: Profitability ratios
-  - OFFICES: Number of branch offices
-  - ESTYMD: Establishment date (YYYY-MM-DD)
-  - REGAGNT: Primary federal regulator (OCC, FRS, FDIC)
-
-Args:
-  - filters (string, optional): ElasticSearch query filter
-  - fields (string, optional): Comma-separated field names
-  - limit (number): Records to return, 1-10000 (default: 20)
-  - offset (number): Pagination offset (default: 0)
-  - sort_by (string, optional): Field to sort by
-  - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
-
-Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and institution records.`,
+      description:
+        'Use this when the user needs FDIC-insured institution search results by name, state, CERT, asset size, charter class, or regulatory status. Returns institution profile rows with pagination; use fdic://schemas/institutions for the full field catalog.',
       inputSchema: CommonQuerySchema,
       annotations: {
         readOnlyHint: true,
@@ -104,15 +62,8 @@ Prefer concise human-readable summaries or tables when answering users. Structur
     "fdic_get_institution",
     {
       title: "Get Institution by Certificate Number",
-      description: `Retrieve detailed information for a specific FDIC-insured institution using its FDIC Certificate Number (CERT).
-
-Use this when you know the exact CERT number for an institution. To find a CERT number, use fdic_search_institutions first.
-
-Args:
-  - cert (number): FDIC Certificate Number (e.g., 3511 for Bank of America)
-  - fields (string, optional): Comma-separated list of fields to return
-
-Returns a detailed institution profile suitable for concise summaries, with structured fields available for exact values when needed.`,
+      description:
+        "Use this when the user knows an exact FDIC Certificate Number and needs one institution profile. To discover a CERT first, call fdic_search_institutions or the ChatGPT-compatible search tool.",
       inputSchema: CertSchema,
       annotations: {
         readOnlyHint: true,
