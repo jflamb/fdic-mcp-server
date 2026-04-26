@@ -57,6 +57,10 @@ function listEvalFiles(...baseDirs) {
 const KNOWN_TOOLS = new Set([
   'search',
   'fetch',
+  // Namespaced aliases registered alongside the canonical ChatGPT names so
+  // multi-connector MCP clients can address them without collision risk.
+  'fdic_search',
+  'fdic_fetch',
   'fdic_search_institutions',
   'fdic_get_institution',
   'fdic_search_failures',

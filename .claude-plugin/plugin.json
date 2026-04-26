@@ -10,7 +10,10 @@
       "url": "https://bankfind.jflamb.com/mcp",
       "stdioFallback": {
         "command": "npx",
-        "args": ["-y", "fdic-mcp-server"]
+        "args": ["-y", "fdic-mcp-server"],
+        "env": {
+          "FDIC_MCP_PROFILE": "core,analysis,chatgpt-aliases,prompts,resources"
+        }
       }
     }
   },

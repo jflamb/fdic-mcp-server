@@ -425,7 +425,11 @@ export const DEFAULT_STRUCTURED_BYTE_LIMIT = 200_000;
 /**
  * Caps the size of an array of records inside a structured-content payload.
  * Returns the original output if it is already under the byte limit, otherwise
- * a copy with the records array truncated and a `truncated: true` flag set.
+ * a copy with the records array truncated, the pagination metadata
+ * re-derived from the sliced count (so callers following `next_offset` cannot
+ * skip records the byte cap dropped), and a `truncated: true` flag set. The
+ * original upstream pagination is preserved under `upstream` for clients that
+ * need to reason about FDIC's own page boundary.
  */
 export function capStructuredContent<T extends Record<string, unknown>>(
   output: T,
@@ -446,7 +450,7 @@ export function capStructuredContent<T extends Record<string, unknown>>(
   let best = 0;
   while (lo <= hi) {
     const mid = Math.floor((lo + hi) / 2);
-    const candidate = { ...output, [recordKey]: records.slice(0, mid), truncated: true };
+    const candidate = buildTruncatedPayload(output, recordKey, records, mid);
     const bytes = Buffer.byteLength(JSON.stringify(candidate), "utf8");
     if (bytes <= byteLimit) {
       best = mid;
@@ -456,5 +460,42 @@ export function capStructuredContent<T extends Record<string, unknown>>(
     }
   }
 
-  return { ...output, [recordKey]: records.slice(0, best), truncated: true };
+  return buildTruncatedPayload(output, recordKey, records, best) as T;
+}
+
+function buildTruncatedPayload(
+  output: Record<string, unknown>,
+  recordKey: string,
+  records: unknown[],
+  slicedLength: number,
+): Record<string, unknown> {
+  const sliced = records.slice(0, slicedLength);
+  const result: Record<string, unknown> = {
+    ...output,
+    [recordKey]: sliced,
+    truncated: true,
+  };
+
+  const offset = typeof output.offset === "number" ? output.offset : undefined;
+  const upstreamCount =
+    typeof output.count === "number" ? output.count : undefined;
+  const upstreamNextOffset =
+    typeof output.next_offset === "number" ? output.next_offset : undefined;
+
+  if (offset !== undefined) {
+    result.count = slicedLength;
+    result.next_offset = offset + slicedLength;
+    result.has_more = true;
+  }
+
+  if (upstreamCount !== undefined || upstreamNextOffset !== undefined) {
+    result.upstream = {
+      ...(upstreamCount !== undefined ? { count: upstreamCount } : {}),
+      ...(upstreamNextOffset !== undefined
+        ? { next_offset: upstreamNextOffset }
+        : {}),
+    };
+  }
+
+  return result;
 }

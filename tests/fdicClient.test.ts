@@ -29,6 +29,7 @@ vi.mock("axios", () => {
 import { AxiosError } from "axios";
 import {
   buildPaginationInfo,
+  capStructuredContent,
   clearQueryCache,
   extractRecords,
   formatToolError,
@@ -376,6 +377,55 @@ describe("fdicClient", () => {
       message: "bad",
       retryable: false,
     });
+  });
+
+  it("returns the original payload when capStructuredContent is under the limit", () => {
+    const payload = {
+      total: 3,
+      offset: 0,
+      count: 3,
+      has_more: false,
+      institutions: [{ CERT: 1 }, { CERT: 2 }, { CERT: 3 }],
+    };
+    expect(capStructuredContent(payload, "institutions", 10_000)).toBe(payload);
+  });
+
+  it("re-derives pagination metadata when capStructuredContent truncates a page", () => {
+    // Pad each record so the byte cap forces a partial page.
+    const records = Array.from({ length: 20 }, (_, idx) => ({
+      CERT: idx,
+      NAME: "X".repeat(200),
+    }));
+    const payload = {
+      total: 100,
+      offset: 0,
+      count: 20,
+      has_more: true,
+      next_offset: 20,
+      institutions: records,
+    };
+
+    const capped = capStructuredContent(payload, "institutions", 1_500) as {
+      total: number;
+      offset: number;
+      count: number;
+      has_more: boolean;
+      next_offset: number;
+      truncated: boolean;
+      upstream: { count: number; next_offset: number };
+      institutions: Array<{ CERT: number }>;
+    };
+
+    expect(capped.truncated).toBe(true);
+    expect(capped.has_more).toBe(true);
+    expect(capped.institutions.length).toBeLessThan(records.length);
+    // count and next_offset must reflect what was actually returned, not the
+    // FDIC page size — otherwise a client following next_offset would skip
+    // the records the byte cap dropped.
+    expect(capped.count).toBe(capped.institutions.length);
+    expect(capped.next_offset).toBe(capped.offset + capped.institutions.length);
+    // Original upstream pagination is preserved for transparency.
+    expect(capped.upstream).toEqual({ count: 20, next_offset: 20 });
   });
 
   it("infers stable error codes from upstream messages", () => {
