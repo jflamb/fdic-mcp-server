@@ -1001,7 +1001,7 @@
       }
     },
     "fdic_show_bank_deep_dive": {
-      "description": "Use this when the user wants a scannable ChatGPT dashboard for one FDIC-insured institution, including identity, public financial metrics, risk signals, and source links.",
+      "description": "Use this when the user wants a scannable single-institution dashboard with identity, public financial metrics, risk signals, and source links. ChatGPT renders an interactive widget; Claude and other MCP clients render the same data as a Markdown table.",
       "inputSchema": {
         "type": "object",
         "properties": {

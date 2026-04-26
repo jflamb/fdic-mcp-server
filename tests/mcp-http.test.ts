@@ -1168,6 +1168,23 @@ describe("HTTP MCP server", () => {
     expect(response.body.result._meta.widget.resourceUri).toBe(
       "ui://widget/fdic-bank-deep-dive-v1.html",
     );
+
+    // Claude (and any MCP client without a widget renderer) reads the text
+    // content. It must be a self-contained Markdown dashboard, not a stub
+    // that only the ChatGPT widget can interpret.
+    const text = response.body.result.content[0].text;
+    expect(text).toContain("## FDIC Bank Deep Dive: Wells Fargo Bank");
+    expect(text).toContain("**CERT** 3511");
+    expect(text).toContain("Sioux Falls, SD");
+    expect(text).toContain("**Report date** 20241231");
+    expect(text).toContain("| Metric | Value |");
+    // Dollar formatting: 1,000,000 ($thousands) → $1.0B
+    expect(text).toContain("| Assets | $1.0B |");
+    expect(text).toContain("| ROA | 1.25% |");
+    expect(text).toContain("| Tier 1 leverage | 8.50% |");
+    expect(text).toContain(
+      "[FDIC BankFind institution profile](https://banks.data.fdic.gov/bankfind-suite/bankfind/details/3511)",
+    );
   });
 
   it("reuses cached FDIC responses across sequential HTTP requests", async () => {

@@ -77,28 +77,114 @@ function collectDashboardRiskSignals(
   return signals;
 }
 
-function buildDashboardText(
-  institution: Record<string, unknown>,
-  repdte: string,
-  riskSignals: string[],
-  warnings: string[],
-): string {
-  const lines = [
-    `FDIC Bank Deep Dive: ${asString(institution.NAME)} (CERT ${asString(institution.CERT)})`,
-    `${asString(institution.CITY)}, ${asString(institution.STALP)} | Report date: ${repdte}`,
-    "This dashboard uses public FDIC BankFind data and is not an official CAMELS rating or supervisory conclusion.",
-    "",
-    `Assets: ${asString(institution.ASSET) || "n/a"} ($thousands)`,
-    `Deposits: ${asString(institution.DEP) || "n/a"} ($thousands)`,
-    `Offices: ${asString(institution.OFFICES) || "n/a"}`,
-  ];
+/**
+ * Formats a dollar amount given in $thousands as a compact human-readable
+ * string ("$108.0B", "$93.4M", "$1,234k"). Mirrors the formatting the
+ * embedded widget uses so the Markdown rendering and the ChatGPT widget
+ * agree on units.
+ */
+function formatDollarsInThousands(value: number | undefined): string {
+  if (value === undefined) {
+    return "n/a";
+  }
+  if (Math.abs(value) >= 1_000_000) {
+    return `$${(value / 1_000_000).toFixed(1)}B`;
+  }
+  if (Math.abs(value) >= 1_000) {
+    return `$${(value / 1_000).toFixed(1)}M`;
+  }
+  return `$${value.toLocaleString()}k`;
+}
 
-  if (riskSignals.length > 0) {
-    lines.push("", "Risk signals:", ...riskSignals.map((signal) => `- ${signal}`));
+interface DashboardStructured {
+  institution: {
+    cert: number;
+    name: string;
+    city: string;
+    state: string;
+    active: boolean;
+    asset_thousands?: number;
+    deposit_thousands?: number;
+    offices?: number;
+    charter_class: string;
+    regulator: string;
+    established: string;
+    report_date: string;
+  };
+  assessment: { proxy_band: string; caveat: string };
+  metrics: Record<string, string | undefined>;
+  risk_signals: string[];
+  warnings: string[];
+  sources: Array<{ title: string; url: string }>;
+}
+
+/**
+ * Builds a Markdown rendering of the deep-dive dashboard from the same
+ * structuredContent the ChatGPT widget consumes. Claude (and any other MCP
+ * client without an HTML widget renderer) shows this Markdown directly;
+ * ChatGPT overrides it with the `_meta.openai/outputTemplate` widget.
+ */
+function buildDashboardMarkdown(data: DashboardStructured): string {
+  const { institution: inst, assessment, metrics } = data;
+  const status = inst.active ? "Active" : "Inactive or unknown";
+
+  const lines: string[] = [];
+  lines.push(`## FDIC Bank Deep Dive: ${inst.name}`);
+  lines.push("");
+  lines.push(
+    `**CERT** ${inst.cert} · ${inst.city}, ${inst.state} · ${status} · **Report date** ${inst.report_date}`,
+  );
+  lines.push("");
+  lines.push(`> ${assessment.caveat}`);
+  lines.push("");
+
+  lines.push("### Headline metrics");
+  lines.push("");
+  lines.push("| Metric | Value |");
+  lines.push("| --- | --- |");
+  lines.push(`| Assets | ${formatDollarsInThousands(inst.asset_thousands)} |`);
+  lines.push(
+    `| Deposits | ${formatDollarsInThousands(inst.deposit_thousands)} |`,
+  );
+  lines.push(`| Offices | ${inst.offices ?? "n/a"} |`);
+  lines.push(`| Proxy band | ${assessment.proxy_band} |`);
+  lines.push(`| ROA | ${metrics.roa ?? "n/a"} |`);
+  lines.push(`| ROE | ${metrics.roe ?? "n/a"} |`);
+  lines.push(`| Tier 1 leverage | ${metrics.tier1_leverage ?? "n/a"} |`);
+  lines.push(`| Noncurrent loans | ${metrics.noncurrent_loans ?? "n/a"} |`);
+  lines.push(`| Loan-to-deposit | ${metrics.loan_to_deposit ?? "n/a"} |`);
+  lines.push(
+    `| Net interest margin | ${metrics.net_interest_margin ?? "n/a"} |`,
+  );
+  lines.push(`| Efficiency ratio | ${metrics.efficiency_ratio ?? "n/a"} |`);
+  lines.push("");
+
+  lines.push("### Risk signals");
+  lines.push("");
+  if (data.risk_signals.length === 0) {
+    lines.push("_No risk signals returned for this dashboard._");
+  } else {
+    for (const signal of data.risk_signals) {
+      lines.push(`- ${signal}`);
+    }
   }
-  if (warnings.length > 0) {
-    lines.push("", "Warnings:", ...warnings.map((warning) => `- ${warning}`));
+  lines.push("");
+
+  if (data.warnings.length > 0) {
+    lines.push("### Warnings");
+    lines.push("");
+    for (const warning of data.warnings) {
+      lines.push(`- ${warning}`);
+    }
+    lines.push("");
   }
+
+  lines.push("### Sources");
+  lines.push("");
+  for (const source of data.sources) {
+    lines.push(`- [${source.title}](${source.url})`);
+  }
+
   return lines.join("\n");
 }
 
@@ -108,7 +194,7 @@ export function registerChatGptBankDeepDiveTool(server: McpServer): void {
     {
       title: "Show Bank Deep Dive Dashboard",
       description:
-        "Use this when the user wants a scannable ChatGPT dashboard for one FDIC-insured institution, including identity, public financial metrics, risk signals, and source links.",
+        "Use this when the user wants a scannable single-institution dashboard with identity, public financial metrics, risk signals, and source links. ChatGPT renders an interactive widget; Claude and other MCP clients render the same data as a Markdown table.",
       inputSchema: BankDeepDiveInputSchema,
       outputSchema: FdicBankDeepDiveOutputSchema,
       annotations: {
@@ -209,7 +295,7 @@ export function registerChatGptBankDeepDiveTool(server: McpServer): void {
             {
               type: "text",
               text: truncateIfNeeded(
-                buildDashboardText(institution, repdte, riskSignals, warnings),
+                buildDashboardMarkdown(structuredContent),
                 CHARACTER_LIMIT,
               ),
             },
