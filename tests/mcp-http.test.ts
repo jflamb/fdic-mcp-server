@@ -789,7 +789,7 @@ describe("HTTP MCP server", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.result.tools).toHaveLength(26);
+    expect(response.body.result.tools).toHaveLength(28);
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toContain("fdic_search_demographics");
@@ -799,7 +799,15 @@ describe("HTTP MCP server", () => {
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toEqual(
-      expect.arrayContaining(["search", "fetch", "fdic_show_bank_deep_dive"]),
+      expect.arrayContaining([
+        // ChatGPT compatibility names
+        "search",
+        "fetch",
+        "fdic_show_bank_deep_dive",
+        // Namespaced aliases registered for general MCP clients
+        "fdic_search",
+        "fdic_fetch",
+      ]),
     );
 
     const financialsTool = response.body.result.tools.find(
@@ -844,6 +852,49 @@ describe("HTTP MCP server", () => {
     expect(deepDiveTool._meta["openai/outputTemplate"]).toBe(
       "ui://widget/fdic-bank-deep-dive-v1.html",
     );
+  });
+
+  it("lists the canonical workflow prompts", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 1010,
+      method: "prompts/list",
+      params: {},
+    });
+
+    expect(response.status).toBe(200);
+    const names = response.body.result.prompts.map(
+      (prompt: { name: string }) => prompt.name,
+    );
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "bank_deep_dive",
+        "failure_forensics",
+        "portfolio_surveillance",
+        "examiner_overlay",
+      ]),
+    );
+  });
+
+  it("renders the bank_deep_dive prompt with the bank argument", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 1011,
+      method: "prompts/get",
+      params: {
+        name: "bank_deep_dive",
+        arguments: { bank: "Wells Fargo", repdte: "20241231" },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const messages = response.body.result.messages;
+    expect(messages).toHaveLength(1);
+    expect(messages[0].role).toBe("user");
+    expect(messages[0].content.type).toBe("text");
+    expect(messages[0].content.text).toContain("Wells Fargo");
+    expect(messages[0].content.text).toContain("20241231");
+    expect(messages[0].content.text).toContain("fdic_analyze_bank_health");
   });
 
   it("lists schema resources for each supported FDIC endpoint", async () => {

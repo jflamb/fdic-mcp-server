@@ -7,6 +7,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import {
   ANALYSIS_TIMEOUT_MS,
   getDefaultReportDate,
@@ -104,6 +105,7 @@ Output includes:
 
 NOTE: This is an analytical tool based on public financial data. AFS/HTM breakdown is not currently available from the FDIC API.`,
       inputSchema: SecuritiesPortfolioSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

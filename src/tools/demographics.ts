@@ -5,12 +5,14 @@ import {
   queryEndpoint,
   extractRecords,
   buildPaginationInfo,
+  capStructuredContent,
   formatSearchResultText,
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
 import { CommonQuerySchema } from "../schemas/common.js";
 import { buildFilterString } from "./shared/queryUtils.js";
+import { FdicDemographicsSearchOutputSchema } from "../schemas/output.js";
 
 const DemographicsQuerySchema = CommonQuerySchema.extend({
   cert: z
@@ -23,7 +25,7 @@ const DemographicsQuerySchema = CommonQuerySchema.extend({
     .string()
     .optional()
     .describe(
-      "Filter by Report Date (REPDTE) in YYYYMMDD format. FDIC data is published quarterly on: March 31, June 30, September 30, and December 31. Example: 20251231 for Q4 2025. If omitted, returns all available dates.",
+      "Filter by Report Date (REPDTE) in YYYYMMDD format (quarter-end: 0331, 0630, 0930, 1231).",
     ),
 });
 
@@ -32,43 +34,10 @@ export function registerDemographicsTools(server: McpServer): void {
     "fdic_search_demographics",
     {
       title: "Search Institution Demographics Data",
-      description: `Search BankFind demographics data for FDIC-insured institutions.
-
-Returns quarterly demographic and market-structure attributes such as office counts, territory assignments, metro classification, county/country codes, and selected geographic reference data.
-
-Common filter examples:
-  - Demographics for a specific bank: CERT:3511
-  - By report date: REPDTE:20251231
-  - Institutions in metro areas: METRO:1
-  - Institutions with out-of-state offices: OFFSTATE:[1 TO *]
-  - Minority status date present: MNRTYDTE:[19000101 TO 99991231]
-
-Key returned fields:
-  - CERT: FDIC Certificate Number
-  - REPDTE: Report Date — the last day of the quarterly reporting period (YYYYMMDD)
-  - QTRNO: Quarter number
-  - OFFTOT: Total offices
-  - OFFSTATE: Offices in other states
-  - OFFNDOM: Offices in non-domestic territories
-  - OFFOTH: Other offices
-  - OFFSOD: Offices included in Summary of Deposits
-  - METRO, MICRO: Metro/micro area flags
-  - CBSANAME, CSA: Core-based statistical area data
-  - FDICTERR, RISKTERR: FDIC and risk territory assignments
-  - SIMS_LAT, SIMS_LONG: Geographic coordinates
-
-Args:
-  - cert (number, optional): Filter by institution CERT number
-  - repdte (string, optional): Report Date in YYYYMMDD format (quarter-end dates: 0331, 0630, 0930, 1231)
-  - filters (string, optional): Additional ElasticSearch query filters
-  - fields (string, optional): Comma-separated field names
-  - limit (number): Records to return (default: 20)
-  - offset (number): Pagination offset (default: 0)
-  - sort_by (string, optional): Field to sort by
-  - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
-
-Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and demographic records.`,
+      description:
+        "Use this when the user wants quarterly demographic and market-structure attributes (office counts, metro classification, county/territory codes, geographic reference data) for FDIC-insured institutions. Filter by CERT and/or REPDTE. See fdic://schemas/demographics for the full field catalog.",
       inputSchema: DemographicsQuerySchema,
+      outputSchema: FdicDemographicsSearchOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -93,7 +62,10 @@ Prefer concise human-readable summaries or tables when answering users. Structur
           params.offset ?? 0,
           records.length,
         );
-        const output = { ...pagination, demographics: records };
+        const output = capStructuredContent(
+          { ...pagination, demographics: records },
+          "demographics",
+        );
         const text = truncateIfNeeded(
           formatSearchResultText("demographic records", records, pagination, [
             "CERT",

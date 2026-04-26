@@ -17,6 +17,10 @@ import {
   getInstitutionUrl,
   getSchemaDocsUrl,
 } from "./shared/chatgptUrls.js";
+import {
+  ChatGptSearchResultSchema,
+  ChatGptFetchResultSchema,
+} from "../schemas/output.js";
 
 const SearchInputSchema = z.object({
   query: z.string().min(1).describe("Natural-language search query."),
@@ -467,14 +471,57 @@ async function fetchById(id: string): Promise<FetchResult> {
   throw new Error(`Unsupported fetch id kind: ${kind}.`);
 }
 
-export function registerChatGptRetrievalTools(server: McpServer): void {
+async function runSearch(query: string): Promise<{ results: SearchResult[] }> {
+  const normalized = normalizeQuery(query);
+  const shouldIncludeFailures = shouldSearchFailures(normalized);
+  const shouldIncludeBranches = shouldSearchBranches(normalized);
+  const shouldIncludeSchemas = shouldSearchSchemas(normalized);
+
+  const [institutions, failures, branches] = await Promise.all([
+    safeSearch(() => searchInstitutions(normalized)),
+    shouldIncludeFailures
+      ? safeSearch(() => searchFailures(normalized))
+      : Promise.resolve([]),
+    shouldIncludeBranches
+      ? safeSearch(() => searchBranches(normalized))
+      : Promise.resolve([]),
+  ]);
+
+  const fallbackFailures =
+    failures.length === 0 && institutions.length === 0
+      ? await safeSearch(() => searchFailures(normalized))
+      : [];
+  const fallbackBranches =
+    branches.length === 0 && institutions.length === 0
+      ? await safeSearch(() => searchBranches(normalized))
+      : [];
+  const schemas = shouldIncludeSchemas ? schemaSearchResults(normalized) : [];
+
+  const results = dedupeResults([
+    ...institutions,
+    ...failures,
+    ...branches,
+    ...fallbackFailures,
+    ...fallbackBranches,
+    ...schemas,
+  ]);
+
+  return { results };
+}
+
+const SEARCH_DESCRIPTION =
+  "Use this when the model needs citation-friendly FDIC BankFind search results for institutions, failed banks, branches, or schema documentation. Returns up to 8 results with id, title, and source URL.";
+const FETCH_DESCRIPTION =
+  "Use this when the model needs the full citation text for a result returned by search. Pass the search result id (e.g. 'institution:3511', 'failure:1234', 'branch:<UNINUM>', 'schema:institutions').";
+
+function registerSearchTool(server: McpServer, name: string): void {
   server.registerTool(
-    "search",
+    name,
     {
       title: "Search FDIC BankFind",
-      description:
-        "Use this when ChatGPT needs citation-friendly FDIC BankFind search results for institutions, failed banks, branches, or schema documentation.",
+      description: SEARCH_DESCRIPTION,
       inputSchema: SearchInputSchema,
+      outputSchema: ChatGptSearchResultSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -483,53 +530,23 @@ export function registerChatGptRetrievalTools(server: McpServer): void {
       },
     },
     async ({ query }) => {
-      const normalized = normalizeQuery(query);
-      const shouldIncludeFailures = shouldSearchFailures(normalized);
-      const shouldIncludeBranches = shouldSearchBranches(normalized);
-      const shouldIncludeSchemas = shouldSearchSchemas(normalized);
-
-      const [institutions, failures, branches] = await Promise.all([
-        safeSearch(() => searchInstitutions(normalized)),
-        shouldIncludeFailures
-          ? safeSearch(() => searchFailures(normalized))
-          : Promise.resolve([]),
-        shouldIncludeBranches
-          ? safeSearch(() => searchBranches(normalized))
-          : Promise.resolve([]),
-      ]);
-
-      const fallbackFailures =
-        failures.length === 0 && institutions.length === 0
-          ? await safeSearch(() => searchFailures(normalized))
-          : [];
-      const fallbackBranches =
-        branches.length === 0 && institutions.length === 0
-          ? await safeSearch(() => searchBranches(normalized))
-          : [];
-      const schemas = shouldIncludeSchemas ? schemaSearchResults(normalized) : [];
-
-      const results = dedupeResults([
-        ...institutions,
-        ...failures,
-        ...branches,
-        ...fallbackFailures,
-        ...fallbackBranches,
-        ...schemas,
-      ]);
-
+      const payload = await runSearch(query);
       return {
-        content: [{ type: "text", text: jsonText({ results }) }],
+        content: [{ type: "text", text: jsonText(payload) }],
+        structuredContent: payload,
       };
     },
   );
+}
 
+function registerFetchTool(server: McpServer, name: string): void {
   server.registerTool(
-    "fetch",
+    name,
     {
       title: "Fetch FDIC BankFind Result",
-      description:
-        "Use this when ChatGPT needs the full citation text for a result returned by search.",
+      description: FETCH_DESCRIPTION,
       inputSchema: FetchInputSchema,
+      outputSchema: ChatGptFetchResultSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -542,10 +559,42 @@ export function registerChatGptRetrievalTools(server: McpServer): void {
         const result = await fetchById(id);
         return {
           content: [{ type: "text", text: jsonText(result) }],
+          structuredContent: result as unknown as Record<string, unknown>,
         };
       } catch (err) {
         return formatToolError(err);
       }
     },
   );
+}
+
+export interface RegisterRetrievalToolsOptions {
+  /**
+   * Whether to register the canonical (un-prefixed) `search` and `fetch` tool
+   * names that ChatGPT's compatibility check expects. Default true.
+   */
+  includeCanonicalNames?: boolean;
+  /**
+   * Whether to register the namespaced `fdic_search` and `fdic_fetch` aliases
+   * for general MCP clients (Claude, etc.) where un-prefixed names risk
+   * collision with other connectors. Default true.
+   */
+  includeNamespacedAliases?: boolean;
+}
+
+export function registerChatGptRetrievalTools(
+  server: McpServer,
+  options: RegisterRetrievalToolsOptions = {},
+): void {
+  const includeCanonical = options.includeCanonicalNames ?? true;
+  const includeAliases = options.includeNamespacedAliases ?? true;
+
+  if (includeCanonical) {
+    registerSearchTool(server, "search");
+    registerFetchTool(server, "fetch");
+  }
+  if (includeAliases) {
+    registerSearchTool(server, "fdic_search");
+    registerFetchTool(server, "fdic_fetch");
+  }
 }

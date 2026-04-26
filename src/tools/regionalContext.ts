@@ -7,6 +7,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import {
   ANALYSIS_TIMEOUT_MS,
   getDefaultReportDate,
@@ -144,6 +145,7 @@ Output includes:
 
 NOTE: Requires FRED_API_KEY environment variable for reliable data access. Degrades gracefully without it.`,
       inputSchema: RegionalContextSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

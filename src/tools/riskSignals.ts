@@ -7,6 +7,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import {
   ANALYSIS_TIMEOUT_MS,
   MAX_CONCURRENCY,
@@ -212,6 +213,7 @@ Output: Per-institution risk signals ranked by severity count. The proxy engine 
 
 NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
       inputSchema: RiskSignalsInputSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

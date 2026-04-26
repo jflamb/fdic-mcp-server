@@ -13,6 +13,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import {
   buildInvalidFieldError,
   findInvalidEndpointFields,
@@ -414,6 +415,7 @@ Output includes:
 
 Override precedence: cert derives defaults, then explicit params override them.`,
       inputSchema: PeerGroupInputSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

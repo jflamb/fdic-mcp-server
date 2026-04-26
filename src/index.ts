@@ -37,37 +37,113 @@ import { registerChatGptRetrievalTools } from "./tools/chatgptRetrieval.js";
 import { registerChatGptBankDeepDiveTool } from "./tools/chatgptBankDeepDive.js";
 import { registerChatGptAppResources } from "./resources/chatgptAppResources.js";
 import { registerSchemaResources } from "./resources/schemaResources.js";
+import { registerWorkflowPrompts } from "./prompts/workflows.js";
 
-export function createServer(): McpServer {
+export type FdicMcpProfile =
+  | "core"
+  | "analysis"
+  | "chatgpt"
+  | "chatgpt-canonical"
+  | "chatgpt-aliases";
+
+export interface CreateServerOptions {
+  /**
+   * Comma-separated profile selector. Default `all` registers everything.
+   * Recognized tokens: `core`, `analysis`, `chatgpt`, `chatgpt-canonical`,
+   * `chatgpt-aliases`, `prompts`, `resources`, `all`. Anything outside this
+   * list is ignored. Pass `chatgpt-aliases` to drop the un-prefixed
+   * `search`/`fetch` names while keeping the namespaced `fdic_search`/
+   * `fdic_fetch` aliases — useful in mixed-connector Claude environments.
+   */
+  profile?: string;
+}
+
+interface ResolvedProfile {
+  core: boolean;
+  analysis: boolean;
+  chatgptCanonical: boolean;
+  chatgptAliases: boolean;
+  chatgptDeepDive: boolean;
+  prompts: boolean;
+  resources: boolean;
+}
+
+export function resolveProfile(raw: string | undefined): ResolvedProfile {
+  const tokens = (raw ?? "all")
+    .split(",")
+    .map((token) => token.trim().toLowerCase())
+    .filter((token) => token.length > 0);
+
+  const has = (token: string) => tokens.includes(token);
+  const all = has("all") || tokens.length === 0;
+
+  const includeChatgpt = all || has("chatgpt");
+  return {
+    core: all || has("core"),
+    analysis: all || has("analysis"),
+    chatgptCanonical:
+      all || includeChatgpt || has("chatgpt-canonical"),
+    chatgptAliases:
+      all || includeChatgpt || has("chatgpt-aliases"),
+    chatgptDeepDive: all || includeChatgpt,
+    prompts: all || has("prompts"),
+    resources: all || has("resources"),
+  };
+}
+
+export function createServer(options: CreateServerOptions = {}): McpServer {
   const server = new McpServer({
     name: "fdic-mcp-server",
     version: VERSION,
   });
 
-  registerInstitutionTools(server);
-  registerFailureTools(server);
-  registerLocationTools(server);
-  registerHistoryTools(server);
-  registerFinancialTools(server);
-  registerSodTools(server);
-  registerDemographicsTools(server);
-  registerAnalysisTools(server);
-  registerPeerGroupTools(server);
-  registerBankHealthTools(server);
-  registerPeerHealthTools(server);
-  registerRiskSignalTools(server);
-  registerCreditConcentrationTools(server);
-  registerFundingProfileTools(server);
-  registerSecuritiesPortfolioTools(server);
-  registerUbprAnalysisTools(server);
-  registerMarketShareAnalysisTools(server);
-  registerFranchiseFootprintTools(server);
-  registerHoldingCompanyProfileTools(server);
-  registerRegionalContextTools(server);
-  registerChatGptRetrievalTools(server);
-  registerChatGptBankDeepDiveTool(server);
-  registerChatGptAppResources(server);
-  registerSchemaResources(server);
+  const profile = resolveProfile(options.profile ?? process.env.FDIC_MCP_PROFILE);
+
+  if (profile.core) {
+    registerInstitutionTools(server);
+    registerFailureTools(server);
+    registerLocationTools(server);
+    registerHistoryTools(server);
+    registerFinancialTools(server);
+    registerSodTools(server);
+    registerDemographicsTools(server);
+  }
+
+  if (profile.analysis) {
+    registerAnalysisTools(server);
+    registerPeerGroupTools(server);
+    registerBankHealthTools(server);
+    registerPeerHealthTools(server);
+    registerRiskSignalTools(server);
+    registerCreditConcentrationTools(server);
+    registerFundingProfileTools(server);
+    registerSecuritiesPortfolioTools(server);
+    registerUbprAnalysisTools(server);
+    registerMarketShareAnalysisTools(server);
+    registerFranchiseFootprintTools(server);
+    registerHoldingCompanyProfileTools(server);
+    registerRegionalContextTools(server);
+  }
+
+  if (profile.chatgptCanonical || profile.chatgptAliases) {
+    registerChatGptRetrievalTools(server, {
+      includeCanonicalNames: profile.chatgptCanonical,
+      includeNamespacedAliases: profile.chatgptAliases,
+    });
+  }
+
+  if (profile.chatgptDeepDive) {
+    registerChatGptBankDeepDiveTool(server);
+    registerChatGptAppResources(server);
+  }
+
+  if (profile.resources) {
+    registerSchemaResources(server);
+  }
+
+  if (profile.prompts) {
+    registerWorkflowPrompts(server);
+  }
 
   return server;
 }
@@ -121,6 +197,13 @@ interface HttpAppOptions {
   chatAllowedOrigins?: string[];
   geminiApiKey?: string;
   serverFactory?: () => McpServer;
+  /**
+   * When true, run the streamable HTTP transport in stateless JSON mode (no
+   * session map, no idle sweep). Recommended for multi-tenant remote
+   * deployments. Default false to preserve backward compatibility with the
+   * session-based contract that existing clients and tests depend on.
+   */
+  stateless?: boolean;
 }
 
 interface SessionContext {
@@ -181,7 +264,7 @@ function sendInvalidSessionResponse(res: express.Response): void {
 
 export function createApp(options: HttpAppOptions = {}): Express {
   const app = express();
-  const serverFactory = options.serverFactory ?? createServer;
+  const serverFactory = options.serverFactory ?? (() => createServer());
   const port = options.port ?? 3000;
   const allowedOrigins =
     options.allowedOrigins ?? parseAllowedOrigins(undefined, port);
@@ -194,19 +277,55 @@ export function createApp(options: HttpAppOptions = {}): Express {
     options.sessionIdleTimeoutMs ?? DEFAULT_SESSION_IDLE_TIMEOUT_MS;
   const sessionSweepIntervalMs =
     options.sessionSweepIntervalMs ?? DEFAULT_SESSION_SWEEP_INTERVAL_MS;
+  const stateless =
+    options.stateless ?? process.env.FDIC_MCP_STATELESS_HTTP === "true";
   app.use(express.json());
 
-  const sessionSweepTimer = setInterval(() => {
-    void sweepIdleSessions(sessions, sessionIdleTimeoutMs, Date.now());
-    sweepIdleChatSessions(chatSessions, sessionIdleTimeoutMs, Date.now());
-  }, sessionSweepIntervalMs);
-  sessionSweepTimer.unref?.();
+  if (!stateless) {
+    const sessionSweepTimer = setInterval(() => {
+      void sweepIdleSessions(sessions, sessionIdleTimeoutMs, Date.now());
+      sweepIdleChatSessions(chatSessions, sessionIdleTimeoutMs, Date.now());
+    }, sessionSweepIntervalMs);
+    sessionSweepTimer.unref?.();
+  }
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", server: "fdic-mcp-server", version: VERSION });
   });
 
   app.all("/mcp", async (req, res) => {
+    if (stateless) {
+      let server: McpServer | undefined;
+      let transport: StreamableHTTPServerTransport | undefined;
+      try {
+        server = serverFactory();
+        transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: undefined,
+          enableJsonResponse: true,
+          enableDnsRebindingProtection: true,
+          allowedOrigins,
+        });
+        res.on("close", () => {
+          void transport?.close().catch(() => {});
+          void server?.close().catch(() => {});
+        });
+        await server.connect(transport);
+        await transport.handleRequest(req, res, req.body);
+      } catch (error: unknown) {
+        console.error("MCP request error:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: { code: -32603, message: "Internal server error" },
+            id: null,
+          });
+        }
+        await transport?.close().catch(() => {});
+        await server?.close().catch(() => {});
+      }
+      return;
+    }
+
     const sessionIdHeader = req.headers["mcp-session-id"];
     const sessionId =
       typeof sessionIdHeader === "string" ? sessionIdHeader : undefined;

@@ -4,6 +4,8 @@
   "tools": [
     "search",
     "fetch",
+    "fdic_search",
+    "fdic_fetch",
     "fdic_search_institutions",
     "fdic_get_institution",
     "fdic_search_failures",

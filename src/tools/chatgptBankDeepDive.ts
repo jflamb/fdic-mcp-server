@@ -11,6 +11,7 @@ import {
 import { BANK_DEEP_DIVE_WIDGET_URI } from "../resources/chatgptAppResources.js";
 import { getDefaultReportDate, validateQuarterEndDate } from "./shared/queryUtils.js";
 import { getInstitutionUrl } from "./shared/chatgptUrls.js";
+import { FdicBankDeepDiveOutputSchema } from "../schemas/output.js";
 
 const BankDeepDiveInputSchema = z.object({
   cert: z
@@ -109,6 +110,7 @@ export function registerChatGptBankDeepDiveTool(server: McpServer): void {
       description:
         "Use this when the user wants a scannable ChatGPT dashboard for one FDIC-insured institution, including identity, public financial metrics, risk signals, and source links.",
       inputSchema: BankDeepDiveInputSchema,
+      outputSchema: FdicBankDeepDiveOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

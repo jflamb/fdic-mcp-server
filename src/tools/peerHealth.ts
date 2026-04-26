@@ -7,6 +7,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import {
   ANALYSIS_TIMEOUT_MS,
   MAX_CONCURRENCY,
@@ -119,6 +120,7 @@ Output: Ranked list with per-institution proxy_score (1-4 scale) and proxy_band,
 
 NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
       inputSchema: PeerHealthInputSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

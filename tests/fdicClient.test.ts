@@ -367,10 +367,27 @@ describe("fdicClient", () => {
     ).toContain("Shorten the date range or reduce the cert list.");
   });
 
-  it("formats tool errors with MCP-compatible shape", () => {
-    expect(formatToolError(new Error("bad"))).toEqual({
-      content: [{ type: "text", text: "Error: bad" }],
-      isError: true,
+  it("formats tool errors with MCP-compatible shape and structured error code", () => {
+    const result = formatToolError(new Error("bad"));
+    expect(result.content).toEqual([{ type: "text", text: "Error: bad" }]);
+    expect(result.isError).toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      code: "FDIC_UNKNOWN",
+      message: "bad",
+      retryable: false,
     });
+  });
+
+  it("infers stable error codes from upstream messages", () => {
+    expect(
+      formatToolError(new Error("FDIC API rate limit exceeded.")).structuredContent,
+    ).toMatchObject({ code: "FDIC_RATE_LIMIT", retryable: true });
+    expect(
+      formatToolError(new Error("Bad request to FDIC API: bad query"))
+        .structuredContent,
+    ).toMatchObject({ code: "FDIC_BAD_FILTER", retryable: false });
+    expect(
+      formatToolError(new Error("No institution found with CERT 99")).structuredContent,
+    ).toMatchObject({ code: "FDIC_NOT_FOUND", retryable: false });
   });
 });

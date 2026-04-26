@@ -7,6 +7,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import {
   ANALYSIS_TIMEOUT_MS,
   getDefaultReportDate,
@@ -208,6 +209,7 @@ Output includes:
 
 NOTE: Management (M) is omitted from component scoring — cannot be assessed from public data. Sensitivity (S) uses proxy metrics (NIM trend, securities concentration). This is a public off-site analytical proxy, not an official CAMELS rating.`,
       inputSchema: BankHealthInputSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

@@ -4,55 +4,27 @@ import {
   queryEndpoint,
   extractRecords,
   buildPaginationInfo,
+  capStructuredContent,
   formatLookupResultText,
   formatSearchResultText,
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
 import { CommonQuerySchema, CertSchema } from "../schemas/common.js";
+import {
+  FdicFailuresSearchOutputSchema,
+  FdicFailureLookupOutputSchema,
+} from "../schemas/output.js";
 
 export function registerFailureTools(server: McpServer): void {
   server.registerTool(
     "fdic_search_failures",
     {
       title: "Search Bank Failures",
-      description: `Search for details on failed FDIC-insured financial institutions.
-
-Returns data on bank failures including failure date, resolution type, estimated cost to the FDIC Deposit Insurance Fund, and acquiring institution info.
-
-Common filter examples:
-  - By state: STALP:CA (two-letter state code)
-  - By year range: FAILDATE:[2008-01-01 TO 2010-12-31]
-  - Recent failures: FAILDATE:[2020-01-01 TO *]
-  - By resolution type: RESTYPE:PAYOFF or RESTYPE:"PURCHASE AND ASSUMPTION"
-  - Large failures by cost: COST:[100000 TO *]  (cost in $thousands)
-  - By name: NAME:"Washington Mutual"
-
-Resolution types (RESTYPE):
-  PAYOFF = depositors paid directly, no acquirer
-  PURCHASE AND ASSUMPTION = acquirer buys assets and assumes deposits
-  PAYOUT = variant of payoff with insured-deposit transfer
-
-Key returned fields:
-  - CERT: FDIC Certificate Number
-  - NAME: Institution name
-  - CITY, STALP (two-letter state code), STNAME (full state name): Location
-  - FAILDATE: Date of failure (YYYY-MM-DD)
-  - SAVR: Savings association flag (SA) or bank (BK)
-  - RESTYPE: Resolution type (see above)
-  - QBFASSET: Total assets at failure ($thousands)
-  - COST: Estimated cost to FDIC Deposit Insurance Fund ($thousands)
-
-Args:
-  - filters (string, optional): ElasticSearch query filter
-  - fields (string, optional): Comma-separated field names
-  - limit (number): Records to return (default: 20)
-  - offset (number): Pagination offset (default: 0)
-  - sort_by (string, optional): Field to sort by (e.g., FAILDATE, COST)
-  - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
-
-Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and failure records.`,
+      description:
+        "Use this when the user wants details on failed FDIC-insured institutions filtered by name, state, date range, resolution type, or cost. Returns failure records with pagination; see fdic://schemas/failures for the full field catalog.",
       inputSchema: CommonQuerySchema,
+      outputSchema: FdicFailuresSearchOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -69,7 +41,10 @@ Prefer concise human-readable summaries or tables when answering users. Structur
           params.offset ?? 0,
           records.length,
         );
-        const output = { ...pagination, failures: records };
+        const output = capStructuredContent(
+          { ...pagination, failures: records },
+          "failures",
+        );
         const text = truncateIfNeeded(
           formatSearchResultText("failures", records, pagination, [
             "CERT",
@@ -97,16 +72,10 @@ Prefer concise human-readable summaries or tables when answering users. Structur
     "fdic_get_institution_failure",
     {
       title: "Get Failure Details by Certificate Number",
-      description: `Retrieve failure details for a specific institution by FDIC Certificate Number.
-
-Use this when you know the CERT of a failed institution to get its specific failure record.
-
-Args:
-  - cert (number): FDIC Certificate Number of the failed institution
-  - fields (string, optional): Comma-separated list of fields to return
-
-Returns detailed failure information suitable for concise summaries, with structured fields available for exact values when needed.`,
+      description:
+        "Use this when the user knows the CERT of a failed institution and needs its specific failure record. Returns failure details (date, resolution type, cost, acquirer); responds with `found: false` if the institution did not fail.",
       inputSchema: CertSchema,
+      outputSchema: FdicFailureLookupOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -124,7 +93,7 @@ Returns detailed failure information suitable for concise summaries, with struct
         const records = extractRecords(response);
         if (records.length === 0) {
           const output = {
-            found: false,
+            found: false as const,
             cert,
             message: `No failure record found for CERT ${cert}. The institution may not have failed, or the CERT may be incorrect.`,
           };

@@ -7,7 +7,35 @@
   "repository": "https://github.com/jflamb/fdic-mcp-server",
   "mcpServers": {
     "fdic": {
-      "url": "https://bankfind.jflamb.com/mcp"
+      "url": "https://bankfind.jflamb.com/mcp",
+      "stdioFallback": {
+        "command": "npx",
+        "args": ["-y", "fdic-mcp-server"]
+      }
     }
-  }
+  },
+  "skills": [
+    {
+      "name": "fdic-mcp-server-conventions",
+      "path": ".claude/skills/fdic-mcp-server/SKILL.md"
+    }
+  ],
+  "commands": [
+    {
+      "name": "fdic-bank-deep-dive",
+      "path": ".claude/commands/fdic-bank-deep-dive.md"
+    },
+    {
+      "name": "fdic-failure-forensics",
+      "path": ".claude/commands/fdic-failure-forensics.md"
+    },
+    {
+      "name": "fdic-portfolio-surveillance",
+      "path": ".claude/commands/fdic-portfolio-surveillance.md"
+    },
+    {
+      "name": "fdic-examiner-overlay",
+      "path": ".claude/commands/fdic-examiner-overlay.md"
+    }
+  ]
 }

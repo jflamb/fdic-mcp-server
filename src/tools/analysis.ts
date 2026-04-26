@@ -9,6 +9,7 @@ import {
   queryEndpoint,
   truncateIfNeeded,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import {
   ANALYSIS_TIMEOUT_MS,
   MAX_CONCURRENCY,
@@ -905,6 +906,7 @@ Inputs:
 
 Returns concise comparison text plus structured deltas, derived metrics, and insight tags for each institution.`,
       inputSchema: SnapshotAnalysisSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

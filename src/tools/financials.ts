@@ -5,12 +5,17 @@ import {
   queryEndpoint,
   extractRecords,
   buildPaginationInfo,
+  capStructuredContent,
   formatSearchResultText,
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
 import { CommonQuerySchema } from "../schemas/common.js";
 import { buildFilterString } from "./shared/queryUtils.js";
+import {
+  FdicFinancialsSearchOutputSchema,
+  FdicSummarySearchOutputSchema,
+} from "../schemas/output.js";
 
 const FinancialQuerySchema = CommonQuerySchema.extend({
   sort_order: z
@@ -31,7 +36,7 @@ const FinancialQuerySchema = CommonQuerySchema.extend({
     .string()
     .optional()
     .describe(
-      "Filter by Report Date (REPDTE) in YYYYMMDD format. FDIC data is published quarterly on call report dates: March 31, June 30, September 30, and December 31. Example: 20231231 for Q4 2023. If omitted, returns all available dates (sorted most recent first by default).",
+      "Filter by Report Date (REPDTE) in YYYYMMDD format (quarter-end: 0331, 0630, 0930, 1231). If omitted, returns all available dates (sorted most recent first).",
     ),
 });
 
@@ -55,42 +60,10 @@ export function registerFinancialTools(server: McpServer): void {
     "fdic_search_financials",
     {
       title: "Search Institution Financial Data",
-      description: `Search quarterly financial (Call Report) data for FDIC-insured institutions. Covers over 1,100 financial variables reported quarterly.
-
-Returns balance sheet, income statement, capital, and performance ratio data from FDIC Call Reports.
-
-Common filter examples:
-  - Financials for a specific bank: CERT:3511
-  - By report date: REPDTE:20231231
-  - High-profit banks in Q4 2023: REPDTE:20231231 AND ROA:[1.5 TO *]
-  - Large banks most recent: ASSET:[10000000 TO *]
-  - Negative net income: NETINC:[* TO 0]
-
-Key returned fields:
-  - CERT: FDIC Certificate Number
-  - REPDTE: Report Date — the last day of the quarterly reporting period (YYYYMMDD)
-  - ASSET: Total assets ($thousands)
-  - DEP: Total deposits ($thousands)
-  - DEPDOM: Domestic deposits ($thousands)
-  - INTINC: Total interest income ($thousands)
-  - EINTEXP: Total interest expense ($thousands)
-  - NETINC: Net income ($thousands)
-  - ROA: Return on assets (%)
-  - ROE: Return on equity (%)
-  - NETNIM: Net interest margin (%)
-
-Args:
-  - cert (number, optional): Filter by institution CERT number
-  - repdte (string, optional): Report Date in YYYYMMDD format (quarter-end dates: 0331, 0630, 0930, 1231)
-  - filters (string, optional): Additional ElasticSearch query filters
-  - fields (string, optional): Comma-separated field names (the full set has 1,100+ fields)
-  - limit (number): Records to return (default: 20)
-  - offset (number): Pagination offset (default: 0)
-  - sort_by (string, optional): Field to sort by
-  - sort_order ('ASC'|'DESC'): Sort direction (default: 'DESC' recommended for most recent first)
-
-Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and quarterly financial records.`,
+      description:
+        "Use this when the user wants quarterly Call Report data (balance sheet, income, capital, performance ratios) for FDIC-insured institutions. Filter by CERT and/or REPDTE plus optional ElasticSearch filters. See fdic://schemas/financials for the full 1,100+ field catalog.",
       inputSchema: FinancialQuerySchema,
+      outputSchema: FdicFinancialsSearchOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -115,7 +88,10 @@ Prefer concise human-readable summaries or tables when answering users. Structur
           params.offset ?? 0,
           records.length,
         );
-        const output = { ...pagination, financials: records };
+        const output = capStructuredContent(
+          { ...pagination, financials: records },
+          "financials",
+        );
         const text = truncateIfNeeded(
           formatSearchResultText("financial records", records, pagination, [
             "CERT",
@@ -142,40 +118,10 @@ Prefer concise human-readable summaries or tables when answering users. Structur
     "fdic_search_summary",
     {
       title: "Search Annual Financial Summary Data",
-      description: `Search aggregate financial and structure summary data subtotaled by year for FDIC-insured institutions.
-
-Returns annual snapshots of key financial metrics — useful for tracking an institution's growth over time.
-
-Common filter examples:
-  - Annual history for a bank: CERT:3511
-  - Specific year: YEAR:2022
-  - Year range: YEAR:[2010 TO 2020]
-  - Large banks in 2022: YEAR:2022 AND ASSET:[10000000 TO *]
-  - Profitable in 2023: YEAR:2023 AND ROE:[10 TO *]
-
-Key returned fields:
-  - CERT: FDIC Certificate Number
-  - YEAR: Report year
-  - ASSET: Total assets ($thousands)
-  - DEP: Total deposits ($thousands)
-  - NETINC: Net income ($thousands)
-  - ROA: Return on assets (%)
-  - ROE: Return on equity (%)
-  - OFFICES: Number of branch offices
-  - REPDTE: Report Date — the last day of the reporting period (YYYYMMDD)
-
-Args:
-  - cert (number, optional): Filter by institution CERT number
-  - year (number, optional): Filter by specific year (1934-present)
-  - filters (string, optional): Additional ElasticSearch query filters
-  - fields (string, optional): Comma-separated field names
-  - limit (number): Records to return (default: 20)
-  - offset (number): Pagination offset (default: 0)
-  - sort_by (string, optional): Field to sort by (e.g., YEAR, ASSET)
-  - sort_order ('ASC'|'DESC'): Sort direction (default: 'ASC')
-
-Prefer concise human-readable summaries or tables when answering users. Structured fields are available for totals, pagination, and annual summary records.`,
+      description:
+        "Use this when the user wants annual financial-summary snapshots (assets, deposits, ROA, ROE, offices) for FDIC-insured institutions, filtered by CERT and/or year. See fdic://schemas/summary for the full field catalog.",
       inputSchema: SummaryQuerySchema,
+      outputSchema: FdicSummarySearchOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -200,7 +146,10 @@ Prefer concise human-readable summaries or tables when answering users. Structur
           params.offset ?? 0,
           records.length,
         );
-        const output = { ...pagination, summary: records };
+        const output = capStructuredContent(
+          { ...pagination, summary: records },
+          "summary",
+        );
         const text = truncateIfNeeded(
           formatSearchResultText("annual summary records", records, pagination, [
             "CERT",

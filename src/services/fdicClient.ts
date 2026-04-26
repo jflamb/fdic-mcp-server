@@ -347,13 +347,114 @@ export function formatLookupResultText(
   return `${label}\n${summarizeRecord(record, preferredKeys, 8)}`;
 }
 
-export function formatToolError(err: unknown): {
+export type FdicErrorCode =
+  | "FDIC_BAD_FILTER"
+  | "FDIC_RATE_LIMIT"
+  | "FDIC_UPSTREAM_ERROR"
+  | "FDIC_RESPONSE_TOO_LARGE"
+  | "FDIC_CANCELED"
+  | "FDIC_NOT_FOUND"
+  | "FDIC_BAD_DATE"
+  | "FDIC_INVALID_INPUT"
+  | "FDIC_UNKNOWN";
+
+interface ToolErrorPayload extends Record<string, unknown> {
+  code: FdicErrorCode;
+  message: string;
+  retryable: boolean;
+  hint?: string;
+}
+
+const ERROR_CODE_FROM_MESSAGE: Array<{
+  pattern: RegExp;
+  code: FdicErrorCode;
+  retryable: boolean;
+}> = [
+  { pattern: /Bad request to FDIC API/, code: "FDIC_BAD_FILTER", retryable: false },
+  { pattern: /rate limit/i, code: "FDIC_RATE_LIMIT", retryable: true },
+  { pattern: /server error/i, code: "FDIC_UPSTREAM_ERROR", retryable: true },
+  {
+    pattern: /response-size limit|maxContentLength/,
+    code: "FDIC_RESPONSE_TOO_LARGE",
+    retryable: false,
+  },
+  { pattern: /canceled/i, code: "FDIC_CANCELED", retryable: true },
+  { pattern: /No (institution|failure|financial)/i, code: "FDIC_NOT_FOUND", retryable: false },
+  { pattern: /quarter-end date/i, code: "FDIC_BAD_DATE", retryable: false },
+];
+
+function inferErrorCode(message: string): { code: FdicErrorCode; retryable: boolean } {
+  for (const entry of ERROR_CODE_FROM_MESSAGE) {
+    if (entry.pattern.test(message)) {
+      return { code: entry.code, retryable: entry.retryable };
+    }
+  }
+  return { code: "FDIC_UNKNOWN", retryable: false };
+}
+
+export function formatToolError(
+  err: unknown,
+  override?: {
+    code?: FdicErrorCode;
+    message?: string;
+    retryable?: boolean;
+    hint?: string;
+  },
+): {
   content: Array<{ type: "text"; text: string }>;
+  structuredContent: Record<string, unknown>;
   isError: true;
 } {
   const message = err instanceof Error ? err.message : String(err);
+  const inferred = inferErrorCode(message);
+  const payload: ToolErrorPayload = {
+    code: override?.code ?? inferred.code,
+    message: override?.message ?? message,
+    retryable: override?.retryable ?? inferred.retryable,
+    hint: override?.hint,
+  };
   return {
-    content: [{ type: "text", text: `Error: ${message}` }],
+    content: [{ type: "text", text: `Error: ${payload.message}` }],
+    structuredContent: payload,
     isError: true,
   };
+}
+
+export const DEFAULT_STRUCTURED_BYTE_LIMIT = 200_000;
+
+/**
+ * Caps the size of an array of records inside a structured-content payload.
+ * Returns the original output if it is already under the byte limit, otherwise
+ * a copy with the records array truncated and a `truncated: true` flag set.
+ */
+export function capStructuredContent<T extends Record<string, unknown>>(
+  output: T,
+  recordKey: keyof T & string,
+  byteLimit = DEFAULT_STRUCTURED_BYTE_LIMIT,
+): T {
+  const records = output[recordKey];
+  if (!Array.isArray(records)) {
+    return output;
+  }
+  const initialBytes = Buffer.byteLength(JSON.stringify(output), "utf8");
+  if (initialBytes <= byteLimit) {
+    return output;
+  }
+
+  let lo = 0;
+  let hi = records.length;
+  let best = 0;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const candidate = { ...output, [recordKey]: records.slice(0, mid), truncated: true };
+    const bytes = Buffer.byteLength(JSON.stringify(candidate), "utf8");
+    if (bytes <= byteLimit) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+
+  return { ...output, [recordKey]: records.slice(0, best), truncated: true };
 }

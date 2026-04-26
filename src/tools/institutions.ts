@@ -4,12 +4,17 @@ import {
   queryEndpoint,
   extractRecords,
   buildPaginationInfo,
+  capStructuredContent,
   formatLookupResultText,
   formatSearchResultText,
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
 import { CommonQuerySchema, CertSchema } from "../schemas/common.js";
+import {
+  FdicInstitutionsSearchOutputSchema,
+  FdicInstitutionLookupOutputSchema,
+} from "../schemas/output.js";
 
 export function registerInstitutionTools(server: McpServer): void {
   server.registerTool(
@@ -17,8 +22,9 @@ export function registerInstitutionTools(server: McpServer): void {
     {
       title: "Search FDIC Institutions",
       description:
-        'Use this when the user needs FDIC-insured institution search results by name, state, CERT, asset size, charter class, or regulatory status. Returns institution profile rows with pagination; use fdic://schemas/institutions for the full field catalog.',
+        "Use this when the user needs FDIC-insured institution search results by name, state, CERT, asset size, charter class, or regulatory status. Returns institution profile rows with pagination; use fdic://schemas/institutions for the full field catalog.",
       inputSchema: CommonQuerySchema,
+      outputSchema: FdicInstitutionsSearchOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -35,7 +41,10 @@ export function registerInstitutionTools(server: McpServer): void {
           params.offset ?? 0,
           records.length,
         );
-        const output = { ...pagination, institutions: records };
+        const output = capStructuredContent(
+          { ...pagination, institutions: records },
+          "institutions",
+        );
         const text = truncateIfNeeded(
           formatSearchResultText("institutions", records, pagination, [
             "CERT",
@@ -63,8 +72,9 @@ export function registerInstitutionTools(server: McpServer): void {
     {
       title: "Get Institution by Certificate Number",
       description:
-        "Use this when the user knows an exact FDIC Certificate Number and needs one institution profile. To discover a CERT first, call fdic_search_institutions or the ChatGPT-compatible search tool.",
+        "Use this when the user knows an exact FDIC Certificate Number and needs one institution profile. To discover a CERT first, call fdic_search_institutions or fdic_search.",
       inputSchema: CertSchema,
+      outputSchema: FdicInstitutionLookupOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -82,7 +92,7 @@ export function registerInstitutionTools(server: McpServer): void {
         const records = extractRecords(response);
         if (records.length === 0) {
           const output = {
-            found: false,
+            found: false as const,
             cert,
             message: `No institution found with CERT number ${cert}.`,
           };

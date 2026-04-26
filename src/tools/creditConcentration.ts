@@ -7,6 +7,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import {
   ANALYSIS_TIMEOUT_MS,
   getDefaultReportDate,
@@ -107,6 +108,7 @@ Output includes:
 
 NOTE: This is an analytical tool based on public financial data.`,
       inputSchema: CreditConcentrationSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

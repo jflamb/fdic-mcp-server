@@ -7,6 +7,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
+import { FdicAnalysisOutputSchema } from "../schemas/output.js";
 import { ANALYSIS_TIMEOUT_MS } from "./shared/queryUtils.js";
 import { sendProgressNotification } from "./shared/progress.js";
 
@@ -108,6 +109,7 @@ Output includes:
 
 Branches outside MSAs are grouped under "Non-MSA / Rural".`,
       inputSchema: FranchiseFootprintInputSchema,
+      outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
