@@ -98,6 +98,19 @@ Check:
 - that the URL ends in `/mcp`
 - that your MCP host supports remote HTTP MCP connections
 
+### ChatGPT shows stale tools or an old widget
+
+ChatGPT can cache tool descriptors and widget resources during Developer Mode testing.
+
+Check:
+
+- refresh tools from the ChatGPT app details page after descriptor or schema changes
+- use a new `ui://widget/...-vN.html` URI after breaking widget HTML, CSS, or JavaScript changes
+- verify the widget resource in MCP Inspector before retesting in ChatGPT
+- confirm widget CSP metadata allows exactly the domains the widget needs
+
+For local testing, expose the HTTP server with an HTTPS tunnel and connect ChatGPT to the tunneled `/mcp` URL.
+
 ### The model keeps choosing the wrong tool
 
 Improve the prompt by stating:

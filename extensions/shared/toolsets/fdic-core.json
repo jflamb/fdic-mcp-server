@@ -2,6 +2,8 @@
   "name": "fdic-core",
   "description": "Core FDIC BankFind data retrieval tools for institution lookup, financials, failures, locations, history, SOD, demographics, and summaries.",
   "tools": [
+    "search",
+    "fetch",
     "fdic_search_institutions",
     "fdic_get_institution",
     "fdic_search_failures",

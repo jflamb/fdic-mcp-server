@@ -3,6 +3,7 @@
   "description": "FDIC analytical and comparison tools for health assessment, peer benchmarking, risk detection, and domain-specific analysis.",
   "tools": [
     "fdic_analyze_bank_health",
+    "fdic_show_bank_deep_dive",
     "fdic_compare_peer_health",
     "fdic_detect_risk_signals",
     "fdic_compare_bank_snapshots",

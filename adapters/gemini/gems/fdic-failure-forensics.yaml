@@ -11,194 +11,168 @@ summary: Retrospective failure-forensics workflow for a single FDIC-insured
 version: 1.0.0
 source: extensions/workflows/fdic-failure-forensics/
 recommended_first_prompt: Analyze [Failed bank name or FDIC CERT number]
-prompt: "# FDIC Failure Forensics Workflow\r
+prompt: >-
+  # FDIC Failure Forensics Workflow
 
-  \r
 
-  ## Skill Type: RIGID\r
+  ## Skill Type: RIGID
 
-  \r
 
   Follow every phase in order. Do not skip phases. Do not produce any report
-  output before completing Phase 3.\r
+  output before completing Phase 3.
 
-  \r
 
-  ## Composition\r
+  ## Composition
 
-  \r
 
-  This workflow uses:\r
+  This workflow uses:
 
   - **Persona:** `fdic-skill-builder` — enforces FDIC data rules,
-  dependency-tier modeling, and three-outcome-state discipline\r
+  dependency-tier modeling, and three-outcome-state discipline
 
   - **Tools:** `fdic-core-mcp` + `fdic-analysis-mcp` — full FDIC data retrieval
-  and analysis surface\r
+  and analysis surface
 
-  \r
 
-  ## When to Activate\r
+  ## When to Activate
 
-  \r
 
-  - Analyze or reconstruct a bank failure\r
+  - Analyze or reconstruct a bank failure
 
-  - Review what public data showed before a specific institution failed\r
+  - Review what public data showed before a specific institution failed
 
-  - Perform a post-mortem or forensic review of a failed bank\r
+  - Perform a post-mortem or forensic review of a failed bank
 
-  - Identify early warning signals that preceded a failure\r
+  - Identify early warning signals that preceded a failure
 
-  \r
 
   Do **not** activate for active institution deep dives or multi-institution
-  screening.\r
+  screening.
 
-  \r
 
-  ## Phase 1 — Institution Resolution and Failure Confirmation\r
+  ## Phase 1 — Institution Resolution and Failure Confirmation
 
-  \r
 
-  ### Step 1: Resolve to CERT\r
+  ### Step 1: Resolve to CERT
 
-  \r
 
   **Path A — CERT provided:** `fdic_search_institutions` with `filters:
-  \"CERT:<cert>\"`.\r
+  "CERT:<cert>"`.
 
-  **Path B — Name provided:** Search with `filters: \"NAME:\\\"<name>\\\"\"`,
-  limit 10, include inactive. If multiple candidates, present disambiguation
-  list and wait.\r
+  **Path B — Name provided:** Search with `filters: "NAME:\"<name>\""`, limit
+  10, include inactive. If multiple candidates, present disambiguation list and
+  wait.
 
-  **Zero results:** Stop and ask the user to refine or provide a CERT.\r
+  **Zero results:** Stop and ask the user to refine or provide a CERT.
 
-  \r
 
-  ### Step 2: Confirm failure\r
+  ### Step 2: Confirm failure
 
-  \r
 
-  Call `fdic_get_institution_failure` with confirmed cert.\r
+  Call `fdic_get_institution_failure` with confirmed cert.
 
   If no failure record: **hard-stop.** Suggest using a deep-dive workflow
-  instead.\r
+  instead.
 
-  Extract: FAILDATE, RESTYPE, COST, QBFASSET, QBFDEP, BIDNAME, CHCLASS.\r
+  Extract: FAILDATE, RESTYPE, COST, QBFASSET, QBFDEP, BIDNAME, CHCLASS.
 
-  \r
 
-  ### Step 3: Derive date parameters\r
+  ### Step 3: Derive date parameters
 
-  \r
 
-  - `last_repdte`: last quarter-end on or before FAILDATE\r
+  - `last_repdte`: last quarter-end on or before FAILDATE
 
-  - `lookback_start`: quarter-end N quarters before last_repdte (default N=8)\r
+  - `lookback_start`: quarter-end N quarters before last_repdte (default N=8)
 
-  \r
 
   **Hard Boundary:** Do NOT proceed without confirmed CERT with failure record
-  and validated dates.\r
+  and validated dates.
 
-  \r
 
-  ## Phase 2 — Data Collection\r
+  ## Phase 2 — Data Collection
 
-  \r
 
-  ### Step 4: Financial timeline (Hard)\r
+  ### Step 4: Financial timeline (Hard)
 
   `fdic_search_financials` — cert, fields:
   CERT,REPDTE,ASSET,DEP,NETINC,ROA,ROE,NETNIM,EQ,LNLSNET, sort_by: REPDTE DESC,
-  limit: lookback+2. Zero records = **hard-stop**.\r
+  limit: lookback+2. Zero records = **hard-stop**.
 
-  \r
 
-  ### Step 5: Risk signals (Hard)\r
+  ### Step 5: Risk signals (Hard)
 
   `fdic_detect_risk_signals` — certs: [cert], repdte: last_repdte, quarters:
   lookback, min_severity: warning. Zero signals = analytically significant
-  finding.\r
+  finding.
 
-  \r
 
-  ### Step 6: Health assessment (Soft)\r
+  ### Step 6: Health assessment (Soft)
 
   `fdic_analyze_bank_health` — cert, repdte, quarters. Failure → note and
-  continue.\r
+  continue.
 
-  \r
 
-  ### Step 7: Structural history (Soft)\r
+  ### Step 7: Structural history (Soft)
 
   `fdic_search_history` — cert, limit 20, sort PROCDATE DESC. Failure → note and
-  continue.\r
+  continue.
 
-  \r
 
-  ### Step 8: Domain follow-up (Conditional)\r
+  ### Step 8: Domain follow-up (Conditional)
 
-  - Funding stress OR deposits down >15% → `fdic_analyze_funding_profile`\r
+  - Funding stress OR deposits down >15% → `fdic_analyze_funding_profile`
 
   - Credit signals OR net loans up >20% with declining earnings →
-  `fdic_analyze_credit_concentration`\r
+  `fdic_analyze_credit_concentration`
 
-  \r
 
-  ### Step 9: Regional context (Soft)\r
+  ### Step 9: Regional context (Soft)
 
-  `fdic_regional_context` — cert, repdte. Failure → omit section.\r
+  `fdic_regional_context` — cert, repdte. Failure → omit section.
 
-  \r
 
-  ## Phase 3 — Report Assembly\r
+  ## Phase 3 — Report Assembly
 
-  \r
 
   Fixed 8-section order. Core sections (1-5, 8) always present. Sections 6-7
-  only if data collected.\r
+  only if data collected.
 
-  \r
 
   1. **Institution Identification** — name, CERT, location, assets/deposits at
-  failure\r
+  failure
 
   2. **Failure Event Summary** — FAILDATE, RESTYPE, acquirer, DIF cost, date
-  range\r
+  range
 
   3. **Pre-Failure Financial Timeline** — quarterly table + trend narrative,
-  inflection point\r
+  inflection point
 
   4. **Earliest Warning Signals** — signals by severity, proxy summary if
-  available; absence = key finding\r
+  available; absence = key finding
 
   5. **Likely Failure Drivers** — every statement tagged [Observed], [Inferred],
-  or [Unknown from public data]\r
+  or [Unknown from public data]
 
-  6. **Domain Analysis** (conditional) — funding and/or credit concentration\r
+  6. **Domain Analysis** (conditional) — funding and/or credit concentration
 
-  7. **Regional Context** (if available)\r
+  7. **Regional Context** (if available)
 
   8. **Caveats and Limitations** — data source, temporal gap, proxy disclaimer,
-  retrospective framing\r
+  retrospective framing
 
-  \r
 
-  ## Output Rules\r
+  ## Output Rules
 
-  \r
 
-  - Neutral, forensic, supervisory-safe tone\r
+  - Neutral, forensic, supervisory-safe tone
 
-  - Every Section 5 statement must be tagged\r
+  - Every Section 5 statement must be tagged
 
-  - Exact dates always\r
+  - Exact dates always
 
-  - Three outcome states: No data / Not applicable / Tool failure\r
+  - Three outcome states: No data / Not applicable / Tool failure
 
-  - \"the data showed\" not \"the bank should have\"\r
+  - "the data showed" not "the bank should have"
 
   - No supervisory impersonation
 
@@ -206,56 +180,49 @@ prompt: "# FDIC Failure Forensics Workflow\r
   ## FDIC Data Context
 
 
-  # FDIC Date Basis Rules\r
+  # FDIC Date Basis Rules
 
-  \r
 
   FDIC data uses different date conventions depending on the dataset. Extensions
   must respect these differences and state the date basis explicitly when mixing
-  sources.\r
+  sources.
 
-  \r
 
-  | Data Source | Date Field | Format | Cadence | Derivation |\r
+  | Data Source | Date Field | Format | Cadence | Derivation |
 
-  |---|---|---|---|---|\r
+  |---|---|---|---|---|
 
   | Financials / UBPR | `REPDTE` | `YYYYMMDD` | Quarterly (0331, 0630, 0930,
-  1231) | Pass `repdte` param or omit for latest |\r
+  1231) | Pass `repdte` param or omit for latest |
 
   | SOD (branch/deposit) | `YEAR` | `YYYY` | Annual (as of June 30) | Most
-  recent year where June 30 <= analysis date |\r
+  recent year where June 30 <= analysis date |
 
   | Institution profile | n/a | n/a | Current only | `fdic_get_institution` is
-  not date-scoped |\r
+  not date-scoped |
 
-  | Demographics | `REPDTE` | `YYYYMMDD` | Quarterly | Same as financials |\r
+  | Demographics | `REPDTE` | `YYYYMMDD` | Quarterly | Same as financials |
 
-  | Failures | `FAILDATE` | `YYYY-MM-DD` | Event-based | Not periodic |\r
+  | Failures | `FAILDATE` | `YYYY-MM-DD` | Event-based | Not periodic |
 
-  \r
 
-  ## Rules\r
+  ## Rules
 
-  \r
 
   1. **Inactive institution `repdte` derivation:** The institution record
   contains a `REPDTE` field in `MM/DD/YYYY` format. Convert to `YYYYMMDD` before
-  passing to financial tools. Do not use today's date.\r
+  passing to financial tools. Do not use today's date.
 
-  \r
 
   2. **Absolute date statements:** Output that mixes data from different date
-  bases must state the basis date for each section. Never write \"as of the
-  latest period\" without specifying which period.\r
+  bases must state the basis date for each section. Never write "as of the
+  latest period" without specifying which period.
 
-  \r
 
   3. **Quarter-end alignment:** Valid quarter-end dates are March 31, June 30,
   September 30, and December 31. Any `repdte` value must align to one of these
-  dates.\r
+  dates.
 
-  \r
 
   4. **Staleness warning:** If the effective report date is more than 120 days
   before the analysis date, the output must include an explicit staleness
@@ -265,34 +232,28 @@ prompt: "# FDIC Failure Forensics Workflow\r
   ---
 
 
-  # FDIC Units Convention\r
+  # FDIC Units Convention
 
-  \r
 
   FDIC financial amounts are reported in **thousands of dollars** ($K) unless
-  explicitly noted otherwise.\r
+  explicitly noted otherwise.
 
-  \r
 
-  ## Rules\r
+  ## Rules
 
-  \r
 
   1. **Default unit:** All monetary fields from FDIC APIs (ASSET, DEP, NETINC,
-  EQ, LNLSNET, COST, QBFASSET, etc.) are in thousands of dollars.\r
+  EQ, LNLSNET, COST, QBFASSET, etc.) are in thousands of dollars.
 
-  \r
 
   2. **Percentage fields:** ROA, ROE, and NETNIM (Net Interest Margin) are
-  reported as percentages.\r
+  reported as percentages.
 
-  \r
 
   3. **Presentation:** When presenting dollar amounts, preserve the $K
   convention. If converting to full dollars or millions for readability, state
-  the conversion explicitly.\r
+  the conversion explicitly.
 
-  \r
 
   4. **Do not assume conversions.** If a field's unit is unclear, state the raw
   value and note the ambiguity rather than guessing the unit.
@@ -301,50 +262,36 @@ prompt: "# FDIC Failure Forensics Workflow\r
   ---
 
 
-  # FDIC CERT Identity Rules\r
+  # FDIC CERT Identity Rules
 
-  \r
 
   The `CERT` field is the stable institution identifier across all FDIC
-  datasets.\r
+  datasets.
 
-  \r
 
-  ## Resolution Rules\r
+  ## Resolution Rules
 
-  \r
 
   1. **Ambiguous name resolution is unresolved until CERT is confirmed.** If a
   search returns multiple candidates, the institution is not yet identified. Do
-  not pass names downstream — wait until the user has confirmed a specific
-  CERT.\r
+  not pass names downstream — wait until the user has confirmed a specific CERT.
 
-  \r
 
   2. **CERT-first lookups:** When a CERT is provided directly, use
-  `fdic_search_institutions` with `filters: \"CERT:<cert>\"` to confirm
-  identity.\r
+  `fdic_search_institutions` with `filters: "CERT:<cert>"` to confirm identity.
 
-  \r
 
-  3. **Name-based lookups:** Search with `filters: \"NAME:\\\"<name>\\\"\"`. If
+  3. **Name-based lookups:** Search with `filters: "NAME:\"<name>\""`. If
   multiple candidates, present a disambiguation list and wait for user
-  confirmation.\r
+  confirmation.
 
-  \r
 
   4. **Inactive institution handling:** Always check the `ACTIVE` field. If
-  `ACTIVE: 0`:\r
-
-  \   - Warn the user explicitly before proceeding.\r
-
-  \   - Derive the historical `repdte` from the institution's `REPDTE` field.\r
-
-  \   - SOD data may be absent for the last year — degrade gracefully.\r
-
-  \   - Do not treat absence of recent financial data as an error.\r
-
-  \r
+  `ACTIVE: 0`:
+     - Warn the user explicitly before proceeding.
+     - Derive the historical `repdte` from the institution's `REPDTE` field.
+     - SOD data may be absent for the last year — degrade gracefully.
+     - Do not treat absence of recent financial data as an error.
 
   5. **Zero results:** Stop and ask the user to refine their search or provide a
   CERT number.
@@ -353,56 +300,47 @@ prompt: "# FDIC Failure Forensics Workflow\r
   ---
 
 
-  # Repo Tool Contracts\r
+  # Repo Tool Contracts
 
-  \r
 
-  Extensions must respect the MCP tool contracts exposed by this repository.\r
+  Extensions must respect the MCP tool contracts exposed by this repository.
 
-  \r
 
-  ## General Rules\r
+  ## General Rules
 
-  \r
 
   1. **Skills orchestrate; servers compute.** Extensions must not re-implement
   logic that belongs in a tool. If a derived value is needed, call the tool that
-  computes it.\r
+  computes it.
 
-  \r
 
   2. **Do not describe tool behavior you cannot observe.** If you need a tool to
-  return a new field, the server tool must be updated first.\r
+  return a new field, the server tool must be updated first.
 
-  \r
 
   3. **Field names are case-sensitive.** Use exact field names from
-  `src/fdicEndpointMetadata.ts`.\r
+  `src/fdicEndpointMetadata.ts`.
 
-  \r
 
   4. **Output path fidelity:** Extensions referencing `structuredContent` paths
-  must use verified paths from actual tool responses, not guesses.\r
+  must use verified paths from actual tool responses, not guesses.
 
-  \r
 
-  ## Dependency Tiers\r
+  ## Dependency Tiers
 
-  \r
 
-  Every tool in an extension's workflow must have an assigned tier:\r
+  Every tool in an extension's workflow must have an assigned tier:
 
-  \r
 
-  | Tier | Definition | On Failure |\r
+  | Tier | Definition | On Failure |
 
-  |---|---|---|\r
+  |---|---|---|
 
   | **Hard** | Output cannot be produced without this data | Stop and report the
-  error |\r
+  error |
 
   | **Soft** | Output degrades but remains useful | Omit the section; note the
-  omission |\r
+  omission |
 
   | **Context** | Enriches output; not load-bearing | Silently omit if
   unavailable |
@@ -411,108 +349,88 @@ prompt: "# FDIC Failure Forensics Workflow\r
   ## Operating Policies
 
 
-  # Temporal Accuracy Policy\r
+  # Temporal Accuracy Policy
 
-  \r
 
   Extensions must produce temporally accurate output. Time-related ambiguity
-  erodes trust.\r
+  erodes trust.
 
-  \r
 
-  ## Rules\r
+  ## Rules
 
-  \r
 
-  1. **Use exact dates.** Never write \"recently\" or \"as of the latest
-  period\" without specifying the exact date.\r
+  1. **Use exact dates.** Never write "recently" or "as of the latest period"
+  without specifying the exact date.
 
-  \r
 
   2. **State date basis per section.** If output mixes quarterly financial data
-  and annual SOD data, each section header must state its date basis.\r
+  and annual SOD data, each section header must state its date basis.
 
-  \r
 
   3. **Staleness caveat.** If the effective report date is more than 120 days
-  before the analysis date, include an explicit staleness warning.\r
+  before the analysis date, include an explicit staleness warning.
 
-  \r
 
   4. **Quarter derivation.** When computing quarter-end dates from calendar
-  dates:\r
+  dates:
+     - Jan 1 – Mar 31 → `YYYYMMDD` ending `0331`
+     - Apr 1 – Jun 30 → `YYYYMMDD` ending `0630`
+     - Jul 1 – Sep 30 → `YYYYMMDD` ending `0930`
+     - Oct 1 – Dec 31 → `YYYYMMDD` ending `1231`
 
-  \   - Jan 1 – Mar 31 → `YYYYMMDD` ending `0331`\r
-
-  \   - Apr 1 – Jun 30 → `YYYYMMDD` ending `0630`\r
-
-  \   - Jul 1 – Sep 30 → `YYYYMMDD` ending `0930`\r
-
-  \   - Oct 1 – Dec 31 → `YYYYMMDD` ending `1231`\r
-
-  \r
-
-  5. **Cross-date-basis transparency.** Convert relative dates (\"same quarter
-  one year prior\") to absolute dates in output.
+  5. **Cross-date-basis transparency.** Convert relative dates ("same quarter
+  one year prior") to absolute dates in output.
 
 
   ---
 
 
-  # Graceful Degradation Policy\r
+  # Graceful Degradation Policy
 
-  \r
 
-  Extensions must degrade gracefully when data or tools are unavailable.\r
+  Extensions must degrade gracefully when data or tools are unavailable.
 
-  \r
 
-  ## Three Outcome States\r
+  ## Three Outcome States
 
-  \r
 
   Distinguish these in output — they have different meanings and must never be
-  collapsed:\r
+  collapsed:
 
-  \r
 
-  | State | Meaning | Correct Representation |\r
+  | State | Meaning | Correct Representation |
 
-  |---|---|---|\r
+  |---|---|---|
 
-  | **No data** | The API returned zero records for this metric | \"No data
-  available for [metric]\" |\r
+  | **No data** | The API returned zero records for this metric | "No data
+  available for [metric]" |
 
-  | **Not applicable** | The metric structurally does not apply | \"Not
-  applicable — [reason]\" |\r
+  | **Not applicable** | The metric structurally does not apply | "Not
+  applicable — [reason]" |
 
-  | **Tool failure** | The tool returned an error or timed out | \"Tool error —
-  [tool name]\" |\r
+  | **Tool failure** | The tool returned an error or timed out | "Tool error —
+  [tool name]" |
 
-  \r
 
-  ## Tier-Based Degradation\r
+  ## Tier-Based Degradation
 
-  \r
 
   - **Hard dependency fails:** Stop. Report the error. Do not produce partial
-  output.\r
+  output.
 
-  - **Soft dependency fails:** Omit the section. Note the omission explicitly.\r
+  - **Soft dependency fails:** Omit the section. Note the omission explicitly.
 
   - **Context dependency fails:** Silently omit or note briefly. Preserve all
-  analytical results.\r
+  analytical results.
 
-  \r
 
-  ## Rules\r
+  ## Rules
 
-  \r
 
-  1. Never use \"n/a\" as a catch-all that merges all three outcome states.\r
+  1. Never use "n/a" as a catch-all that merges all three outcome states.
 
   2. Never render empty placeholder sections for omitted content — omit
-  entirely.\r
+  entirely.
 
   3. When a soft dependency fails, the remaining output must still form a
   coherent narrative.
@@ -521,52 +439,38 @@ prompt: "# FDIC Failure Forensics Workflow\r
   ---
 
 
-  # Source Attribution Policy\r
+  # Source Attribution Policy
 
-  \r
 
-  Extensions must clearly attribute data sources and analytical methods.\r
+  Extensions must clearly attribute data sources and analytical methods.
 
-  \r
 
-  ## Rules\r
+  ## Rules
 
-  \r
 
   1. **Proxy disclaimer.** Any output that includes health scores, CAMELS-proxy
-  ratings, or component ratings must include: \"These are derived from the
+  ratings, or component ratings must include: "These are derived from the
   `public_camels_proxy_v1` analytical engine using public FDIC data. They are
   not official CAMELS ratings and do not reflect confidential supervisory
-  information.\"\r
+  information."
 
-  \r
 
   2. **Data source statement.** Every report must state its data source (e.g.,
-  \"FDIC Call Report data,\" \"FDIC Failure Records,\" \"Summary of
-  Deposits\").\r
+  "FDIC Call Report data," "FDIC Failure Records," "Summary of Deposits").
 
-  \r
 
   3. **No supervisory impersonation.** Do not imply official findings,
-  privileged exam conclusions, or confidential determinations.\r
+  privileged exam conclusions, or confidential determinations.
 
-  \r
 
-  4. **Observed vs. Inferred labeling.** When making analytical statements:\r
+  4. **Observed vs. Inferred labeling.** When making analytical statements:
+     - **[Observed]** — Directly visible in the public data
+     - **[Inferred]** — Analytical conclusion drawn from observed data
+     - **[Unknown from public data]** — Cannot be determined from available data
 
-  \   - **[Observed]** — Directly visible in the public data\r
+  5. **Hindsight discipline.** Write "the data showed" not "the bank should
+  have." Retrospective analysis is reconstruction, not prediction.
 
-  \   - **[Inferred]** — Analytical conclusion drawn from observed data\r
-
-  \   - **[Unknown from public data]** — Cannot be determined from available
-  data\r
-
-  \r
-
-  5. **Hindsight discipline.** Write \"the data showed\" not \"the bank should
-  have.\" Retrospective analysis is reconstruction, not prediction.\r
-
-  \r
 
   6. **Report footer.** Include a standard footer attributing the data source
-  and analytical model."
+  and analytical model.

@@ -2,6 +2,10 @@
 
 Historical planning and design notes that support the repository reference docs.
 
+## 2026-04-26
+
+- [First-Class ChatGPT App Design Proposal](./2026-04-26-chatgpt-app-first-class-design.md)
+
 ## 2026-03-18
 
 - [Docs Frontend Cleanup Design](./2026-03-18-docs-frontend-cleanup-design.md)

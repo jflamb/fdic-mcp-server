@@ -18,6 +18,8 @@ For guided multi-tool workflows available in Claude Code, see [Skills]({{ '/skil
 
 | Tool | Use It When | Notes |
 |------|-------------|-------|
+| `search` | ChatGPT needs citation-friendly retrieval results across institutions, failures, branches, or schema docs | Standard MCP retrieval shape for ChatGPT company knowledge and deep research compatibility |
+| `fetch` | ChatGPT needs full citation text for an item returned by `search` | Accepts ids such as `institution:<CERT>`, `failure:<CERT>`, `branch:<id>`, and `schema:<endpoint>` |
 | `fdic_search_institutions` | You need institution search results by name, state, status, asset size, or other details | Good default entry point for bank discovery |
 | `fdic_get_institution` | You already know the FDIC `CERT` and need one institution record | Best for direct bank lookup |
 | `fdic_search_failures` | You need failed-bank records, failure dates, costs, or resolution details | Use when the question is specifically about bank failures |
@@ -48,6 +50,7 @@ All financial amounts are in **thousands of dollars** unless otherwise noted.
 | Tool | Use It When | Notes |
 |------|-------------|-------|
 | `fdic_analyze_bank_health` | You want a CAMELS-style health assessment for a single institution | `public_camels_proxy_v1` assessment with overall band, PCA capital categorization, management overlay, and trend analysis |
+| `fdic_show_bank_deep_dive` | You want a ChatGPT app dashboard for a single institution | Returns dashboard-ready structured content and links to the embedded Bank Deep Dive widget |
 | `fdic_compare_peer_health` | You want to rank a group of institutions by health scores | Ranks peers by proxy scores with percentiles and outlier flags for the subject institution |
 | `fdic_detect_risk_signals` | You want to scan institutions for early warning indicators | Flags critical and warning-level issues with standardized signal codes |
 

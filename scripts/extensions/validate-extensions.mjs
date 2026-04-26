@@ -55,6 +55,8 @@ function listEvalFiles(...baseDirs) {
 
 // ── Known MCP tools exposed by this repo ────────────────────────────────
 const KNOWN_TOOLS = new Set([
+  'search',
+  'fetch',
   'fdic_search_institutions',
   'fdic_get_institution',
   'fdic_search_failures',
@@ -68,6 +70,7 @@ const KNOWN_TOOLS = new Set([
   'fdic_compare_bank_snapshots',
   'fdic_peer_group_analysis',
   'fdic_analyze_bank_health',
+  'fdic_show_bank_deep_dive',
   'fdic_compare_peer_health',
   'fdic_detect_risk_signals',
   'fdic_analyze_credit_concentration',

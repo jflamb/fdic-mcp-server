@@ -789,13 +789,18 @@ describe("HTTP MCP server", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.result.tools).toHaveLength(23);
+    expect(response.body.result.tools).toHaveLength(26);
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toContain("fdic_search_demographics");
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toContain("fdic_compare_bank_snapshots");
+    expect(
+      response.body.result.tools.map((tool: { name: string }) => tool.name),
+    ).toEqual(
+      expect.arrayContaining(["search", "fetch", "fdic_show_bank_deep_dive"]),
+    );
 
     const financialsTool = response.body.result.tools.find(
       (tool: { name: string }) => tool.name === "fdic_search_financials",
@@ -817,6 +822,28 @@ describe("HTTP MCP server", () => {
     expect(peerGroupTool.inputSchema.properties.repdte.type).toBe("string");
     expect(peerGroupTool.inputSchema.properties.cert.type).toBe("integer");
     expect(peerGroupTool.inputSchema.properties.asset_min.type).toBe("number");
+
+    const searchTool = response.body.result.tools.find(
+      (tool: { name: string }) => tool.name === "search",
+    );
+    expect(searchTool.inputSchema.properties.query.type).toBe("string");
+    expect(searchTool.annotations.readOnlyHint).toBe(true);
+
+    const fetchTool = response.body.result.tools.find(
+      (tool: { name: string }) => tool.name === "fetch",
+    );
+    expect(fetchTool.inputSchema.properties.id.type).toBe("string");
+    expect(fetchTool.annotations.readOnlyHint).toBe(true);
+
+    const deepDiveTool = response.body.result.tools.find(
+      (tool: { name: string }) => tool.name === "fdic_show_bank_deep_dive",
+    );
+    expect(deepDiveTool._meta.ui.resourceUri).toBe(
+      "ui://widget/fdic-bank-deep-dive-v1.html",
+    );
+    expect(deepDiveTool._meta["openai/outputTemplate"]).toBe(
+      "ui://widget/fdic-bank-deep-dive-v1.html",
+    );
   });
 
   it("lists schema resources for each supported FDIC endpoint", async () => {
@@ -840,8 +867,31 @@ describe("HTTP MCP server", () => {
         "fdic://schemas/summary",
         "fdic://schemas/sod",
         "fdic://schemas/demographics",
+        "ui://widget/fdic-bank-deep-dive-v1.html",
       ]),
     );
+  });
+
+  it("reads the ChatGPT bank deep-dive widget resource", async () => {
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 103,
+      method: "resources/read",
+      params: {
+        uri: "ui://widget/fdic-bank-deep-dive-v1.html",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const resource = response.body.result.contents[0];
+    expect(resource.uri).toBe("ui://widget/fdic-bank-deep-dive-v1.html");
+    expect(resource.mimeType).toBe("text/html;profile=mcp-app");
+    expect(resource.text).toContain("FDIC BankFind");
+    expect(resource._meta.ui.prefersBorder).toBe(true);
+    expect(resource._meta.ui.csp).toEqual({
+      connectDomains: [],
+      resourceDomains: [],
+    });
   });
 
   it("reads an endpoint schema resource over HTTP", async () => {
@@ -863,6 +913,210 @@ describe("HTTP MCP server", () => {
     expect(parsed.fields.CERT).toBeDefined();
     expect(parsed.fields.NETNIM).toBeDefined();
     expect(parsed.sort_fields).toContain("CERT");
+  });
+
+  it("returns ChatGPT-compatible search results", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 3511,
+              NAME: "Wells Fargo Bank, National Association",
+              CITY: "Sioux Falls",
+              STALP: "SD",
+              ACTIVE: 1,
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 104,
+      method: "tools/call",
+      params: {
+        name: "search",
+        arguments: { query: "Wells Fargo Bank" },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.content).toHaveLength(1);
+    const payload = JSON.parse(response.body.result.content[0].text);
+    expect(payload.results).toEqual([
+      {
+        id: "institution:3511",
+        title: "Wells Fargo Bank, National Association (Sioux Falls, SD)",
+        url: "https://banks.data.fdic.gov/bankfind-suite/bankfind/details/3511",
+      },
+    ]);
+  });
+
+  it("returns fetch text for an institution result", async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            data: {
+              CERT: 3511,
+              NAME: "Wells Fargo Bank, National Association",
+              CITY: "Sioux Falls",
+              STALP: "SD",
+              ACTIVE: 1,
+              ASSET: 1000000,
+            },
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 105,
+      method: "tools/call",
+      params: {
+        name: "fetch",
+        arguments: { id: "institution:3511" },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.content).toHaveLength(1);
+    const payload = JSON.parse(response.body.result.content[0].text);
+    expect(payload).toMatchObject({
+      id: "institution:3511",
+      title: "Wells Fargo Bank, National Association",
+      url: "https://banks.data.fdic.gov/bankfind-suite/bankfind/details/3511",
+      metadata: {
+        type: "institution",
+        cert: 3511,
+      },
+    });
+    expect(payload.text).toContain("CERT: 3511");
+  });
+
+  it("returns fetchable branch search results", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: { data: [], meta: { total: 0 } },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                UNINUM: 123456,
+                CERT: 3511,
+                UNINAME: "Wells Fargo Bank",
+                NAMEFULL: "Austin Branch",
+                ADDRESS: "100 Congress Ave",
+                CITY: "Austin",
+                STALP: "TX",
+                ZIP: "78701",
+                BRNUM: 12,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 106,
+      method: "tools/call",
+      params: {
+        name: "search",
+        arguments: { query: "branches in Austin" },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const payload = JSON.parse(response.body.result.content[0].text);
+    expect(payload.results).toEqual([
+      {
+        id: "branch:123456",
+        title: "Wells Fargo Bank - 100 Congress Ave, Austin, TX, 78701",
+        url: "https://jflamb.github.io/fdic-mcp-server/tool-reference/#fdic_search_locations",
+      },
+    ]);
+  });
+
+  it("returns dashboard structuredContent for the ChatGPT bank deep-dive tool", async () => {
+    getMock
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                NAME: "Wells Fargo Bank, National Association",
+                CITY: "Sioux Falls",
+                STALP: "SD",
+                ACTIVE: 1,
+                ASSET: 1000000,
+                DEP: 900000,
+                OFFICES: 10,
+                BKCLASS: "N",
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            {
+              data: {
+                CERT: 3511,
+                REPDTE: "20241231",
+                ASSET: 1000000,
+                DEP: 900000,
+                ROA: 1.25,
+                IDT1CER: 8.5,
+              },
+            },
+          ],
+          meta: { total: 1 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 107,
+      method: "tools/call",
+      params: {
+        name: "fdic_show_bank_deep_dive",
+        arguments: { cert: 3511, repdte: "20241231" },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.structuredContent).toMatchObject({
+      institution: {
+        cert: 3511,
+        name: "Wells Fargo Bank, National Association",
+        report_date: "20241231",
+        asset_thousands: 1000000,
+      },
+      metrics: {
+        roa: "1.25%",
+        tier1_leverage: "8.50%",
+      },
+      sources: [
+        {
+          url: "https://banks.data.fdic.gov/bankfind-suite/bankfind/details/3511",
+        },
+      ],
+    });
+    expect(response.body.result._meta.widget.resourceUri).toBe(
+      "ui://widget/fdic-bank-deep-dive-v1.html",
+    );
   });
 
   it("reuses cached FDIC responses across sequential HTTP requests", async () => {

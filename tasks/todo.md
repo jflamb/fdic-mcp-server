@@ -1,3 +1,35 @@
+# First-Class ChatGPT App
+
+Reference: 2026-04-26 design proposal to make the FDIC MCP server behave like a first-class ChatGPT app.
+
+## Goals
+
+- [x] Add always-on ChatGPT-compatible `search` and `fetch` tools covering institutions, failures, branches, and schema docs.
+- [x] Add an embedded Bank Deep Dive widget resource and a render tool that links to it.
+- [x] Improve representative tool metadata for ChatGPT discovery without changing existing tool contracts.
+- [x] Document the ChatGPT app local/tunneled validation loop and submission readiness checklist.
+- [x] Validate with repo-standard commands.
+
+## Acceptance Criteria
+
+- [x] `tools/list` includes `search`, `fetch`, and existing FDIC tools.
+- [x] `search` and `fetch` use the expected exact input shapes and JSON text response wrappers.
+- [x] Retrieval results include canonical HTTPS URLs where possible and fetchable branch/location IDs.
+- [x] A widget resource is registered with MCP Apps UI MIME type and app metadata.
+- [x] A render tool returns dashboard-ready `structuredContent` and points to the widget resource.
+- [x] Existing FDIC tool behavior remains backward compatible.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Implemented ChatGPT-compatible retrieval tools, embedded widget resource, bank deep-dive render tool, docs, tests, and regenerated extension schema/adapters.
+- [x] Full validation passed after committing generated schema updates.
+
 # Public Legal Pages For App Directory
 
 Reference: 2026-03-30 request to add a Privacy Policy URL and Terms of Service URL for the public OpenAI app submission.

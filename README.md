@@ -193,6 +193,8 @@ More examples are in [docs/usage-examples.md](./docs/usage-examples.md).
 
 | Tool | Description |
 |------|-------------|
+| `search` | ChatGPT-compatible citation search across institutions, failures, branches, and schema docs |
+| `fetch` | Fetch full citation text for a result returned by `search` |
 | `fdic_search_institutions` | Search FDIC-insured banks and savings institutions |
 | `fdic_get_institution` | Get details for a specific institution by CERT number |
 | `fdic_search_failures` | Search failed bank records |
@@ -206,6 +208,7 @@ More examples are in [docs/usage-examples.md](./docs/usage-examples.md).
 | `fdic_compare_bank_snapshots` | Compare two reporting snapshots across banks and rank growth and profitability changes |
 | `fdic_peer_group_analysis` | Build a peer group and rank an institution against peers on financial metrics |
 | `fdic_analyze_bank_health` | Run a CAMELS-style health assessment for a single institution |
+| `fdic_show_bank_deep_dive` | Render a ChatGPT bank deep-dive dashboard for a single institution |
 | `fdic_ubpr_analysis` | Run a UBPR-equivalent ratio analysis (ROA, ROE, NIM, efficiency, capital, liquidity, growth) |
 | `fdic_compare_peer_health` | Rank a group of institutions by CAMELS-style health scores |
 | `fdic_detect_risk_signals` | Scan institutions for early warning risk indicators |

@@ -33,6 +33,9 @@ import { registerMarketShareAnalysisTools } from "./tools/marketShareAnalysis.js
 import { registerFranchiseFootprintTools } from "./tools/franchiseFootprint.js";
 import { registerHoldingCompanyProfileTools } from "./tools/holdingCompanyProfile.js";
 import { registerRegionalContextTools } from "./tools/regionalContext.js";
+import { registerChatGptRetrievalTools } from "./tools/chatgptRetrieval.js";
+import { registerChatGptBankDeepDiveTool } from "./tools/chatgptBankDeepDive.js";
+import { registerChatGptAppResources } from "./resources/chatgptAppResources.js";
 import { registerSchemaResources } from "./resources/schemaResources.js";
 
 export function createServer(): McpServer {
@@ -61,6 +64,9 @@ export function createServer(): McpServer {
   registerFranchiseFootprintTools(server);
   registerHoldingCompanyProfileTools(server);
   registerRegionalContextTools(server);
+  registerChatGptRetrievalTools(server);
+  registerChatGptBankDeepDiveTool(server);
+  registerChatGptAppResources(server);
   registerSchemaResources(server);
 
   return server;
