@@ -428,6 +428,36 @@ describe("fdicClient", () => {
     expect(capped.upstream).toEqual({ count: 20, next_offset: 20 });
   });
 
+  it("throws FDIC_RESPONSE_TOO_LARGE when capStructuredContent cannot fit a single record", () => {
+    const oversize = "X".repeat(2_000);
+    const payload = {
+      total: 5,
+      offset: 0,
+      count: 5,
+      has_more: false,
+      institutions: [{ CERT: 1, NAME: oversize }],
+    };
+
+    expect(() => capStructuredContent(payload, "institutions", 500)).toThrow(
+      /response-size limit/,
+    );
+
+    const error = (() => {
+      try {
+        capStructuredContent(payload, "institutions", 500);
+        return null;
+      } catch (err) {
+        return err as Error;
+      }
+    })();
+
+    expect(error).not.toBeNull();
+    expect(formatToolError(error!).structuredContent).toMatchObject({
+      code: "FDIC_RESPONSE_TOO_LARGE",
+      retryable: false,
+    });
+  });
+
   it("infers stable error codes from upstream messages", () => {
     expect(
       formatToolError(new Error("FDIC API rate limit exceeded.")).structuredContent,

@@ -460,6 +460,19 @@ export function capStructuredContent<T extends Record<string, unknown>>(
     }
   }
 
+  if (best === 0) {
+    // Even one record overflows the cap. Re-deriving pagination here would
+    // set next_offset = offset, which a client paginating off the structured
+    // payload would request forever. Surface this as an explicit
+    // FDIC_RESPONSE_TOO_LARGE error and let the caller recover by trimming
+    // the per-record payload (smaller `fields` list, lower `limit`).
+    throw new Error(
+      "FDIC API response exceeded the configured response-size limit before parsing: " +
+        "a single record exceeded the structured-content byte cap. " +
+        "Request fewer fields with `fields=`, lower `limit`, or raise the cap.",
+    );
+  }
+
   return buildTruncatedPayload(output, recordKey, records, best) as T;
 }
 
