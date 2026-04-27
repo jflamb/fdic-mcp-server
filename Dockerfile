@@ -1,4 +1,9 @@
 ARG NODE_VERSION=22.22.1
+# Version baked into dist/server.js via esbuild's __APP_VERSION__ define.
+# The deploy workflow passes the latest published git tag here so /health
+# reflects the actual deployed release. Falls back to package.json when
+# unset (local builds, CI smoke builds, etc.).
+ARG VERSION
 
 FROM node:${NODE_VERSION}-bookworm-slim AS build
 
@@ -10,6 +15,8 @@ RUN npm ci
 COPY src ./src
 COPY scripts ./scripts
 COPY tsconfig.json ./
+ARG VERSION
+ENV BUILD_VERSION=${VERSION}
 RUN npm run build && npm prune --omit=dev
 
 FROM node:${NODE_VERSION}-bookworm-slim

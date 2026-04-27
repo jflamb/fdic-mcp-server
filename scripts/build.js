@@ -4,8 +4,12 @@ const path = require("path");
 const pkg = require("../package.json");
 
 async function main() {
+  // Prefer BUILD_VERSION when supplied (the deploy workflow passes the
+  // tagged release version via Docker build arg). Fall back to package.json
+  // so local `npm run build` keeps working unchanged.
+  const version = process.env.BUILD_VERSION || pkg.version;
   const define = {
-    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_VERSION__: JSON.stringify(version),
   };
 
   await Promise.all([
