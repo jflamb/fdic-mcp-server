@@ -2,6 +2,22 @@ import { z } from "zod";
 
 const FdicRecord = z.record(z.unknown());
 
+const FdicFinancialRecord = z.object({
+  CERT: z.number().int().optional(),
+  NAME: z.string().optional(),
+  REPDTE: z.union([z.string(), z.number()]).optional(),
+  ASSET: z.number().optional(),
+  DEP: z.number().optional(),
+  NETINC: z.number().optional(),
+  ROA: z.number().optional(),
+  ROE: z.number().optional(),
+  IDT1CER: z.number().optional(),
+  NCLNLSR: z.number().optional(),
+  LNLSDEPR: z.number().optional(),
+  NIMY: z.number().optional(),
+  EEFFR: z.number().optional(),
+}).passthrough();
+
 const Pagination = {
   total: z.number().int(),
   offset: z.number().int(),
@@ -10,10 +26,13 @@ const Pagination = {
   next_offset: z.number().int().optional(),
 } as const;
 
-function paginatedSearchSchema<K extends string>(recordKey: K) {
+function paginatedSearchSchema<K extends string>(
+  recordKey: K,
+  recordSchema: z.ZodTypeAny = FdicRecord,
+) {
   return z.object({
     ...Pagination,
-    [recordKey]: z.array(FdicRecord),
+    [recordKey]: z.array(recordSchema),
     truncated: z.boolean().optional(),
   });
 }
@@ -30,6 +49,7 @@ export const FdicHistorySearchOutputSchema = paginatedSearchSchema("events");
 
 export const FdicFinancialsSearchOutputSchema = paginatedSearchSchema(
   "financials",
+  FdicFinancialRecord,
 );
 
 export const FdicSummarySearchOutputSchema = paginatedSearchSchema("summary");

@@ -43,6 +43,44 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "institutions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "offset",
+          "count",
+          "has_more",
+          "institutions"
+        ],
+        "additionalProperties": false
       }
     },
     "fdic_get_institution": {
@@ -64,6 +102,11 @@
           "cert"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_search_failures": {
@@ -107,6 +150,44 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "offset",
+          "count",
+          "has_more",
+          "failures"
+        ],
+        "additionalProperties": false
       }
     },
     "fdic_get_institution_failure": {
@@ -128,6 +209,11 @@
           "cert"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_search_locations": {
@@ -176,6 +262,44 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "offset",
+          "count",
+          "has_more",
+          "locations"
+        ],
+        "additionalProperties": false
       }
     },
     "fdic_search_history": {
@@ -223,6 +347,44 @@
             "description": "Filter by FDIC Certificate Number to get history for a specific institution"
           }
         },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "offset",
+          "count",
+          "has_more",
+          "events"
+        ],
         "additionalProperties": false
       }
     },
@@ -275,6 +437,88 @@
             "description": "Filter by Report Date (REPDTE) in YYYYMMDD format (quarter-end: 0331, 0630, 0930, 1231). If omitted, returns all available dates (sorted most recent first)."
           }
         },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "financials": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "CERT": {
+                  "type": "integer"
+                },
+                "NAME": {
+                  "type": "string"
+                },
+                "REPDTE": {
+                  "type": [
+                    "string",
+                    "number"
+                  ]
+                },
+                "ASSET": {
+                  "type": "number"
+                },
+                "DEP": {
+                  "type": "number"
+                },
+                "NETINC": {
+                  "type": "number"
+                },
+                "ROA": {
+                  "type": "number"
+                },
+                "ROE": {
+                  "type": "number"
+                },
+                "IDT1CER": {
+                  "type": "number"
+                },
+                "NCLNLSR": {
+                  "type": "number"
+                },
+                "LNLSDEPR": {
+                  "type": "number"
+                },
+                "NIMY": {
+                  "type": "number"
+                },
+                "EEFFR": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "offset",
+          "count",
+          "has_more",
+          "financials"
+        ],
         "additionalProperties": false
       }
     },
@@ -329,6 +573,44 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "offset",
+          "count",
+          "has_more",
+          "summary"
+        ],
+        "additionalProperties": false
       }
     },
     "fdic_search_sod": {
@@ -382,6 +664,44 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "deposits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "offset",
+          "count",
+          "has_more",
+          "deposits"
+        ],
+        "additionalProperties": false
       }
     },
     "fdic_search_demographics": {
@@ -433,6 +753,44 @@
             "description": "Filter by Report Date (REPDTE) in YYYYMMDD format (quarter-end: 0331, 0630, 0930, 1231)."
           }
         },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "demographics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "offset",
+          "count",
+          "has_more",
+          "demographics"
+        ],
         "additionalProperties": false
       }
     },
@@ -524,6 +882,11 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_peer_group_analysis": {
@@ -588,6 +951,11 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_analyze_bank_health": {
@@ -617,6 +985,11 @@
           "cert"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_compare_peer_health": {
@@ -680,6 +1053,490 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "public_camels_proxy_v1"
+          },
+          "official_status": {
+            "type": "string",
+            "const": "public off-site proxy, not official CAMELS"
+          },
+          "proxy": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "proxy_summary": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "const": "public_camels_proxy_v1"
+                  },
+                  "official_status": {
+                    "type": "string",
+                    "const": "public off-site proxy, not official CAMELS"
+                  },
+                  "score": {
+                    "type": "number"
+                  },
+                  "band": {
+                    "type": "string"
+                  },
+                  "components": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": "string"
+                        },
+                        "score": {
+                          "type": "number"
+                        },
+                        "legacy_rating": {
+                          "type": "number"
+                        },
+                        "legacy_label": {
+                          "type": "string"
+                        },
+                        "flags": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "label",
+                        "score",
+                        "legacy_rating",
+                        "legacy_label",
+                        "flags"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "capital_classification": {
+                    "type": "object",
+                    "properties": {
+                      "category": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "binding_constraint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "ratios_used": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "category",
+                      "label",
+                      "binding_constraint",
+                      "ratios_used"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "management_overlay": {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "type": "string"
+                      },
+                      "caps_band": {
+                        "type": "boolean"
+                      },
+                      "reason_codes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "level",
+                      "caps_band",
+                      "reason_codes"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk_signal_count": {
+                    "type": "integer"
+                  },
+                  "risk_signal_severities": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer"
+                    }
+                  },
+                  "trend_count": {
+                    "type": "integer"
+                  },
+                  "data_quality": {
+                    "type": "object",
+                    "properties": {
+                      "report_date": {
+                        "type": "string"
+                      },
+                      "staleness": {
+                        "type": "string"
+                      },
+                      "gaps_count": {
+                        "type": "integer"
+                      },
+                      "gaps": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "report_date",
+                      "staleness",
+                      "gaps_count",
+                      "gaps"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "model",
+                  "official_status",
+                  "score",
+                  "band",
+                  "components",
+                  "capital_classification",
+                  "management_overlay",
+                  "risk_signal_count",
+                  "risk_signal_severities",
+                  "trend_count",
+                  "data_quality"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "report_date": {
+            "type": "string"
+          },
+          "sort_by": {
+            "type": "string"
+          },
+          "total_institutions": {
+            "type": "integer"
+          },
+          "returned_count": {
+            "type": "integer"
+          },
+          "subject_cert": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "subject_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "subject": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "peer_median": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "peer_weighted_avg": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "percentile": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "higher_is_better": {
+                  "type": "boolean"
+                },
+                "is_outlier": {
+                  "type": "boolean"
+                },
+                "outlier_direction": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "high",
+                        "low"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "label",
+                "subject",
+                "peer_median",
+                "peer_weighted_avg",
+                "percentile",
+                "higher_is_better",
+                "is_outlier",
+                "outlier_direction"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "institutions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "cert": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "name_source": {
+                  "type": "string",
+                  "enum": [
+                    "fdic_institution_profile",
+                    "cert_fallback"
+                  ]
+                },
+                "city": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "state": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "total_assets": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "proxy_score": {
+                  "type": "number"
+                },
+                "proxy_band": {
+                  "type": "string"
+                },
+                "composite_rating": {
+                  "type": "number"
+                },
+                "composite_label": {
+                  "type": "string"
+                },
+                "component_ratings": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                },
+                "flags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "cert",
+                "name",
+                "name_source",
+                "city",
+                "state",
+                "total_assets",
+                "proxy_score",
+                "proxy_band",
+                "composite_rating",
+                "composite_label",
+                "component_ratings",
+                "flags"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "peer_context": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "peer_count": {
+                    "type": "integer"
+                  },
+                  "peer_definition": {
+                    "type": "string"
+                  },
+                  "broadening_steps": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "subject_rank": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "subject_percentiles": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "peer_count": {
+                          "type": "integer"
+                        },
+                        "peer_median": {
+                          "type": "number"
+                        },
+                        "peer_mean": {
+                          "type": "number"
+                        },
+                        "subject_value": {
+                          "type": "number"
+                        },
+                        "subject_percentile": {
+                          "type": "number"
+                        },
+                        "robust_z_score": {
+                          "type": "number"
+                        },
+                        "is_outlier": {
+                          "type": "boolean"
+                        },
+                        "outlier_direction": {
+                          "type": "string",
+                          "enum": [
+                            "high",
+                            "low"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "peer_count",
+                        "peer_median",
+                        "peer_mean",
+                        "subject_value",
+                        "subject_percentile",
+                        "robust_z_score",
+                        "is_outlier"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "weighted_peer_averages": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "peer_count",
+                  "peer_definition",
+                  "broadening_steps",
+                  "subject_rank",
+                  "subject_percentiles",
+                  "weighted_peer_averages"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "model",
+          "official_status",
+          "proxy_summary",
+          "report_date",
+          "sort_by",
+          "total_institutions",
+          "returned_count",
+          "subject_cert",
+          "subject_rank",
+          "metrics",
+          "institutions",
+          "peer_context"
+        ],
+        "additionalProperties": true
       }
     },
     "fdic_detect_risk_signals": {
@@ -742,6 +1599,11 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_analyze_credit_concentration": {
@@ -764,6 +1626,11 @@
           "cert"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_analyze_funding_profile": {
@@ -786,6 +1653,11 @@
           "cert"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_analyze_securities_portfolio": {
@@ -808,6 +1680,11 @@
           "cert"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_ubpr_analysis": {
@@ -831,6 +1708,11 @@
           "cert"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_market_share_analysis": {
@@ -865,6 +1747,11 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_franchise_footprint": {
@@ -887,6 +1774,11 @@
           "cert"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_holding_company_profile": {
@@ -905,6 +1797,11 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "fdic_regional_context": {
@@ -930,6 +1827,11 @@
           }
         },
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "search": {
@@ -945,6 +1847,38 @@
         },
         "required": [
           "query"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "results"
         ],
         "additionalProperties": false
       }
@@ -964,6 +1898,34 @@
           "id"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "text",
+          "url"
+        ],
+        "additionalProperties": false
       }
     },
     "fdic_search": {
@@ -981,6 +1943,38 @@
           "query"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "additionalProperties": false
       }
     },
     "fdic_fetch": {
@@ -996,6 +1990,34 @@
         },
         "required": [
           "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "text",
+          "url"
         ],
         "additionalProperties": false
       }
@@ -1018,6 +2040,151 @@
         },
         "required": [
           "cert"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "institution": {
+            "type": "object",
+            "properties": {
+              "cert": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "asset_thousands": {
+                "type": "number"
+              },
+              "deposit_thousands": {
+                "type": "number"
+              },
+              "offices": {
+                "type": "number"
+              },
+              "charter_class": {
+                "type": "string"
+              },
+              "regulator": {
+                "type": "string"
+              },
+              "established": {
+                "type": "string"
+              },
+              "report_date": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "cert",
+              "name",
+              "city",
+              "state",
+              "active",
+              "charter_class",
+              "regulator",
+              "established",
+              "report_date"
+            ],
+            "additionalProperties": false
+          },
+          "assessment": {
+            "type": "object",
+            "properties": {
+              "official_rating": {
+                "type": "boolean"
+              },
+              "proxy_band": {
+                "type": "string"
+              },
+              "caveat": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "official_rating",
+              "proxy_band",
+              "caveat"
+            ],
+            "additionalProperties": false
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "roa": {
+                "type": "string"
+              },
+              "roe": {
+                "type": "string"
+              },
+              "tier1_leverage": {
+                "type": "string"
+              },
+              "noncurrent_loans": {
+                "type": "string"
+              },
+              "loan_to_deposit": {
+                "type": "string"
+              },
+              "net_interest_margin": {
+                "type": "string"
+              },
+              "efficiency_ratio": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "risk_signals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "institution",
+          "assessment",
+          "metrics",
+          "risk_signals",
+          "warnings",
+          "sources"
         ],
         "additionalProperties": false
       }
