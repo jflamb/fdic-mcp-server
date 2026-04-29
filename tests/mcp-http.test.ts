@@ -816,6 +816,20 @@ describe("HTTP MCP server", () => {
     expect(financialsTool.inputSchema.properties.sort_order.default).toBe(
       "DESC",
     );
+    expect(
+      financialsTool.outputSchema.properties.financials.items.properties,
+    ).toMatchObject({
+      CERT: { type: "integer" },
+      REPDTE: {
+        type: ["string", "number"],
+      },
+      ASSET: { type: "number" },
+      ROA: { type: "number" },
+      IDT1CER: { type: "number" },
+    });
+    expect(
+      financialsTool.outputSchema.properties.financials.items.additionalProperties,
+    ).toBe(true);
     const analysisTool = response.body.result.tools.find(
       (tool: { name: string }) => tool.name === "fdic_compare_bank_snapshots",
     );
@@ -852,6 +866,16 @@ describe("HTTP MCP server", () => {
     expect(deepDiveTool._meta["openai/outputTemplate"]).toBe(
       "ui://widget/fdic-bank-deep-dive-v1.html",
     );
+    expect(deepDiveTool.outputSchema.properties.institution.properties).toMatchObject({
+      cert: { type: "integer" },
+      name: { type: "string" },
+      report_date: { type: "string" },
+    });
+    expect(deepDiveTool.outputSchema.properties.metrics.properties).toMatchObject({
+      roa: { type: "string" },
+      tier1_leverage: { type: "string" },
+      efficiency_ratio: { type: "string" },
+    });
   });
 
   it("lists the canonical workflow prompts", async () => {

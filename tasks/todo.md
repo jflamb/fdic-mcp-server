@@ -1,3 +1,33 @@
+# Issue #221: Artifact-Facing Output Schemas
+
+Reference: https://github.com/jflamb/fdic-mcp-server/issues/221
+
+## Goals
+
+- [x] Inventory artifact-facing tools and identify loose output schemas.
+- [x] Tighten the highest-value practical schema without breaking caller-selected FDIC fields.
+- [x] Confirm `structuredContent` and advertised `outputSchema` for `fdic_search_financials` and `fdic_show_bank_deep_dive`.
+- [x] Update generated schema/adapters after tool metadata changes.
+- [x] Validate with repo-standard checks.
+
+## Acceptance Criteria
+
+- [x] `fdic_search_financials` advertises common financial record fields with types while preserving passthrough support for the full BankFind field catalog.
+- [x] `fdic_show_bank_deep_dive` continues to advertise its concrete dashboard output schema.
+- [x] HTTP tests verify direct `structuredContent` and `tools/list` output schemas for both tools.
+- [x] Generated extension schema metadata is current.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] `npm run extensions:validate`
+
+## Review / Results
+
+- [x] Added common-field typing to `fdic_search_financials`, preserved passthrough support for the full FDIC field catalog, exported output schemas into generated tool metadata, and added HTTP assertions for artifact-facing `outputSchema`/`structuredContent`. Full repo validation passed after committing because the generated-schema freshness test compares against `git HEAD`.
+
 # Issue #220: Flatten Peer-Health Proxy Payload
 
 Reference: https://github.com/jflamb/fdic-mcp-server/issues/220

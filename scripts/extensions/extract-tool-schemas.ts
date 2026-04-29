@@ -38,15 +38,24 @@ async function main(): Promise<void> {
   await client.close();
   await server.close();
 
-  const schemas: Record<string, { description: string; inputSchema: object }> = {};
+  const schemas: Record<string, {
+    description: string;
+    inputSchema: object;
+    outputSchema?: object;
+  }> = {};
   for (const tool of tools) {
     // Strip $schema — OpenAI function-calling format does not use it,
     // and its presence causes interoperability issues.
     const inputSchema = { ...tool.inputSchema } as Record<string, unknown>;
     delete inputSchema['$schema'];
+    const outputSchema = tool.outputSchema
+      ? ({ ...tool.outputSchema } as Record<string, unknown>)
+      : undefined;
+    if (outputSchema) delete outputSchema['$schema'];
     schemas[tool.name] = {
       description: tool.description ?? '',
       inputSchema,
+      ...(outputSchema ? { outputSchema } : {}),
     };
   }
 
