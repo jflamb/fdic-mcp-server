@@ -200,6 +200,14 @@ const PeerHealthProxySummarySchema = z.object({
   }),
 });
 
+const DeprecationNoticeSchema = z.object({
+  path: z.string(),
+  status: z.literal("deprecated"),
+  replacement: z.string(),
+  removal_target: z.literal("future_major_release"),
+  note: z.string(),
+});
+
 export const FdicPeerHealthOutputSchema = z.object({
   model: z.literal("public_camels_proxy_v1"),
   official_status: z.literal("public off-site proxy, not official CAMELS"),
@@ -213,6 +221,7 @@ export const FdicPeerHealthOutputSchema = z.object({
   subject_rank: z.number().int().nullable(),
   metrics: z.array(PeerHealthMetricRowSchema),
   institutions: z.array(PeerHealthInstitutionSchema),
+  deprecations: z.array(DeprecationNoticeSchema),
   peer_context: z
     .object({
       peer_count: z.number().int(),
