@@ -1868,6 +1868,37 @@
         "additionalProperties": true
       }
     },
+    "fdic_qbp_lite_data": {
+      "description": "Build chart-ready data for a concise QBP Lite report from reproducible public BankFind quarterly financials. Includes executive snapshot metrics, trend series, community-bank comparison data, source notes, and explicit exclusions for non-public or non-BankFind QBP items.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "repdte": {
+            "type": "string",
+            "pattern": "^\\d{8}$",
+            "description": "Quarter-end Report Date (REPDTE) in YYYYMMDD format. If omitted, the tool searches backward from the latest likely published quarter until data is found."
+          },
+          "trend_quarters": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 40,
+            "default": 20,
+            "description": "Number of quarterly observations to return for trend charts, including the current quarter. Default 20 quarters."
+          },
+          "include_community_banks": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include a compact community-bank-vs-industry comparison using the public community-bank flag."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
+      }
+    },
     "search": {
       "description": "Use this when the model needs citation-friendly FDIC BankFind search results for institutions, failed banks, branches, or schema documentation. Returns up to 8 results with id, title, and source URL.",
       "inputSchema": {

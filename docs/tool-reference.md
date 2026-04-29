@@ -44,6 +44,7 @@ All financial amounts are in **thousands of dollars** unless otherwise noted.
 |------|-------------|-------|
 | `fdic_compare_bank_snapshots` | You want to compare multiple banks across two quarterly report dates or over a quarterly time series | Best for growth, profitability, branch-count, and trend analysis |
 | `fdic_peer_group_analysis` | You want to benchmark one institution against a peer group at a single report date | Best for ranking a bank against comparable institutions. Auto-derives peer criteria from the subject's asset size and charter class. |
+| `fdic_qbp_lite_data` | You want chart-ready data for a concise QBP Lite report | Aggregates public quarterly BankFind financials into executive snapshot metrics, trend series, portfolio credit-quality data, capital ratios, community-bank comparisons, and explicit exclusions for non-reproducible QBP items. |
 
 ## Health and Risk Analysis Tools
 
