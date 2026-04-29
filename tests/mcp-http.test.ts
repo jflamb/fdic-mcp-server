@@ -3241,6 +3241,63 @@ describe("HTTP MCP server", () => {
       peer_median: expect.closeTo(0.85, 5),
     });
     expect(sc.peer_context.weighted_peer_averages.roaPct).toBe(0.86);
+    expect(sc.proxy_summary).toMatchObject({
+      model: "public_camels_proxy_v1",
+      official_status: "public off-site proxy, not official CAMELS",
+      score: expect.any(Number),
+      band: expect.any(String),
+      capital_classification: {
+        category: "well_capitalized",
+        label: "Well Capitalized",
+        binding_constraint: null,
+        ratios_used: {
+          totalRiskBased: 12,
+          tier1RiskBased: 11,
+          cet1: 10,
+          leverage: 9,
+        },
+      },
+      management_overlay: {
+        level: expect.any(String),
+        caps_band: expect.any(Boolean),
+        reason_codes: expect.any(Array),
+      },
+      risk_signal_count: expect.any(Number),
+      risk_signal_severities: expect.any(Object),
+      trend_count: 0,
+      data_quality: {
+        report_date: "20241231",
+        staleness: expect.any(String),
+        gaps_count: expect.any(Number),
+        gaps: expect.any(Array),
+      },
+    });
+    expect(sc.proxy_summary.components).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "capital",
+          label: expect.any(String),
+          score: expect.any(Number),
+          legacy_rating: expect.any(Number),
+          flags: expect.any(Array),
+        }),
+        expect.objectContaining({
+          name: "liquidity_funding",
+          legacy_label: expect.any(String),
+        }),
+      ]),
+    );
+    expect(sc.proxy).toMatchObject({
+      overall: {
+        score: sc.proxy_summary.score,
+        band: sc.proxy_summary.band,
+      },
+      component_assessment: {
+        capital: {
+          score: expect.any(Number),
+        },
+      },
+    });
     expect(sc.metrics).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

@@ -143,10 +143,48 @@ const PeerHealthInstitutionSchema = z.object({
   flags: z.array(z.string()),
 });
 
+const PeerHealthProxySummarySchema = z.object({
+  model: z.literal("public_camels_proxy_v1"),
+  official_status: z.literal("public off-site proxy, not official CAMELS"),
+  score: z.number(),
+  band: z.string(),
+  components: z.array(
+    z.object({
+      name: z.string(),
+      label: z.string(),
+      score: z.number(),
+      legacy_rating: z.number(),
+      legacy_label: z.string(),
+      flags: z.array(z.string()),
+    }),
+  ),
+  capital_classification: z.object({
+    category: z.string(),
+    label: z.string(),
+    binding_constraint: z.string().nullable(),
+    ratios_used: z.record(z.number().nullable()),
+  }),
+  management_overlay: z.object({
+    level: z.string(),
+    caps_band: z.boolean(),
+    reason_codes: z.array(z.string()),
+  }),
+  risk_signal_count: z.number().int(),
+  risk_signal_severities: z.record(z.number().int()),
+  trend_count: z.number().int(),
+  data_quality: z.object({
+    report_date: z.string(),
+    staleness: z.string(),
+    gaps_count: z.number().int(),
+    gaps: z.array(z.string()),
+  }),
+});
+
 export const FdicPeerHealthOutputSchema = z.object({
   model: z.literal("public_camels_proxy_v1"),
   official_status: z.literal("public off-site proxy, not official CAMELS"),
   proxy: z.unknown().nullable(),
+  proxy_summary: PeerHealthProxySummarySchema.nullable(),
   report_date: z.string(),
   sort_by: z.string(),
   total_institutions: z.number().int(),

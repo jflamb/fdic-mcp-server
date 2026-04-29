@@ -59,6 +59,43 @@ interface PeerHealthMetricRow {
   outlier_direction: "high" | "low" | null;
 }
 
+interface PeerHealthProxyComponentSummary {
+  name: string;
+  label: string;
+  score: number;
+  legacy_rating: number;
+  legacy_label: string;
+  flags: string[];
+}
+
+interface PeerHealthProxySummary {
+  model: "public_camels_proxy_v1";
+  official_status: "public off-site proxy, not official CAMELS";
+  score: number;
+  band: OverallBand;
+  components: PeerHealthProxyComponentSummary[];
+  capital_classification: {
+    category: string;
+    label: string;
+    binding_constraint: string | null;
+    ratios_used: Record<string, number | null>;
+  };
+  management_overlay: {
+    level: string;
+    caps_band: boolean;
+    reason_codes: string[];
+  };
+  risk_signal_count: number;
+  risk_signal_severities: Record<string, number>;
+  trend_count: number;
+  data_quality: {
+    report_date: string;
+    staleness: string;
+    gaps_count: number;
+    gaps: string[];
+  };
+}
+
 const PEER_METRICS: {
   key: "roaPct" | "equityCapitalRatioPct" | "netInterestMarginPct" | "efficiencyRatioPct" | "loanToDepositPct";
   legacyKey: string;
@@ -74,6 +111,56 @@ const PEER_METRICS: {
   { key: "efficiencyRatioPct", legacyKey: "efficiencyRatioPct", name: "efficiency_ratio_pct", label: "Efficiency ratio", higherIsBetter: false },
   { key: "loanToDepositPct", legacyKey: "loanToDepositPct", name: "loan_to_deposit_pct", label: "Loan-to-deposit ratio", higherIsBetter: false },
 ];
+
+function buildProxySummary(
+  proxy: ProxyAssessment | null,
+): PeerHealthProxySummary | null {
+  if (!proxy) return null;
+
+  const componentEntries = [
+    { name: "capital", assessment: proxy.component_assessment.capital },
+    { name: "asset_quality", assessment: proxy.component_assessment.asset_quality },
+    { name: "earnings", assessment: proxy.component_assessment.earnings },
+    { name: "liquidity_funding", assessment: proxy.component_assessment.liquidity_funding },
+    { name: "sensitivity_proxy", assessment: proxy.component_assessment.sensitivity_proxy },
+  ];
+
+  const riskSignalSeverities: Record<string, number> = {};
+  for (const signal of proxy.risk_signals) {
+    riskSignalSeverities[signal.severity] =
+      (riskSignalSeverities[signal.severity] ?? 0) + 1;
+  }
+
+  return {
+    model: proxy.model,
+    official_status: proxy.official_status,
+    score: proxy.overall.score,
+    band: proxy.overall.band,
+    components: componentEntries.map(({ name, assessment }) => ({
+      name,
+      label: assessment.label,
+      score: assessment.score,
+      legacy_rating: assessment.legacy_rating,
+      legacy_label: assessment.legacy_label,
+      flags: assessment.flags,
+    })),
+    capital_classification: {
+      category: proxy.capital_classification.category,
+      label: proxy.capital_classification.label,
+      binding_constraint: proxy.capital_classification.binding_constraint ?? null,
+      ratios_used: proxy.capital_classification.ratios_used,
+    },
+    management_overlay: {
+      level: proxy.management_overlay.level,
+      caps_band: proxy.management_overlay.caps_band,
+      reason_codes: proxy.management_overlay.reason_codes,
+    },
+    risk_signal_count: proxy.risk_signals.length,
+    risk_signal_severities: riskSignalSeverities,
+    trend_count: proxy.trend_insights.length,
+    data_quality: proxy.data_quality,
+  };
+}
 
 const PeerHealthInputSchema = z.object({
   cert: z
@@ -145,7 +232,7 @@ Three usage modes:
 
 Optionally provide cert to highlight a subject institution's position in the ranking.
 
-Output: structuredContent includes {model, official_status, report_date, institutions, metrics, peer_context, proxy}. Institutions include proxy scores and name_source. When a subject cert is provided, metrics is a flat subject-vs-peer array for UI binding while peer_context preserves the legacy nested percentiles and weighted averages. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.
+Output: structuredContent includes {model, official_status, report_date, institutions, metrics, peer_context, proxy_summary, proxy}. Institutions include proxy scores and name_source. When a subject cert is provided, metrics is a flat subject-vs-peer array and proxy_summary is a flattened subject proxy for UI binding while peer_context and proxy preserve the legacy detailed payloads. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.
 
 NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
       inputSchema: PeerHealthInputSchema,
@@ -640,6 +727,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             model: "public_camels_proxy_v1" as const,
             official_status: "public off-site proxy, not official CAMELS" as const,
             proxy: subjectProxy,
+            proxy_summary: buildProxySummary(subjectProxy),
             report_date: params.repdte,
             sort_by: params.sort_by,
             total_institutions: entries.length,
