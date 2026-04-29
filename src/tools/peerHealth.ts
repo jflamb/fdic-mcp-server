@@ -96,6 +96,25 @@ interface PeerHealthProxySummary {
   };
 }
 
+interface PeerHealthDeprecationNotice {
+  path: string;
+  status: "deprecated";
+  replacement: string;
+  removal_target: "future_major_release";
+  note: string;
+}
+
+const PEER_HEALTH_DEPRECATIONS: PeerHealthDeprecationNotice[] = [
+  {
+    path: "peer_context.subject_percentiles",
+    status: "deprecated",
+    replacement: "metrics",
+    removal_target: "future_major_release",
+    note:
+      "Use metrics[] for new subject-vs-peer UI bindings. The legacy camelCase percentile map remains for backward compatibility until a coordinated major release.",
+  },
+];
+
 const PEER_METRICS: {
   key: "roaPct" | "equityCapitalRatioPct" | "netInterestMarginPct" | "efficiencyRatioPct" | "loanToDepositPct";
   legacyKey: string;
@@ -232,7 +251,7 @@ Three usage modes:
 
 Optionally provide cert to highlight a subject institution's position in the ranking.
 
-Output: structuredContent includes {model, official_status, report_date, institutions, metrics, peer_context, proxy_summary, proxy}. Institutions include proxy scores and name_source. When a subject cert is provided, metrics is a flat subject-vs-peer array and proxy_summary is a flattened subject proxy for UI binding while peer_context and proxy preserve the legacy detailed payloads. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.
+Output: structuredContent includes {model, official_status, report_date, institutions, metrics, peer_context, proxy_summary, proxy, deprecations}. Institutions include proxy scores and name_source. When a subject cert is provided, metrics[] is the preferred subject-vs-peer array for new UI bindings and proxy_summary is a flattened subject proxy. peer_context.subject_percentiles is deprecated, remains for backward compatibility, and is targeted for removal only in a future coordinated major release. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.
 
 NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
       inputSchema: PeerHealthInputSchema,
@@ -737,6 +756,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             metrics: metricRows,
             institutions: returned,
             peer_context: peerContext,
+            deprecations: PEER_HEALTH_DEPRECATIONS,
           },
         };
       } catch (err) {

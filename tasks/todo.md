@@ -1,3 +1,33 @@
+# Issue #222: Peer Percentile Deprecation Plan
+
+Reference: https://github.com/jflamb/fdic-mcp-server/issues/222
+
+## Goals
+
+- [x] Document `metrics[]` as the preferred subject-vs-peer metric path for new consumers.
+- [x] Mark `peer_context.subject_percentiles` as deprecated without removing it.
+- [x] Describe the migration and removal target as a future major release.
+- [x] Preserve current behavior until a coordinated breaking change is planned.
+- [x] Validate with repo-standard checks.
+
+## Acceptance Criteria
+
+- [x] `fdic_compare_peer_health` still returns `peer_context.subject_percentiles`.
+- [x] `fdic_compare_peer_health` returns machine-readable deprecation metadata for the legacy percentile path.
+- [x] The output schema advertises the deprecation metadata.
+- [x] Tests verify the legacy path, preferred replacement, and future-major removal target.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] `npm run extensions:validate`
+
+## Review / Results
+
+- [x] Added machine-readable deprecation metadata for `peer_context.subject_percentiles`, documented `metrics[]` as the preferred replacement, preserved the legacy path, and regenerated schema metadata. Full repo validation passed after committing because the generated-schema freshness test compares against `git HEAD`.
+
 # Issue #221: Artifact-Facing Output Schemas
 
 Reference: https://github.com/jflamb/fdic-mcp-server/issues/221

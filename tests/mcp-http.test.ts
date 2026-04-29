@@ -3265,6 +3265,14 @@ describe("HTTP MCP server", () => {
       peer_median: expect.closeTo(0.85, 5),
     });
     expect(sc.peer_context.weighted_peer_averages.roaPct).toBe(0.86);
+    expect(sc.deprecations).toEqual([
+      expect.objectContaining({
+        path: "peer_context.subject_percentiles",
+        status: "deprecated",
+        replacement: "metrics",
+        removal_target: "future_major_release",
+      }),
+    ]);
     expect(sc.proxy_summary).toMatchObject({
       model: "public_camels_proxy_v1",
       official_status: "public off-site proxy, not official CAMELS",
