@@ -1,3 +1,32 @@
+# Peer Health Artifact Contract Cleanup
+
+Reference: 2026-04-29 artifact-builder feedback on `fdic_compare_peer_health` response shape.
+
+## Goals
+
+- [x] Preserve existing `content`, `structuredContent`, and legacy nested peer-health fields.
+- [x] Add a flat `metrics` array for subject-vs-peer values that UI code can bind without walking nested percentile objects.
+- [x] Add explicit peer identity source metadata so placeholder names such as `CERT 31628` do not look like rendering bugs.
+- [x] Document the dashboard-oriented response shape in the tool description.
+- [x] Validate with targeted tests and repo-standard checks as practical.
+
+## Acceptance Criteria
+
+- [x] `fdic_compare_peer_health` still returns the existing `peer_context.subject_percentiles` and `weighted_peer_averages` fields.
+- [x] When a subject CERT is provided, `structuredContent.metrics` contains one row per comparison metric with `name`, `label`, `subject`, `peer_median`, `peer_weighted_avg`, `percentile`, `higher_is_better`, and `is_outlier`.
+- [x] Each returned institution includes `name_source` to distinguish FDIC-provided names from CERT fallback labels.
+- [x] Tests cover the new flat metrics and name source fields.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+
+## Review / Results
+
+- [x] Implemented backward-compatible peer-health structuredContent additions, a tool-specific output schema, generated schema/adapters, and targeted HTTP coverage. Full repo validation passed after committing because the adapter freshness test compares generated schema output against `git HEAD`.
+
 # First-Class ChatGPT App
 
 Reference: 2026-04-26 design proposal to make the FDIC MCP server behave like a first-class ChatGPT app.

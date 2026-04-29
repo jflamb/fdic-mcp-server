@@ -3142,4 +3142,139 @@ describe("HTTP MCP server", () => {
       }),
     ]);
   });
+
+  it("returns flat peer-health metrics and explicit institution name sources", async () => {
+    const financial = (
+      cert: number,
+      asset: number,
+      roa: number,
+      equityRatio: number,
+      nim: number,
+      efficiency: number,
+      loanToDeposit: number,
+    ) => ({
+      CERT: cert,
+      REPDTE: "20241231",
+      ASSET: asset,
+      DEP: asset * 0.8,
+      DEPDOM: asset * 0.75,
+      COREDEP: asset * 0.6,
+      EQTOT: asset * (equityRatio / 100),
+      EQV: equityRatio,
+      NETINC: asset * (roa / 100),
+      IDT1CER: 9,
+      IDT1RWAJR: 11,
+      RBCT1J: 10,
+      RBCRWAJ: 12,
+      ROA: roa,
+      ROE: 9,
+      NIMY: nim,
+      EEFFR: efficiency,
+      LNLSDEPR: loanToDeposit,
+      NCLNLSR: 0.7,
+      NTLNLSR: 0.1,
+      NPERFV: 0.5,
+      LNRESNCR: 160,
+      ELNATRY: 0.2,
+      BROR: 3,
+      CHBALR: 9,
+      SC: asset * 0.2,
+    });
+
+    getMock
+      // Financials for explicit peer set
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: financial(100, 1_000_000, 1.2, 10, 3.4, 54, 72) },
+            { data: financial(200, 900_000, 0.8, 8, 3.0, 62, 86) },
+            { data: financial(31628, 1_100_000, 0.9, 9, 3.2, 58, 82) },
+          ],
+          meta: { total: 3 },
+        },
+      })
+      // Initial institution roster omits one CERT, matching the artifact feedback.
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { data: { CERT: 100, NAME: "Subject Bank", CITY: "Raleigh", STALP: "NC" } },
+            { data: { CERT: 200, NAME: "Peer Bank", CITY: "Cary", STALP: "NC" } },
+          ],
+          meta: { total: 2 },
+        },
+      })
+      // Best-effort gap fill still cannot resolve the missing name.
+      .mockResolvedValueOnce({
+        data: {
+          data: [],
+          meta: { total: 0 },
+        },
+      })
+      // Subject history enrichment
+      .mockResolvedValueOnce({
+        data: {
+          data: [],
+          meta: { total: 0 },
+        },
+      });
+
+    const response = await mcpPost({
+      jsonrpc: "2.0",
+      id: 107,
+      method: "tools/call",
+      params: {
+        name: "fdic_compare_peer_health",
+        arguments: {
+          cert: 100,
+          certs: [100, 200, 31628],
+          repdte: "20241231",
+          limit: 10,
+        },
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const sc = response.body.result.structuredContent;
+
+    expect(sc.peer_context.subject_percentiles.roaPct).toMatchObject({
+      subject_value: 1.2,
+      peer_median: expect.closeTo(0.85, 5),
+    });
+    expect(sc.peer_context.weighted_peer_averages.roaPct).toBe(0.86);
+    expect(sc.metrics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "roa_pct",
+          label: "Return on assets",
+          subject: 1.2,
+          peer_median: expect.closeTo(0.85, 5),
+          peer_weighted_avg: 0.86,
+          higher_is_better: true,
+          is_outlier: expect.any(Boolean),
+          outlier_direction: expect.anything(),
+        }),
+        expect.objectContaining({
+          name: "efficiency_ratio_pct",
+          higher_is_better: false,
+          outlier_direction: null,
+        }),
+      ]),
+    );
+    expect(sc.institutions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          cert: 100,
+          name: "Subject Bank",
+          name_source: "fdic_institution_profile",
+        }),
+        expect.objectContaining({
+          cert: 31628,
+          name: "CERT 31628",
+          name_source: "cert_fallback",
+          city: null,
+          state: null,
+        }),
+      ]),
+    );
+  });
 });
