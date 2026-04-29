@@ -7,7 +7,7 @@ import {
   truncateIfNeeded,
   formatToolError,
 } from "../services/fdicClient.js";
-import { FdicAnalysisOutputSchema } from "../schemas/output.js";
+import { FdicPeerHealthOutputSchema } from "../schemas/output.js";
 import {
   ANALYSIS_TIMEOUT_MS,
   MAX_CONCURRENCY,
@@ -32,6 +32,7 @@ import {
 interface PeerHealthEntry {
   cert: number;
   name: string;
+  name_source: "fdic_institution_profile" | "cert_fallback";
   city: string | null;
   state: string | null;
   total_assets: number | null;
@@ -45,6 +46,34 @@ interface PeerHealthEntry {
   component_ratings: Record<string, number>;
   flags: string[];
 }
+
+interface PeerHealthMetricRow {
+  name: string;
+  label: string;
+  subject: number | null;
+  peer_median: number | null;
+  peer_weighted_avg: number | null;
+  percentile: number | null;
+  higher_is_better: boolean;
+  is_outlier: boolean;
+  outlier_direction: "high" | "low" | null;
+}
+
+const PEER_METRICS: {
+  key: "roaPct" | "equityCapitalRatioPct" | "netInterestMarginPct" | "efficiencyRatioPct" | "loanToDepositPct";
+  legacyKey: string;
+  name: string;
+  label: string;
+  higherIsBetter: boolean;
+}[] = [
+  // legacyKey preserves the original camelCase peer_context map keys for backward compatibility.
+  // New UI consumers should bind to the flat metrics[].name snake_case values instead.
+  { key: "roaPct", legacyKey: "roaPct", name: "roa_pct", label: "Return on assets", higherIsBetter: true },
+  { key: "equityCapitalRatioPct", legacyKey: "equityCapitalRatioPct", name: "equity_capital_ratio_pct", label: "Equity capital ratio", higherIsBetter: true },
+  { key: "netInterestMarginPct", legacyKey: "netInterestMarginPct", name: "net_interest_margin_pct", label: "Net interest margin", higherIsBetter: true },
+  { key: "efficiencyRatioPct", legacyKey: "efficiencyRatioPct", name: "efficiency_ratio_pct", label: "Efficiency ratio", higherIsBetter: false },
+  { key: "loanToDepositPct", legacyKey: "loanToDepositPct", name: "loan_to_deposit_pct", label: "Loan-to-deposit ratio", higherIsBetter: false },
+];
 
 const PeerHealthInputSchema = z.object({
   cert: z
@@ -116,11 +145,11 @@ Three usage modes:
 
 Optionally provide cert to highlight a subject institution's position in the ranking.
 
-Output: Ranked list with per-institution proxy_score (1-4 scale) and proxy_band, sorted by composite or any individual component. When a subject cert is provided, includes peer percentile context, asset-weighted peer averages, and the subject's full proxy assessment. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.
+Output: structuredContent includes {model, official_status, report_date, institutions, metrics, peer_context, proxy}. Institutions include proxy scores and name_source. When a subject cert is provided, metrics is a flat subject-vs-peer array for UI binding while peer_context preserves the legacy nested percentiles and weighted averages. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.
 
 NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
       inputSchema: PeerHealthInputSchema,
-      outputSchema: FdicAnalysisOutputSchema,
+      outputSchema: FdicPeerHealthOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -346,6 +375,37 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           if (c !== null) profileMap.set(c, r);
         }
 
+        const financialCerts = allFinancials
+          .map((r) => asNumber(r.CERT))
+          .filter((cert): cert is number => cert !== null);
+        const missingProfileCerts = financialCerts.filter((cert) => {
+          const profile = profileMap.get(cert);
+          return !profile || typeof profile.NAME !== "string" || profile.NAME.length === 0;
+        });
+        if (missingProfileCerts.length > 0) {
+          const missingProfileFilters = buildCertFilters(missingProfileCerts);
+          const missingProfileResponses = await mapWithConcurrency(
+            missingProfileFilters,
+            MAX_CONCURRENCY,
+            async (certFilter) =>
+              queryEndpoint(
+                ENDPOINTS.INSTITUTIONS,
+                {
+                  filters: certFilter,
+                  fields: "CERT,NAME,CITY,STALP",
+                  limit: 10_000,
+                  sort_by: "CERT",
+                  sort_order: "ASC",
+                },
+                { signal: controller.signal },
+              ),
+          );
+          for (const r of missingProfileResponses.flatMap(extractRecords)) {
+            const c = asNumber(r.CERT);
+            if (c !== null) profileMap.set(c, r);
+          }
+        }
+
         await sendProgressNotification(server.server, progressToken, 0.7, "Computing proxy assessments");
 
         // Fetch history for subject bank if specified (best-effort, additive)
@@ -397,7 +457,12 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
 
           entries.push({
             cert,
-            name: String(profile?.NAME ?? `CERT ${cert}`),
+            name: typeof profile?.NAME === "string" && profile.NAME.length > 0
+              ? profile.NAME
+              : `CERT ${cert}`,
+            name_source: typeof profile?.NAME === "string" && profile.NAME.length > 0
+              ? "fdic_institution_profile"
+              : "cert_fallback",
             city: profile?.CITY ? String(profile.CITY) : null,
             state: profile?.STALP ? String(profile.STALP) : null,
             total_assets: asNumber(fin.ASSET),
@@ -436,20 +501,13 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           subject_percentiles: Record<string, PeerStats>;
           weighted_peer_averages: Record<string, number>;
         } | null = null;
+        let metricRows: PeerHealthMetricRow[] = [];
 
         if (params.cert) {
           const subjectFin = allFinancials.find((f) => asNumber(f.CERT) === params.cert);
           if (subjectFin) {
             const subjectExtraction = extractCanonicalMetrics(subjectFin);
             const sm = subjectExtraction.metrics;
-
-            const PEER_METRICS: { key: keyof typeof sm; label: string; higherIsBetter: boolean }[] = [
-              { key: "roaPct", label: "roaPct", higherIsBetter: true },
-              { key: "equityCapitalRatioPct", label: "equityCapitalRatioPct", higherIsBetter: true },
-              { key: "netInterestMarginPct", label: "netInterestMarginPct", higherIsBetter: true },
-              { key: "efficiencyRatioPct", label: "efficiencyRatioPct", higherIsBetter: false },
-              { key: "loanToDepositPct", label: "loanToDepositPct", higherIsBetter: false },
-            ];
 
             // Collect metric values from all peers (excluding subject)
             const peerFinancials = allFinancials.filter((f) => asNumber(f.CERT) !== params.cert);
@@ -472,15 +530,28 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
                 }
               }
               if (peerValues.length === 0) continue;
+              let stats: PeerStats | null = null;
               if (subjectVal !== null) {
-                subjectPercentiles[pm.label] = computePeerStats(subjectVal, peerValues, {
+                stats = computePeerStats(subjectVal, peerValues, {
                   higherIsBetter: pm.higherIsBetter,
                 });
+                subjectPercentiles[pm.legacyKey] = stats;
               }
               const weighted = computeWeightedAggregate(weightedEntries);
               if (weighted !== null) {
-                weightedPeerAverages[pm.label] = Math.round(weighted * 100) / 100;
+                weightedPeerAverages[pm.legacyKey] = Math.round(weighted * 100) / 100;
               }
+              metricRows.push({
+                name: pm.name,
+                label: pm.label,
+                subject: subjectVal,
+                peer_median: stats?.peer_median ?? null,
+                peer_weighted_avg: weighted !== null ? Math.round(weighted * 100) / 100 : null,
+                percentile: stats?.subject_percentile ?? null,
+                higher_is_better: pm.higherIsBetter,
+                is_outlier: stats?.is_outlier ?? false,
+                outlier_direction: stats?.outlier_direction ?? null,
+              });
             }
 
             // Build peer definition string
@@ -575,6 +646,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
             returned_count: returned.length,
             subject_cert: params.cert ?? null,
             subject_rank: subjectRank,
+            metrics: metricRows,
             institutions: returned,
             peer_context: peerContext,
           },

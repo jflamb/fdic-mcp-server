@@ -105,6 +105,68 @@ export const FdicBankDeepDiveOutputSchema = z.object({
   sources: z.array(Source),
 });
 
+const PeerStatsSchema = z.object({
+  peer_count: z.number().int(),
+  peer_median: z.number(),
+  peer_mean: z.number(),
+  subject_value: z.number(),
+  subject_percentile: z.number(),
+  robust_z_score: z.number(),
+  is_outlier: z.boolean(),
+  outlier_direction: z.enum(["high", "low"]).optional(),
+});
+
+const PeerHealthMetricRowSchema = z.object({
+  name: z.string(),
+  label: z.string(),
+  subject: z.number().nullable(),
+  peer_median: z.number().nullable(),
+  peer_weighted_avg: z.number().nullable(),
+  percentile: z.number().nullable(),
+  higher_is_better: z.boolean(),
+  is_outlier: z.boolean(),
+  outlier_direction: z.enum(["high", "low"]).nullable(),
+});
+
+const PeerHealthInstitutionSchema = z.object({
+  cert: z.number().int(),
+  name: z.string(),
+  name_source: z.enum(["fdic_institution_profile", "cert_fallback"]),
+  city: z.string().nullable(),
+  state: z.string().nullable(),
+  total_assets: z.number().nullable(),
+  proxy_score: z.number(),
+  proxy_band: z.string(),
+  composite_rating: z.number(),
+  composite_label: z.string(),
+  component_ratings: z.record(z.number()),
+  flags: z.array(z.string()),
+});
+
+export const FdicPeerHealthOutputSchema = z.object({
+  model: z.literal("public_camels_proxy_v1"),
+  official_status: z.literal("public off-site proxy, not official CAMELS"),
+  proxy: z.unknown().nullable(),
+  report_date: z.string(),
+  sort_by: z.string(),
+  total_institutions: z.number().int(),
+  returned_count: z.number().int(),
+  subject_cert: z.number().int().nullable(),
+  subject_rank: z.number().int().nullable(),
+  metrics: z.array(PeerHealthMetricRowSchema),
+  institutions: z.array(PeerHealthInstitutionSchema),
+  peer_context: z
+    .object({
+      peer_count: z.number().int(),
+      peer_definition: z.string(),
+      broadening_steps: z.array(z.string()),
+      subject_rank: z.number().int().nullable(),
+      subject_percentiles: z.record(PeerStatsSchema),
+      weighted_peer_averages: z.record(z.number()),
+    })
+    .nullable(),
+}).passthrough();
+
 /**
  * Permissive output schema for tools whose structuredContent is a complex,
  * heterogeneous analytical payload. We use a passthrough ZodObject (rather
