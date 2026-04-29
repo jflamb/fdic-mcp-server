@@ -789,13 +789,16 @@ describe("HTTP MCP server", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.result.tools).toHaveLength(28);
+    expect(response.body.result.tools).toHaveLength(29);
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toContain("fdic_search_demographics");
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toContain("fdic_compare_bank_snapshots");
+    expect(
+      response.body.result.tools.map((tool: { name: string }) => tool.name),
+    ).toContain("fdic_qbp_lite_data");
     expect(
       response.body.result.tools.map((tool: { name: string }) => tool.name),
     ).toEqual(

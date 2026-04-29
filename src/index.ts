@@ -33,6 +33,7 @@ import { registerMarketShareAnalysisTools } from "./tools/marketShareAnalysis.js
 import { registerFranchiseFootprintTools } from "./tools/franchiseFootprint.js";
 import { registerHoldingCompanyProfileTools } from "./tools/holdingCompanyProfile.js";
 import { registerRegionalContextTools } from "./tools/regionalContext.js";
+import { registerQbpLiteTools } from "./tools/qbpLite.js";
 import { registerChatGptRetrievalTools } from "./tools/chatgptRetrieval.js";
 import { registerChatGptBankDeepDiveTool } from "./tools/chatgptBankDeepDive.js";
 import { registerChatGptAppResources } from "./resources/chatgptAppResources.js";
@@ -123,6 +124,7 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
     registerFranchiseFootprintTools(server);
     registerHoldingCompanyProfileTools(server);
     registerRegionalContextTools(server);
+    registerQbpLiteTools(server);
   }
 
   if (profile.chatgptCanonical || profile.chatgptAliases) {

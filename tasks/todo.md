@@ -507,3 +507,43 @@ Reference: 2026-03-29 investigation of failed GitHub Actions workflow `Deploy Cl
 - [x] Exact failure: `AssertionError: No resource content in tool response`.
 - [x] Root cause: workflow assumed an older MCP tool result shape even though the server and tests now return text `content` plus JSON `structuredContent`.
 - [x] Updated `.github/workflows/deploy-cloud-run.yml` so the post-deploy tool-call check asserts the live contract already covered by `tests/live/mcp-live-smoke.test.ts` and `tests/mcp-http.test.ts`.
+
+---
+
+# QBP Lite Data Tool
+
+Reference: 2026-04-29 request to make production of a 3-5 page QBP Lite report more efficient.
+
+## Goals
+
+- [x] Add a purpose-built MCP tool that returns QBP Lite chart/table data from reproducible public BankFind financials.
+- [x] Include reporting-period metadata, executive snapshot metrics, chart-ready series, and explicit exclusions.
+- [x] Keep non-reproducible QBP items such as official problem-bank counts and DIF accounting out of scope.
+- [x] Add focused tests and update tool documentation.
+
+## Acceptance Criteria
+
+- [x] `fdic_qbp_lite_data` accepts an optional quarter-end `repdte` and defaults to the latest likely published quarter.
+- [x] Structured output includes current, prior-quarter, year-ago, and trend-window date metadata.
+- [x] Structured output includes executive snapshot metrics with current value, quarter-over-quarter change, and year-over-year change.
+- [x] Structured output includes chart-ready data for earnings/margin, loans/deposits, credit quality, capital, and optional community-bank comparison.
+- [x] Output includes data notes and known exclusions to prevent implying confidential supervisory or DIF-accounting coverage.
+- [x] Standard validation passes or any exceptions are documented.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] `npm run extensions:validate`
+- [x] Live smoke via `buildQbpLiteData({ repdte: "20251231", trend_quarters: 8 })`
+
+## Review / Results
+
+- [x] Added `fdic_qbp_lite_data` under the analysis profile.
+- [x] Added chart-ready structured sections for executive snapshot, earnings/margin, loan/deposit trends, credit quality, portfolio performance, capital ratios, and community-bank comparison.
+- [x] Review follow-up: corrected capital-ratio mappings (`RBC1AAJ`, `RBCT1C`, `RBCT1`, `RBC`, `RWAJ`, `RWAJT`), switched NIM weighting to earning assets, added 10k truncation warnings, and tightened percent-change/text formatting.
+- [x] Review follow-up: expanded QBP Lite tests for capital-field regressions, loan/deposit series, portfolio performance, community-bank slicing, and truncation warning behavior.
+- [x] Refreshed `extensions/shared/tool-schemas.json` and documented the new tool in `docs/tool-reference.md`.
+- [x] Branch: `codex/qbp-lite-data-tool`
+- [x] Local commit created with message `feat: add QBP Lite data bundle tool`.
