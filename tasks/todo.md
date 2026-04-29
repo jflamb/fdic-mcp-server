@@ -1,3 +1,33 @@
+# Issue #220: Flatten Peer-Health Proxy Payload
+
+Reference: https://github.com/jflamb/fdic-mcp-server/issues/220
+
+## Goals
+
+- [x] Inventory common subject proxy fields useful to artifact/UI consumers.
+- [x] Add a stable flattened `proxy_summary` while preserving the detailed `proxy` payload.
+- [x] Add output schema coverage for the flattened proxy summary.
+- [x] Cover the new shape with tests.
+- [x] Validate with repo-standard checks.
+
+## Acceptance Criteria
+
+- [x] `fdic_compare_peer_health` returns `proxy_summary` when a subject proxy exists.
+- [x] `proxy_summary` exposes common top-level status, score, band, component summaries, capital classification, management overlay, risk signal count, trend count, and data quality fields without requiring nested proxy traversal.
+- [x] Existing `proxy` output remains unchanged for compatibility.
+- [x] Tests verify both `proxy_summary` and the preserved detailed `proxy` payload.
+
+## Validation
+
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] `npm run extensions:validate`
+
+## Review / Results
+
+- [x] Implemented additive `proxy_summary` structuredContent for `fdic_compare_peer_health`, preserved the detailed `proxy`, updated schema metadata, and added HTTP test coverage. Full repo validation passed after committing because the generated-schema freshness test compares against `git HEAD`.
+
 # Peer Health Artifact Contract Cleanup
 
 Reference: 2026-04-29 artifact-builder feedback on `fdic_compare_peer_health` response shape.
