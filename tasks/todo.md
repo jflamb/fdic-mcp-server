@@ -547,3 +547,35 @@ Reference: 2026-04-29 request to make production of a 3-5 page QBP Lite report m
 - [x] Refreshed `extensions/shared/tool-schemas.json` and documented the new tool in `docs/tool-reference.md`.
 - [x] Branch: `codex/qbp-lite-data-tool`
 - [x] Local commit created with message `feat: add QBP Lite data bundle tool`.
+
+---
+
+# Codex Plugin Surface Review
+
+Reference: 2026-06-03 request to review the Codex plugin against the repository's full extension surface and implement the highest-value scoped fix.
+
+## Goals
+
+- [x] Review Codex plugin parity against MCP transports, skills, extension metadata, prompts/resources, and docs.
+- [x] Recommend a prioritized plan for remaining plugin surface gaps.
+- [x] Implement one scoped improvement with validation.
+
+## Acceptance Criteria
+
+- [x] Review identifies material remaining gaps instead of treating the plugin as complete.
+- [x] Highest-value scoped change is implemented in repo code.
+- [x] Validation covers the new behavior.
+
+## Validation
+
+- [x] `npx vitest run tests/syncCodexPlugin.test.ts`
+- [x] `npm run typecheck`
+- [x] `npm test`
+- [x] `npm run plugin:sync -- --plugin-dir /tmp/fdic-mcp-server-plugin-check`
+- [x] `python3 /Users/jaime/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py /tmp/fdic-mcp-server-plugin-check`
+- [x] `python3 /Users/jaime/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py /Users/jaime/plugins/fdic-mcp-server`
+
+## Review / Results
+
+- [x] Implemented tests for `scripts/sync-codex-plugin.mjs`, covering default hosted HTTP, active local stdio mode, skill copying, and invalid transport rejection.
+- [x] Confirmed the installed personal plugin validates and uses hosted HTTP as its active MCP transport.

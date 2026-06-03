@@ -89,6 +89,18 @@ For a local development plugin, create the plugin with the Codex `plugin-creator
 skills/
 ```
 
+This repository includes a sync helper that regenerates the personal Codex plugin from the current checkout:
+
+```bash
+npm run plugin:sync
+```
+
+The helper uses the hosted HTTP endpoint by default and writes `.mcp.local-stdio.example.json` as the local checkout variant. To make local stdio the active plugin transport instead, run:
+
+```bash
+npm run plugin:sync -- --transport stdio
+```
+
 Before installing or sharing a plugin that uses local stdio, verify the checkout is built:
 
 ```bash

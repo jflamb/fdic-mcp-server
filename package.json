@@ -34,7 +34,8 @@
     "deploy:local": "bash scripts/deploy-local.sh",
     "extensions:validate": "node scripts/extensions/validate-extensions.mjs",
     "extensions:extract-schemas": "tsx scripts/extensions/extract-tool-schemas.ts",
-    "extensions:build": "node scripts/extensions/build-adapters.mjs"
+    "extensions:build": "node scripts/extensions/build-adapters.mjs",
+    "plugin:sync": "node scripts/sync-codex-plugin.mjs"
   },
   "repository": {
     "type": "git",
