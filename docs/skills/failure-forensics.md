@@ -2,7 +2,7 @@
 title: "Failure Forensics"
 nav_group: skills
 kicker: Skill
-summary: A Claude Code skill that reconstructs the pre-failure timeline for a failed institution and identifies public-data warning signals.
+summary: A plugin skill that reconstructs the pre-failure timeline for a failed institution and identifies public-data warning signals.
 breadcrumbs:
   - title: Overview
     url: /
@@ -10,9 +10,9 @@ breadcrumbs:
     url: /skills/
 ---
 
-The `/fdic-failure-forensics` command reconstructs the pre-failure financial timeline for a single failed FDIC-insured institution, identifies the earliest visible warning signals from public data, and explains likely drivers of deterioration.
+The Failure Forensics skill reconstructs the pre-failure financial timeline for a single failed FDIC-insured institution, identifies the earliest visible warning signals from public data, and explains likely drivers of deterioration.
 
-This is a **Claude Code skill**, not an MCP tool. It requires Claude Code with the plugin installed. If you are using another MCP client, you can approximate this workflow by combining `fdic_get_institution_failure`, `fdic_search_financials`, `fdic_detect_risk_signals`, and `fdic_analyze_bank_health` in sequence — see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
+This is a **plugin skill**, not an MCP tool. It is available through the Codex local plugin and the Claude Code plugin. If you are using another MCP client, you can approximate this workflow by combining `fdic_get_institution_failure`, `fdic_search_financials`, `fdic_detect_risk_signals`, and `fdic_analyze_bank_health` in sequence — see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
 
 ## When to Use It
 

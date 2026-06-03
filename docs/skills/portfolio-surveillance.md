@@ -2,7 +2,7 @@
 title: "Portfolio Surveillance"
 nav_group: skills
 kicker: Skill
-summary: A Claude Code skill that screens a universe of FDIC-insured institutions and produces a ranked watchlist with escalation tiers.
+summary: A plugin skill that screens a universe of FDIC-insured institutions and produces a ranked watchlist with escalation tiers.
 breadcrumbs:
   - title: Overview
     url: /
@@ -10,9 +10,9 @@ breadcrumbs:
     url: /skills/
 ---
 
-The `/fdic-portfolio-surveillance` command screens a defined universe of institutions, ranks them by emerging risk and relative health, and produces a decision-ready watchlist grouped into escalation tiers.
+The Portfolio Surveillance skill screens a defined universe of institutions, ranks them by emerging risk and relative health, and produces a decision-ready watchlist grouped into escalation tiers.
 
-This is a **Claude Code skill**, not an MCP tool. It requires Claude Code with the plugin installed. If you are using another MCP client, you can approximate this workflow by combining `fdic_detect_risk_signals`, `fdic_compare_peer_health`, and `fdic_compare_bank_snapshots` in sequence — see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
+This is a **plugin skill**, not an MCP tool. It is available through the Codex local plugin and the Claude Code plugin. If you are using another MCP client, you can approximate this workflow by combining `fdic_detect_risk_signals`, `fdic_compare_peer_health`, and `fdic_compare_bank_snapshots` in sequence — see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
 
 ## When to Use It
 

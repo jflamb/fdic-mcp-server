@@ -2,7 +2,7 @@
 title: Client Setup
 nav_group: setup
 kicker: Setup
-summary: Configure the server in Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI, with transport-specific caveats called out.
+summary: Configure the server in Codex, Claude Code, Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI, with transport-specific caveats called out.
 breadcrumbs:
   - title: Overview
     url: /
@@ -42,7 +42,66 @@ npm install -g fdic-mcp-server
 
 Client support changes quickly. Treat the linked official docs as the source of truth.
 
-Last verified: March 15, 2026.
+Last verified: June 3, 2026.
+
+## Codex
+
+Codex can use a local plugin that packages the FDIC BankFind MCP server connection together with the project skills. Use this path when you want Codex to load both the tools and the guided workflows from one plugin.
+
+The plugin includes:
+
+- **MCP tools** — either the hosted HTTP endpoint or a local stdio server launched from the project checkout
+- **Codex skills** — repository conventions, FDIC skill-building guidance, portfolio surveillance, and failure forensics workflows
+
+Prefer the hosted HTTP endpoint when you do not need local source changes:
+
+```json
+{
+  "mcpServers": {
+    "fdic-bankfind": {
+      "url": "https://bankfind.jflamb.com/mcp"
+    }
+  }
+}
+```
+
+Use local stdio when you are testing changes from a checkout:
+
+```json
+{
+  "mcpServers": {
+    "fdic-bankfind-local": {
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd /path/to/fdic-mcp-server && npm start"
+      ]
+    }
+  }
+}
+```
+
+For a local development plugin, create the plugin with the Codex `plugin-creator` skill, then install it from your personal marketplace in the Codex app. The generated plugin should contain:
+
+```text
+.codex-plugin/plugin.json
+.mcp.json
+skills/
+```
+
+Before installing or sharing a plugin that uses local stdio, verify the checkout is built:
+
+```bash
+npm install
+npm run build
+npm start
+```
+
+Notes:
+
+- The hosted HTTP endpoint uses the same server tool surface as the local stdio process, but it will not include unbuilt local source changes.
+- Keep the plugin skills synchronized with `.agents/skills/` when the repository workflows change.
+- If the plugin points at `npm start`, run `npm run build` after TypeScript changes so `dist/index.js` is current.
 
 ## Claude Code
 

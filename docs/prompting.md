@@ -8,13 +8,13 @@ breadcrumbs:
     url: /
 ---
 
-This section covers how to get the most from the FDIC BankFind MCP tools — prompt patterns, copyable examples, tool selection, and guided Claude Code skills.
+This section covers how to get the most from the FDIC BankFind MCP tools — prompt patterns, copyable examples, tool selection, and guided plugin skills.
 
 <div class="card-grid">
   <a class="card" href="{{ '/choose-a-workflow/' | relative_url }}">
     <span class="card__eyebrow">Start Here</span>
     <h3>Choose a Workflow</h3>
-    <p>Decide whether you need an MCP tool or a Claude Code skill based on what you're analyzing and which client you're using.</p>
+    <p>Decide whether you need an MCP tool or a plugin skill based on what you're analyzing and which client you're using.</p>
   </a>
   <a class="card" href="{{ '/prompting-guide/' | relative_url }}">
     <span class="card__eyebrow">Patterns</span>
@@ -32,18 +32,18 @@ This section covers how to get the most from the FDIC BankFind MCP tools — pro
     <p>Quick reference for all 20+ MCP tools — what each does and when to use it.</p>
   </a>
   <a class="card" href="{{ '/skills/' | relative_url }}">
-    <span class="card__eyebrow">Claude Code</span>
+    <span class="card__eyebrow">Plugins</span>
     <h3>Skills</h3>
-    <p>Guided analyst workflows that chain multiple tools into structured reports. Bank Deep Dive, Examiner Support, Portfolio Surveillance, and Failure Forensics. Claude Code only.</p>
+    <p>Guided analyst workflows that chain multiple tools into structured reports. Availability depends on the installed Codex or Claude Code plugin.</p>
   </a>
 </div>
 
-## MCP Tools vs Claude Code Skills
+## MCP Tools vs Plugin Skills
 
-| | MCP Tools | Claude Code Skills |
+| | MCP Tools | Plugin Skills |
 |---|---|---|
-| **Works in** | Any MCP client | Claude Code only |
-| **Invoked by** | Natural-language prompts | Slash commands |
+| **Works in** | Any MCP client | Plugin-aware coding agents such as Codex or Claude Code |
+| **Invoked by** | Natural-language prompts | Skill activation or slash commands, depending on host |
 | **Scope** | One dataset or analysis at a time | Multi-tool structured reports |
 | **Stability** | Stable tool contracts | Evolving conversational workflows |
 

@@ -19,3 +19,4 @@
 - For docs features meant to be discoverable across the site, do not hide the primary entry point inside a section page or secondary navigation when the user expectation is a global launcher or site-wide affordance.
 - When model output is presented directly in a docs UI, do not stop at plain-text transport success; verify that the rendered surface supports the markdown structures the model actually emits.
 - When reviewing multi-entity analysis tools, do not equate contract consistency with identical payload size: if a single-entity tool returns a full model and bulk tools return summaries, prefer explicit docs and field semantics over forcing full per-entity objects into every response.
+- When documenting Codex plugins for MCP servers, check the repository's advertised transports before writing setup guidance; if `server.json` includes a remote HTTP endpoint, document that as a valid plugin option instead of assuming local stdio only.

@@ -46,7 +46,7 @@ sections:
   skills:
     title: Skills
     items:
-      - title: Claude Code Skills
+      - title: Plugin Skills
         short_title: Overview
         url: /skills/
       - title: Bank Deep Dive

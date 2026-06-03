@@ -2,7 +2,7 @@
 title: Choose a Workflow
 nav_group: prompting
 kicker: Guide
-summary: Decide whether to use an MCP tool or a Claude Code skill, and pick the right one for your analysis goal.
+summary: Decide whether to use an MCP tool or a plugin skill, and pick the right one for your analysis goal.
 breadcrumbs:
   - title: Overview
     url: /
@@ -10,14 +10,15 @@ breadcrumbs:
 
 This page helps you quickly find the right path for your FDIC data analysis task.
 
-## Are You Using Claude Code?
+## Are You Using A Plugin-Aware Coding Agent?
 
 | If you are using... | You have access to... |
 |---------------------|----------------------|
+| **Codex** (with local plugin installed) | MCP tools, repository skills, Portfolio Surveillance, and Failure Forensics |
 | **Claude Code** (with plugin installed) | MCP tools **and** Claude Code skills |
 | **Any other MCP client** (Claude Desktop, ChatGPT, Gemini CLI, etc.) | MCP tools only |
 
-Skills are guided analyst workflows available exclusively in Claude Code. They chain multiple MCP tools into structured reports. If you are not in Claude Code, you can achieve similar results by prompting the [MCP tools]({{ '/tool-reference/' | relative_url }}) directly — it just takes more manual orchestration.
+Skills are guided analyst workflows available through plugin-aware coding agents. They chain multiple MCP tools into structured reports. If your client does not support these skills, you can achieve similar results by prompting the [MCP tools]({{ '/tool-reference/' | relative_url }}) directly — it just takes more manual orchestration.
 
 ## What Are You Analyzing?
 
@@ -37,7 +38,7 @@ Skills are guided analyst workflows available exclusively in Claude Code. They c
 
 | Goal | Best Path | Client |
 |------|-----------|--------|
-| Screen and triage a group of banks | [Portfolio Surveillance]({{ '/skills/portfolio-surveillance/' | relative_url }}) skill | Claude Code |
+| Screen and triage a group of banks | [Portfolio Surveillance]({{ '/skills/portfolio-surveillance/' | relative_url }}) skill | Codex or Claude Code |
 | Risk signal scan (flat list) | `fdic_detect_risk_signals` tool | Any MCP client |
 | Rank a group by health scores | `fdic_compare_peer_health` tool | Any MCP client |
 | Compare growth/profitability across time | `fdic_compare_bank_snapshots` tool | Any MCP client |
@@ -47,7 +48,7 @@ Skills are guided analyst workflows available exclusively in Claude Code. They c
 
 | Goal | Best Path | Client |
 |------|-----------|--------|
-| Reconstruct pre-failure timeline and identify warning signals | [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}) skill | Claude Code |
+| Reconstruct pre-failure timeline and identify warning signals | [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}) skill | Codex or Claude Code |
 | Look up failure details (date, cost, resolution) | `fdic_get_institution_failure` tool | Any MCP client |
 | Search multiple failures by date/cost/state | `fdic_search_failures` tool | Any MCP client |
 | Pre-failure financials (manual reconstruction) | `fdic_search_financials` + `fdic_detect_risk_signals` tools | Any MCP client |
@@ -70,10 +71,10 @@ Skills are guided analyst workflows available exclusively in Claude Code. They c
 ## Decision Flowchart
 
 ```
-Are you in Claude Code (with plugin)?
+Are you in Codex or Claude Code with the plugin?
 ├── Yes
-│   ├── Single institution, full report? → /fdic-bank-deep-dive
-│   ├── Single institution, add examiner knowledge? → /fdic-examiner-overlay
+│   ├── Single institution, full report? → /fdic-bank-deep-dive in Claude Code, or use MCP tools directly
+│   ├── Single institution, add examiner knowledge? → /fdic-examiner-overlay in Claude Code
 │   ├── Multiple institutions, screen & triage? → /fdic-portfolio-surveillance
 │   ├── Failed institution, reconstruct timeline? → /fdic-failure-forensics
 │   └── One specific dataset or analysis? → Use the MCP tool directly
@@ -104,6 +105,6 @@ When a skill or multi-tool prompt mixes quarterly and annual data, the output st
 ## Next Steps
 
 - [Tool Reference]({{ '/tool-reference/' | relative_url }}) — Full list of MCP tools with use-case guidance
-- [Skills]({{ '/skills/' | relative_url }}) — Claude Code skill details, inputs, and output formats
+- [Skills]({{ '/skills/' | relative_url }}) — Plugin skill details, inputs, and output formats
 - [Prompting Guide]({{ '/prompting-guide/' | relative_url }}) — Prompt patterns and date rules for effective queries
 - [Usage Examples]({{ '/usage-examples/' | relative_url }}) — Copyable prompts with expected answer shapes

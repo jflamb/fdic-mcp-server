@@ -12,7 +12,7 @@ breadcrumbs:
 
 The examples below are natural-language prompts you can copy into any MCP client, followed by what a good answer should cover. These examples cover the **MCP tools** that work in any client.
 
-For Claude Code skill examples, see the individual skill pages: [Bank Deep Dive]({{ '/skills/bank-deep-dive/' | relative_url }}), [Examiner Support]({{ '/skills/examiner-support/' | relative_url }}), [Portfolio Surveillance]({{ '/skills/portfolio-surveillance/' | relative_url }}), [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}).
+For plugin skill examples, see the individual skill pages: [Bank Deep Dive]({{ '/skills/bank-deep-dive/' | relative_url }}), [Examiner Support]({{ '/skills/examiner-support/' | relative_url }}), [Portfolio Surveillance]({{ '/skills/portfolio-surveillance/' | relative_url }}), [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}).
 
 ## Search Institutions
 
@@ -246,7 +246,7 @@ Scan all active banks in Wyoming for risk signals. For any bank with critical si
 Which bank failures since 2008 had the highest estimated losses? For the top 3, show their quarterly financials from the year before they failed and identify which risk signals were present.
 ```
 
-For a more structured failure analysis workflow, use the [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}) skill in Claude Code.
+For a more structured failure analysis workflow, use the [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}) plugin skill.
 
 ## Prompting Tips
 

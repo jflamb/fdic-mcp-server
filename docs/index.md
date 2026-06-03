@@ -32,14 +32,14 @@ body_class: overview-page
   <section class="hero-panel">
     <h3>MCP Tools</h3>
     <p>
-      20+ tools that work in <strong>any MCP client</strong> — Claude Desktop, ChatGPT, Gemini CLI, GitHub Copilot CLI, and more.
+      20+ tools that work in <strong>any MCP client</strong> — Codex, Claude Desktop, ChatGPT, Gemini CLI, GitHub Copilot CLI, and more.
       Search institutions, pull quarterly financials, run peer analysis, and detect risk signals.
     </p>
   </section>
   <section class="hero-panel">
-    <h3>Claude Code Skills</h3>
+    <h3>Plugin Skills</h3>
     <p>
-      Guided analyst workflows that run inside <strong>Claude Code only</strong>.
+      Guided analyst workflows that run in plugin-aware coding agents such as <strong>Codex</strong> and <strong>Claude Code</strong>.
       <a href="{{ '/skills/bank-deep-dive/' | relative_url }}">Bank Deep Dive</a> chains nine tools into a ten-section institution report.
       <a href="{{ '/skills/examiner-support/' | relative_url }}">Examiner Support</a> layers qualitative examiner knowledge onto CAMELS proxy scores.
       <a href="{{ '/skills/portfolio-surveillance/' | relative_url }}">Portfolio Surveillance</a> screens a bank universe and produces a ranked watchlist.
@@ -59,12 +59,12 @@ body_class: overview-page
   <a class="card" href="{{ '/choose-a-workflow/' | relative_url }}">
     <span class="card__eyebrow">Navigate</span>
     <h3>Choose a workflow</h3>
-    <p>Decide whether to use an MCP tool or a Claude Code skill based on what you're analyzing and which client you're using.</p>
+    <p>Decide whether to use an MCP tool or a plugin skill based on what you're analyzing and which client you're using.</p>
   </a>
   <a class="card" href="{{ '/clients/' | relative_url }}">
     <span class="card__eyebrow">Connect</span>
     <h3>Find your MCP host instructions</h3>
-    <p>Use the right setup steps for Claude Code, Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI.</p>
+    <p>Use the right setup steps for Codex, Claude Code, Claude Desktop, ChatGPT, Gemini CLI, or GitHub Copilot CLI.</p>
   </a>
 </div>
 
@@ -102,9 +102,9 @@ body_class: overview-page
     <p>Quick reference for all 20+ MCP tools — what each does and when to use it. Works in any MCP client.</p>
   </a>
   <a class="card" href="{{ '/skills/' | relative_url }}">
-    <span class="card__eyebrow">Claude Code</span>
+    <span class="card__eyebrow">Plugins</span>
     <h3>Skills</h3>
-    <p>Bank Deep Dive, Examiner Support, Portfolio Surveillance, and Failure Forensics. Guided multi-tool workflows. Claude Code only.</p>
+    <p>Bank Deep Dive, Examiner Support, Portfolio Surveillance, and Failure Forensics. Guided multi-tool workflows for plugin-aware coding agents.</p>
   </a>
   <a class="card" href="{{ '/prompting/' | relative_url }}">
     <span class="card__eyebrow">Prompting</span>

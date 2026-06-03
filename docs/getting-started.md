@@ -42,7 +42,7 @@ If your host only supports local stdio servers, use the local install path below
 
 - Node.js 20 or later
 - npm
-- An MCP-compatible host such as Claude Desktop, ChatGPT Developer Mode, Gemini CLI, or GitHub Copilot CLI
+- An MCP-compatible host such as Codex, Claude Desktop, ChatGPT Developer Mode, Gemini CLI, or GitHub Copilot CLI
 
 ### Install
 
@@ -88,7 +88,7 @@ The Docker image and Cloud Run deployment use port `8080` by default; `3000` is 
 
 ### Connect A Client
 
-Use the client-specific instructions in [Client Setup]({{ '/clients/' | relative_url }}).
+Use the client-specific instructions in [Client Setup]({{ '/clients/' | relative_url }}). If you are using Codex, the plugin path can load the hosted HTTP endpoint or a local stdio server together with the associated skills.
 
 For remote-URL hosts, use:
 

@@ -19,7 +19,7 @@ Get the server running in your MCP host, then use the troubleshooting guide if a
   <a class="card" href="{{ '/clients/' | relative_url }}">
     <span class="card__eyebrow">Connect</span>
     <h3>Client Setup</h3>
-    <p>Host-specific setup notes for Claude Desktop, ChatGPT, Gemini CLI, and GitHub Copilot CLI.</p>
+    <p>Host-specific setup notes for Codex, Claude Code, Claude Desktop, ChatGPT, Gemini CLI, and GitHub Copilot CLI.</p>
   </a>
   <a class="card" href="{{ '/troubleshooting/' | relative_url }}">
     <span class="card__eyebrow">Fix Issues</span>

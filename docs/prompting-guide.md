@@ -146,7 +146,7 @@ Build a peer group for CERT 29846, then compare the bank to peer medians on ROA,
 Which bank failures since 2008 had the highest losses? For the top 3, show their pre-failure financials and risk signals.
 ```
 
-For structured multi-tool workflows without manual orchestration, consider the [Claude Code skills]({{ '/skills/' | relative_url }}).
+For structured multi-tool workflows without manual orchestration, consider the [plugin skills]({{ '/skills/' | relative_url }}).
 
 ## The Public Off-Site Proxy Model
 

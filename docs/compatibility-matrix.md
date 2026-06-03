@@ -12,15 +12,17 @@ breadcrumbs:
 
 This matrix summarizes the level of setup guidance and expected support for common MCP hosts documented in this repository.
 
-Last reviewed: March 15, 2026.
+Last reviewed: June 3, 2026.
 
-| Host | Local Stdio | Remote HTTP | Support | Notes |
-|------|:-----------:|:-----------:|:-------:|-------|
-| Claude Desktop | ✓ | ✓ | Good | Hosted connector path is preferred when available |
-| ChatGPT Developer Mode | ✗ | ✓ | Good | Requires reachable HTTPS MCP endpoint |
-| Gemini CLI | ✓ | ✓ | Good | Local trust settings can block startup |
-| GitHub Copilot CLI | ✓ | — | Good | Local config is straightforward |
-| Other MCP hosts | — | — | Best effort | Validate transport support before relying on the server |
+| Host | Local Stdio | Remote HTTP | Plugin / Skills | Support | Notes |
+|------|:-----------:|:-----------:|:---------------:|:-------:|-------|
+| Codex | ✓ | ✓ | ✓ | Good | Local plugin can bundle the hosted or local server with Codex skills |
+| Claude Code | ✓ | ✓ | ✓ | Good | Plugin install can include hosted MCP tools and Claude Code skills |
+| Claude Desktop | ✓ | ✓ | — | Good | Hosted connector path is preferred when available |
+| ChatGPT Developer Mode | ✗ | ✓ | — | Good | Requires reachable HTTPS MCP endpoint |
+| Gemini CLI | ✓ | ✓ | — | Good | Local trust settings can block startup |
+| GitHub Copilot CLI | ✓ | — | — | Good | Local config is straightforward |
+| Other MCP hosts | — | — | — | Best effort | Validate transport support before relying on the server |
 
 ## Support Level Meanings
 
@@ -28,6 +30,19 @@ Last reviewed: March 15, 2026.
 - `Best effort`: likely compatible in principle, but not covered by host-specific instructions here
 
 ## Notes By Host
+
+### Codex
+
+- Local plugin setup can package `.mcp.json` and `skills/` together
+- Hosted HTTP is the simplest plugin path when local source changes are not needed
+- The local stdio server should launch from a built checkout when testing source changes
+- Use this path when Codex needs the FDIC tools and the repository-specific workflows in the same session
+
+### Claude Code
+
+- Plugin setup can install MCP tools and Claude Code skills together
+- Hosted MCP tools are preferred when you do not need local development changes
+- Local stdio can still be configured for source-checkout testing
 
 ### Claude Desktop
 
@@ -54,4 +69,5 @@ Last reviewed: March 15, 2026.
 ## Recommendation
 
 - Use Claude Desktop or ChatGPT when you want the simplest hosted-URL setup
-- Use Gemini CLI or GitHub Copilot CLI when you specifically want local stdio
+- Use Codex or Claude Code when you want plugin-packaged skills alongside MCP tools
+- Use Gemini CLI or GitHub Copilot CLI when you specifically want local stdio without plugin workflows

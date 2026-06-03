@@ -1,16 +1,16 @@
 ---
-title: Claude Code Skills
+title: Plugin Skills
 nav_group: skills
 kicker: Skills
-summary: Guided analyst workflows that chain multiple MCP tools into structured reports. Claude Code only.
+summary: Guided analyst workflows that chain multiple MCP tools into structured reports through plugin-aware coding agents.
 breadcrumbs:
   - title: Overview
     url: /
 ---
 
-Skills are guided analyst workflows that run inside **Claude Code only**. Each skill chains multiple MCP tools into a structured, multi-section report with consistent formatting and built-in caveats.
+Skills are guided analyst workflows that run inside plugin-aware coding agents. Each skill chains multiple MCP tools into a structured, multi-section report with consistent formatting and built-in caveats.
 
-**Skills are not MCP tools.** MCP tools work in any MCP client (Claude Desktop, ChatGPT, Gemini CLI, and others). Skills are slash commands that orchestrate those tools through Claude Code's conversational interface. If you are not using Claude Code, use the [MCP tools directly]({{ '/tool-reference/' | relative_url }}) or see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}) for guidance.
+**Skills are not MCP tools.** MCP tools work in any MCP client (Codex, Claude Desktop, ChatGPT, Gemini CLI, and others). Skills orchestrate those tools through a host-specific plugin interface. If your client does not support these skills, use the [MCP tools directly]({{ '/tool-reference/' | relative_url }}) or see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}) for guidance.
 
 ## Available Skills
 
@@ -39,10 +39,10 @@ Skills are guided analyst workflows that run inside **Claude Code only**. Each s
 
 ## Skills vs MCP Tools
 
-| | MCP Tools | Claude Code Skills |
+| | MCP Tools | Plugin Skills |
 |---|---|---|
-| **Works in** | Any MCP client | Claude Code only |
-| **Invoked by** | Natural-language prompts | Slash commands (`/fdic-bank-deep-dive`) |
+| **Works in** | Any MCP client | Plugin-aware coding agents such as Codex or Claude Code |
+| **Invoked by** | Natural-language prompts | Skill activation or slash commands, depending on host |
 | **Output** | Single tool response | Multi-section structured report |
 | **Scope** | One dataset or analysis at a time | Chains multiple tools with graceful degradation |
 | **Stability** | Stable tool contracts | Evolving conversational workflows |
@@ -50,7 +50,7 @@ Skills are guided analyst workflows that run inside **Claude Code only**. Each s
 
 ## Installing Skills
 
-Skills are installed alongside the MCP server through the Claude Code plugin system:
+Claude Code skills are installed alongside the MCP server through the Claude Code plugin system:
 
 ```text
 /plugin marketplace add jflamb/fdic-mcp-server
@@ -58,6 +58,8 @@ Skills are installed alongside the MCP server through the Claude Code plugin sys
 ```
 
 See [Client Setup]({{ '/clients/' | relative_url }}) for details. Manual MCP server setup (without the plugin) gives you MCP tools only, not skills.
+
+Codex can also use a local plugin that packages the MCP server and the repository skills from a local checkout. See [Client Setup]({{ '/clients/' | relative_url }}#codex) for the Codex plugin structure and validation steps.
 
 ## Data Basis and Limitations
 

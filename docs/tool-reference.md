@@ -10,9 +10,9 @@ breadcrumbs:
     url: /prompting/
 ---
 
-This page is a reference for the MCP tools provided by this server. All tools work in **any MCP client** — Claude Desktop, ChatGPT, Gemini CLI, GitHub Copilot CLI, and others.
+This page is a reference for the MCP tools provided by this server. All tools work in **any MCP client** — Codex, Claude Desktop, ChatGPT, Gemini CLI, GitHub Copilot CLI, and others.
 
-For guided multi-tool workflows available in Claude Code, see [Skills]({{ '/skills/' | relative_url }}). For help choosing between tools and skills, see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
+For guided multi-tool workflows available through plugins, see [Skills]({{ '/skills/' | relative_url }}). For help choosing between tools and skills, see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
 
 ## Search and Lookup Tools
 
