@@ -36,6 +36,15 @@ Examples:
 
 If your host only supports local stdio servers, use the local install path below.
 
+## Plugin Install Path
+
+Use the plugin path when you are working in a plugin-aware coding agent and want the MCP tools plus guided analysis skills to load together.
+
+- **Claude Code:** add the `jflamb/fdic-mcp-server` marketplace, then install `fdic-mcp-server@fdic-mcp-server`.
+- **Codex:** run `npm run plugin:sync` from this checkout, then install the generated `fdic-mcp-server` plugin from your personal marketplace in the Codex app.
+
+See [Plugin Installation]({{ '/plugin-installation/' | relative_url }}) for the exact commands and the hosted-versus-local transport choice.
+
 ## Local Install Path
 
 ### Prerequisites

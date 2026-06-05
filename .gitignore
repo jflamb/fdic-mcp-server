@@ -1,12 +1,13 @@
 node_modules/
 dist/
+vendor/bundle/
 .tmp/
+.sass-cache/
 .jekyll-cache/
 .jekyll-metadata
 docs/.jekyll-cache/
 _site/
 docs/_site/
-Gemfile.lock
 .DS_Store
 *.tsbuildinfo
 .envrc

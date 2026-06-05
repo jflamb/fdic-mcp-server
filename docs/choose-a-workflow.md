@@ -15,10 +15,10 @@ This page helps you quickly find the right path for your FDIC data analysis task
 | If you are using... | You have access to... |
 |---------------------|----------------------|
 | **Codex** (with local plugin installed) | MCP tools, repository skills, Portfolio Surveillance, and Failure Forensics |
-| **Claude Code** (with plugin installed) | MCP tools **and** Claude Code skills |
+| **Claude Code** (with plugin installed) | MCP tools and Claude Code plugin skills |
 | **Any other MCP client** (Claude Desktop, ChatGPT, Gemini CLI, etc.) | MCP tools only |
 
-Skills are guided analyst workflows available through plugin-aware coding agents. They chain multiple MCP tools into structured reports. If your client does not support these skills, you can achieve similar results by prompting the [MCP tools]({{ '/tool-reference/' | relative_url }}) directly — it just takes more manual orchestration.
+Skills are guided analyst workflows available through plugin-aware coding agents such as Codex and Claude Code. They are not Claude-only as a category, but individual skill availability depends on the installed plugin. If your client does not support these skills, you can achieve similar results by prompting the [MCP tools]({{ '/tool-reference/' | relative_url }}) directly — it just takes more manual orchestration.
 
 ## What Are You Analyzing?
 
@@ -26,12 +26,12 @@ Skills are guided analyst workflows available through plugin-aware coding agents
 
 | Goal | Best Path | Client |
 |------|-----------|--------|
-| Full-picture report (health, financials, peers, credit, funding, franchise) | [Bank Deep Dive]({{ '/skills/bank-deep-dive/' | relative_url }}) skill | Claude Code |
+| Full-picture report (health, financials, peers, credit, funding, franchise) | [Bank Deep Dive]({{ '/skills/bank-deep-dive/' | relative_url }}) skill | Claude Code plugin |
 | Health assessment only | `fdic_analyze_bank_health` tool | Any MCP client |
 | Financial ratios only | `fdic_ubpr_analysis` tool | Any MCP client |
 | Peer benchmarking only | `fdic_peer_group_analysis` tool | Any MCP client |
 | Credit concentration only | `fdic_analyze_credit_concentration` tool | Any MCP client |
-| Layer examiner knowledge onto baseline | [Examiner Support]({{ '/skills/examiner-support/' | relative_url }}) skill | Claude Code |
+| Layer examiner knowledge onto baseline | [Examiner Support]({{ '/skills/examiner-support/' | relative_url }}) skill | Claude Code plugin |
 | Quick fact lookup (name, location, charter) | `fdic_get_institution` tool | Any MCP client |
 
 ### Portfolio / Multiple Institutions
@@ -75,8 +75,8 @@ Are you in Codex or Claude Code with the plugin?
 ├── Yes
 │   ├── Single institution, full report? → /fdic-bank-deep-dive in Claude Code, or use MCP tools directly
 │   ├── Single institution, add examiner knowledge? → /fdic-examiner-overlay in Claude Code
-│   ├── Multiple institutions, screen & triage? → /fdic-portfolio-surveillance
-│   ├── Failed institution, reconstruct timeline? → /fdic-failure-forensics
+│   ├── Multiple institutions, screen & triage? → /fdic-portfolio-surveillance in Codex or Claude Code
+│   ├── Failed institution, reconstruct timeline? → /fdic-failure-forensics in Codex or Claude Code
 │   └── One specific dataset or analysis? → Use the MCP tool directly
 └── No
     └── Use MCP tools directly (see Tool Reference)

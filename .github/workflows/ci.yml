@@ -145,6 +145,52 @@ jobs:
         if: steps.filter.outputs.chatbot == 'true'
         run: npm run test:e2e
 
+  docs-build:
+    name: Docs build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'Gemfile'
+              - 'Gemfile.lock'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'scripts/generate-docs-release-data.mjs'
+
+      - name: Set up Node.js
+        if: steps.filter.outputs.docs == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install npm dependencies
+        if: steps.filter.outputs.docs == 'true'
+        run: npm ci
+
+      - name: Set up Ruby
+        if: steps.filter.outputs.docs == 'true'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Build docs site
+        if: steps.filter.outputs.docs == 'true'
+        run: npm run docs:build
+
   ci-required:
     name: CI required
     runs-on: ubuntu-latest
@@ -154,6 +200,7 @@ jobs:
       - validate
       - docker-build
       - e2e
+      - docs-build
     if: ${{ always() }}
 
     steps:
@@ -176,6 +223,11 @@ jobs:
 
           if [ "${{ needs.e2e.result }}" != "success" ] && [ "${{ needs.e2e.result }}" != "skipped" ]; then
             echo "e2e result: ${{ needs.e2e.result }}"
+            exit 1
+          fi
+
+          if [ "${{ needs.docs-build.result }}" != "success" ] && [ "${{ needs.docs-build.result }}" != "skipped" ]; then
+            echo "docs-build result: ${{ needs.docs-build.result }}"
             exit 1
           fi
 

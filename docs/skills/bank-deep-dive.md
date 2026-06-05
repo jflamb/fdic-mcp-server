@@ -2,7 +2,7 @@
 title: "Bank Deep Dive"
 nav_group: skills
 kicker: Skill
-summary: A Claude Code skill that chains nine MCP tools into a comprehensive ten-section report for a single FDIC-insured institution.
+summary: A Claude Code plugin skill that chains nine MCP tools into a comprehensive ten-section report for a single FDIC-insured institution.
 breadcrumbs:
   - title: Overview
     url: /
@@ -12,7 +12,7 @@ breadcrumbs:
 
 The `/fdic-bank-deep-dive` command produces a comprehensive single-institution report by chaining nine MCP tools into ten structured sections. It works for both active and inactive (failed or merged) institutions.
 
-This is a **Claude Code skill**, not an MCP tool. It requires Claude Code with the plugin installed. If you are using another MCP client, you can achieve similar results by prompting the individual MCP tools directly — see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
+This is a **plugin skill**, not an MCP tool. This specific deep-dive workflow is currently exposed through the Claude Code plugin. Other plugin skills are also available through Codex. If you are using another MCP client, you can achieve similar results by prompting the individual MCP tools directly — see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
 
 ## When to Use It
 

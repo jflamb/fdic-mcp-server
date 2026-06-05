@@ -17,7 +17,7 @@ Last reviewed: June 3, 2026.
 | Host | Local Stdio | Remote HTTP | Plugin / Skills | Support | Notes |
 |------|:-----------:|:-----------:|:---------------:|:-------:|-------|
 | Codex | ✓ | ✓ | ✓ | Good | Local plugin can bundle the hosted or local server with Codex skills |
-| Claude Code | ✓ | ✓ | ✓ | Good | Plugin install can include hosted MCP tools and Claude Code skills |
+| Claude Code | ✓ | ✓ | ✓ | Good | Plugin install can include hosted MCP tools and plugin skills |
 | Claude Desktop | ✓ | ✓ | — | Good | Hosted connector path is preferred when available |
 | ChatGPT Developer Mode | ✗ | ✓ | — | Good | Requires reachable HTTPS MCP endpoint |
 | Gemini CLI | ✓ | ✓ | — | Good | Local trust settings can block startup |
@@ -40,7 +40,7 @@ Last reviewed: June 3, 2026.
 
 ### Claude Code
 
-- Plugin setup can install MCP tools and Claude Code skills together
+- Plugin setup can install MCP tools and plugin skills together
 - Hosted MCP tools are preferred when you do not need local development changes
 - Local stdio can still be configured for source-checkout testing
 

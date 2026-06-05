@@ -57,6 +57,7 @@ const formatInline = (value) => {
 
   const formatted = linkTokens.replaced
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/~~(.+?)~~/g, "<del>$1</del>")
     .replace(/(^|[^\*])\*(?!\s)(.+?)(?<!\s)\*(?!\*)/g, "$1<em>$2</em>")
     .replace(/(^|[^_])_(?!\s)(.+?)(?<!\s)_(?!_)/g, "$1<em>$2</em>");
 
@@ -65,6 +66,12 @@ const formatInline = (value) => {
 
 const isTableSeparator = (line) =>
   /^\|?[\s:-]+\|[\s|:-]*$/.test(line.trim());
+
+const isHorizontalRule = (line) =>
+  /^ {0,3}([-*_])(?:\s*\1){2,}\s*$/.test(line);
+
+const isBlockquoteLine = (line) =>
+  /^>\s?/.test(line.trim());
 
 const isListLine = (line) =>
   /^([-*])\s+/.test(line.trim()) || /^\d+\.\s+/.test(line.trim());
@@ -76,6 +83,21 @@ const getListIndent = (line) => {
 
 const isRawListLine = (line) =>
   /^\s*([-*])\s+/.test(line) || /^\s*\d+\.\s+/.test(line);
+
+const getListTextIndent = (line) => {
+  const match = line.match(/^(\s*)(?:[-*]|\d+\.)\s+/);
+  return match ? match[0].length : getListIndent(line);
+};
+
+const splitTableRow = (line) => {
+  const trimmed = line.trim();
+  const withoutLeading = trimmed.startsWith("|") ? trimmed.slice(1) : trimmed;
+  const normalized = withoutLeading.endsWith("|")
+    ? withoutLeading.slice(0, -1)
+    : withoutLeading;
+
+  return normalized.split("|").map((cell) => cell.trim());
+};
 
 const parseListItems = (lines, startIndex) => {
   const items = [];
@@ -107,8 +129,21 @@ const parseListItems = (lines, startIndex) => {
       break;
     }
 
-    items.push({ text: trimmed.replace(listPattern, ""), children: "" });
+    const textLines = [trimmed.replace(listPattern, "")];
+    const textIndent = getListTextIndent(lines[index]);
     index += 1;
+
+    while (
+      index < lines.length &&
+      lines[index].trim() &&
+      !isRawListLine(lines[index]) &&
+      getListIndent(lines[index]) >= textIndent
+    ) {
+      textLines.push(lines[index].trim());
+      index += 1;
+    }
+
+    items.push({ text: textLines.join(" "), children: "" });
   }
 
   const html = `<${listTag}>${items
@@ -146,6 +181,22 @@ const parseMarkdown = (source) => {
       continue;
     }
 
+    if (isHorizontalRule(lines[index])) {
+      blocks.push("<hr>");
+      index += 1;
+      continue;
+    }
+
+    if (isBlockquoteLine(lines[index])) {
+      const quoteLines = [];
+      while (index < lines.length && isBlockquoteLine(lines[index])) {
+        quoteLines.push(lines[index].trim().replace(/^>\s?/, ""));
+        index += 1;
+      }
+      blocks.push(`<blockquote>${parseMarkdown(quoteLines.join("\n"))}</blockquote>`);
+      continue;
+    }
+
     const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
       // Shift heading level down by 1 (h1→h2, etc.) to preserve semantic hierarchy inside chat bubbles
@@ -160,19 +211,11 @@ const parseMarkdown = (source) => {
       index + 1 < lines.length &&
       isTableSeparator(lines[index + 1])
     ) {
-      const header = line
-        .split("|")
-        .map((cell) => cell.trim())
-        .filter(Boolean);
+      const header = splitTableRow(line);
       const rows = [];
       index += 2;
       while (index < lines.length && lines[index].includes("|")) {
-        rows.push(
-          lines[index]
-            .split("|")
-            .map((cell) => cell.trim())
-            .filter(Boolean),
-        );
+        rows.push(splitTableRow(lines[index]));
         index += 1;
       }
 
@@ -206,6 +249,8 @@ const parseMarkdown = (source) => {
       index < lines.length &&
       lines[index].trim() &&
       !lines[index].trim().startsWith("```") &&
+      !isHorizontalRule(lines[index]) &&
+      !isBlockquoteLine(lines[index]) &&
       !/^(#{1,6})\s+/.test(lines[index].trim()) &&
       !isListLine(lines[index]) &&
       !(

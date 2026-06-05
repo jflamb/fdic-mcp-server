@@ -21,6 +21,11 @@ Get the server running in your MCP host, then use the troubleshooting guide if a
     <h3>Client Setup</h3>
     <p>Host-specific setup notes for Codex, Claude Code, Claude Desktop, ChatGPT, Gemini CLI, and GitHub Copilot CLI.</p>
   </a>
+  <a class="card" href="{{ '/plugin-installation/' | relative_url }}">
+    <span class="card__eyebrow">Plugins</span>
+    <h3>Plugin Installation</h3>
+    <p>Install the tools and guided skills together in plugin-aware coding agents such as Codex or Claude Code.</p>
+  </a>
   <a class="card" href="{{ '/troubleshooting/' | relative_url }}">
     <span class="card__eyebrow">Fix Issues</span>
     <h3>Troubleshooting And FAQ</h3>

@@ -44,7 +44,7 @@ Client support changes quickly. Treat the linked official docs as the source of 
 
 Last verified: June 3, 2026.
 
-## Codex
+## Codex Plugin Installation
 
 Codex can use a local plugin that packages the FDIC BankFind MCP server connection together with the project skills. Use this path when you want Codex to load both the tools and the guided workflows from one plugin.
 
@@ -81,6 +81,8 @@ Use local stdio when you are testing changes from a checkout:
 }
 ```
 
+For full plugin installation steps, see [Plugin Installation]({{ '/plugin-installation/' | relative_url }}).
+
 For a local development plugin, create the plugin with the Codex `plugin-creator` skill, then install it from your personal marketplace in the Codex app. The generated plugin should contain:
 
 ```text
@@ -115,9 +117,9 @@ Notes:
 - Keep the plugin skills synchronized with `.agents/skills/` when the repository workflows change.
 - If the plugin points at `npm start`, run `npm run build` after TypeScript changes so `dist/index.js` is current.
 
-## Claude Code
+## Claude Code Plugin Installation
 
-Claude Code has a plugin system that installs both the MCP server and Claude Code skills in one step.
+Claude Code has a plugin system that installs both the MCP server and plugin skills in one step.
 
 Add the marketplace and install:
 
@@ -128,9 +130,9 @@ Add the marketplace and install:
 
 This gives you:
 - **MCP tools** — the hosted endpoint at `https://bankfind.jflamb.com/mcp`, giving you all 20+ search, analysis, and comparison tools that work in any MCP client
-- **Claude Code skills** — guided analyst workflows like [Bank Deep Dive](/skills/bank-deep-dive/), [Examiner Support](/skills/examiner-support/), [Portfolio Surveillance](/skills/portfolio-surveillance/), and [Failure Forensics](/skills/failure-forensics/) (Claude Code only)
+- **Plugin skills** — guided analyst workflows like [Bank Deep Dive](/skills/bank-deep-dive/), [Examiner Support](/skills/examiner-support/), [Portfolio Surveillance](/skills/portfolio-surveillance/), and [Failure Forensics](/skills/failure-forensics/)
 
-Skills complement the MCP tools. Tools give you raw data access; skills build structured, multi-step workflows on top of those tools. See [Skills](/skills/) for details.
+Skills complement the MCP tools. Tools give you raw data access; skills build structured, multi-step workflows on top of those tools. Plugin skills are available in both Codex and Claude Code, but each plugin may expose a different set. See [Skills](/skills/) for details.
 
 To use a local server instead, override the MCP config after installing the plugin:
 

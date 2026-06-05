@@ -36,6 +36,13 @@ Public user docs:
 
 - [User&rsquo;s Guide](https://jflamb.github.io/fdic-mcp-server/)
 
+Validate the public docs site locally:
+
+```bash
+npm run docs:bundle
+npm run docs:build
+```
+
 Repo reference docs:
 
 - [Reference home](./reference/README.md)
@@ -226,15 +233,17 @@ Server-side analysis helpers:
 - `fdic_peer_group_analysis` builds a peer group from asset size, charter class, and geography criteria and then ranks an institution against peers
 - `fdic_analyze_bank_health` returns a full `public_camels_proxy_v1` proxy assessment; `fdic_compare_peer_health` returns per-institution summary scores with a full proxy for the subject; `fdic_detect_risk_signals` uses the proxy engine to generate per-institution risk signals — all are analytical proxies, not official regulatory CAMELS ratings
 
-## Claude Code Skills
+## Plugin Skills
 
-This repository includes a [Claude Code](https://claude.ai/claude-code) slash command that chains multiple FDIC MCP tools into a structured analysis workflow.
+This repository includes plugin skills that chain multiple FDIC MCP tools into structured analysis workflows. Skills are not MCP tools, and they are not Claude-only as a category. Codex and Claude Code can both load guided skills through their plugin systems, although each host may expose a different skill list.
 
 | Skill | Command | Description |
 |-------|---------|-------------|
 | Bank Deep Dive | `/fdic-bank-deep-dive` | Comprehensive single-institution analysis report covering health assessment, financial performance, peer benchmarking, credit concentration, funding profile, securities portfolio, franchise footprint, and economic context. Accepts a bank name or CERT number with an optional report date. |
+| Portfolio Surveillance | `/fdic-portfolio-surveillance` | Screens a defined group of institutions and produces a ranked watchlist with escalation tiers. |
+| Failure Forensics | `/fdic-failure-forensics` | Reconstructs a failed institution's pre-failure financial timeline and identifies public-data warning signals. |
 
-Skills are defined in `.claude/commands/` and are available to any Claude Code session with this MCP server configured. See [docs/usage-examples.md](./docs/usage-examples.md) for a usage example.
+Claude Code plugin skills are defined in `.claude/commands/`. Codex plugin skills are generated from `.agents/skills/` through `npm run plugin:sync`. See [docs/plugin-installation.md](./docs/plugin-installation.md) for installation details and [docs/usage-examples.md](./docs/usage-examples.md) for usage examples.
 
 ## Data Notes
 

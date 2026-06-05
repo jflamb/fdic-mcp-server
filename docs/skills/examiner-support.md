@@ -2,7 +2,7 @@
 title: "FDIC Examiner Support"
 nav_group: skills
 kicker: Skill
-summary: A Claude Code skill that guides examiners through layering qualitative knowledge onto a public-data CAMELS proxy baseline.
+summary: A Claude Code plugin skill that guides examiners through layering qualitative knowledge onto a public-data CAMELS proxy baseline.
 breadcrumbs:
   - title: Overview
     url: /
@@ -12,7 +12,7 @@ breadcrumbs:
 
 The `/fdic-examiner-overlay` command guides an experienced bank examiner or financial analyst through enriching a `public_camels_proxy_v1` baseline with qualitative knowledge not available from public Call Report data.
 
-This is a **Claude Code skill**, not an MCP tool. It requires Claude Code with the plugin installed. If you are using another MCP client, you can run `fdic_analyze_bank_health` to get the public-data baseline, but the structured overlay workflow is only available through this skill.
+This is a **plugin skill**, not an MCP tool. This specific examiner overlay workflow is currently exposed through the Claude Code plugin. Other plugin skills are also available through Codex. If you are using another MCP client, you can run `fdic_analyze_bank_health` to get the public-data baseline, but the structured overlay workflow is only available through this skill.
 
 ## When to Use It
 
@@ -118,7 +118,7 @@ Adjusted component scores are weighted (Capital 0.30, Asset Quality 0.25, Earnin
 
 ## Key Caveats
 
-- **Claude Code only**: The interactive overlay workflow is not available in other MCP clients.
+- **Host availability**: This specific interactive overlay workflow is currently exposed through the Claude Code plugin. Plugin skills as a category are also available in Codex.
 - **Examiner knowledge required**: The skill collects specific, structured inputs. Vague evidence will be re-prompted.
 - **Bounded adjustments**: No single domain can move a score by more than &#177;1.0. Low-confidence inputs are further capped.
 - **Confidential inputs**: Fields like classified asset trends and supervisory history may contain confidential supervisory information. The caveats section marks these. Handle the blended output according to your institution's information-sharing policies.

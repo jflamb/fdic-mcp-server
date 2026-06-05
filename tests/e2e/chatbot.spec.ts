@@ -67,9 +67,15 @@ test("assistant replies render richer markdown structures", async ({ page }) => 
   await expect(bubble.locator("h3")).toHaveText("Results summary");
   await expect(bubble.locator("a")).toHaveAttribute("href", "/prompting-guide/");
   await expect(bubble.locator("ol li")).toHaveCount(2);
+  await expect(bubble.locator("ol li").nth(1)).toContainText("continues on the next line");
   await expect(bubble.locator("ul li")).toHaveCount(2);
   await expect(bubble.locator("em")).toHaveText("Efficient");
   await expect(bubble.locator("li code")).toHaveText("CERT 12345");
+  await expect(bubble.locator("blockquote")).toContainText("public-data context");
+  await expect(bubble.locator("hr")).toHaveCount(1);
+  await expect(bubble.locator("del")).toHaveText("Outdated note");
+  await expect(bubble.locator("table")).toBeVisible();
+  await expect(bubble.getByRole("cell", { name: "$125M" })).toBeVisible();
   await expect(bubble.locator("pre code")).toContainText("Assets: 125000");
   await expect(bubble).toContainText("Literal HTML: <b>safe</b>");
   await expect(bubble.locator("b")).toHaveCount(0);

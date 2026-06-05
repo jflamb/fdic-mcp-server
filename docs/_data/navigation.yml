@@ -27,6 +27,9 @@ sections:
     items:
       - title: Getting Started
         url: /getting-started/
+      - title: Plugin Installation
+        short_title: Plugins
+        url: /plugin-installation/
       - title: Client Setup
         url: /clients/
       - title: Troubleshooting And FAQ

@@ -8,9 +8,9 @@ breadcrumbs:
     url: /
 ---
 
-Skills are guided analyst workflows that run inside plugin-aware coding agents. Each skill chains multiple MCP tools into a structured, multi-section report with consistent formatting and built-in caveats.
+Skills are guided analyst workflows that run inside plugin-aware coding agents such as Codex and Claude Code. Each skill chains multiple MCP tools into a structured, multi-section report with consistent formatting and built-in caveats.
 
-**Skills are not MCP tools.** MCP tools work in any MCP client (Codex, Claude Desktop, ChatGPT, Gemini CLI, and others). Skills orchestrate those tools through a host-specific plugin interface. If your client does not support these skills, use the [MCP tools directly]({{ '/tool-reference/' | relative_url }}) or see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}) for guidance.
+**Skills are not MCP tools, and they are not Claude-only.** MCP tools work in any MCP client (Codex, Claude Desktop, ChatGPT, Gemini CLI, and others). Skills orchestrate those tools through a host-specific plugin interface, and the exact skill list depends on the plugin you install. If your client does not support these skills, use the [MCP tools directly]({{ '/tool-reference/' | relative_url }}) or see [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}) for guidance.
 
 ## Available Skills
 
@@ -50,16 +50,22 @@ Skills are guided analyst workflows that run inside plugin-aware coding agents. 
 
 ## Installing Skills
 
-Claude Code skills are installed alongside the MCP server through the Claude Code plugin system:
+Install skills through a plugin-aware coding agent. The Codex and Claude Code plugins both package MCP tools with guided workflows, but they do not expose an identical skill list.
+
+Claude Code plugin install:
 
 ```text
 /plugin marketplace add jflamb/fdic-mcp-server
 /plugin install fdic-mcp-server@fdic-mcp-server
 ```
 
-See [Client Setup]({{ '/clients/' | relative_url }}) for details. Manual MCP server setup (without the plugin) gives you MCP tools only, not skills.
+Codex local plugin setup:
 
-Codex can also use a local plugin that packages the MCP server and the repository skills from a local checkout. See [Client Setup]({{ '/clients/' | relative_url }}#codex) for the Codex plugin structure and validation steps.
+```bash
+npm run plugin:sync
+```
+
+See [Plugin Installation]({{ '/plugin-installation/' | relative_url }}) for exact setup steps. Manual MCP server setup without a plugin gives you MCP tools only, not skills.
 
 ## Data Basis and Limitations
 
