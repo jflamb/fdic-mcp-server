@@ -4,6 +4,7 @@ import type { Request, Response, Router } from "express";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { RateLimiter } from "./chatRateLimit.js";
+import { getRequestIp } from "./requestIdentity.js";
 
 export const CHAT_SYSTEM_PROMPT = `You are a demo assistant for the FDIC BankFind MCP Server. You help users
 explore FDIC banking data using the tools available to you.
@@ -217,15 +218,6 @@ function mapMessagesToContents(messages: ChatMessage[]): ChatContent[] {
     role: message.role === "assistant" ? "model" : "user",
     parts: [{ text: message.content }],
   }));
-}
-
-function getRequestIp(req: Request): string {
-  const forwarded = req.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0]?.trim() || req.ip || "unknown";
-  }
-
-  return req.ip || "unknown";
 }
 
 function getResponseParts(

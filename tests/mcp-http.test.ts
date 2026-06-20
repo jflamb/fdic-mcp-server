@@ -35,6 +35,7 @@ import {
   parseHttpHost,
   parseHttpPort,
 } from "../src/index.js";
+import { ConcurrentLimiter, RateLimiter } from "../src/chatRateLimit.js";
 import { clearQueryCache } from "../src/services/fdicClient.js";
 import packageJson from "../package.json";
 
@@ -300,6 +301,117 @@ describe("HTTP MCP server", () => {
 
     expect(postDeleteResponse.status).toBe(404);
     expect(postDeleteResponse.body.error.message).toBe("Session not found");
+  });
+
+  it("rate limits MCP requests by client IP", async () => {
+    const mcpRateLimiter = new RateLimiter({
+      maxRequests: 1,
+      windowMs: 60_000,
+    });
+    mcpRateLimiter.check("203.0.113.10", Date.now());
+    const app = createApp({
+      mcpRateLimiter,
+    });
+
+    const response = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("x-forwarded-for", "203.0.113.10")
+      .send({
+        jsonrpc: "2.0",
+        id: 0,
+        method: "initialize",
+        params: {
+          protocolVersion: defaultProtocolVersion,
+          capabilities: {},
+          clientInfo: {
+            name: "vitest",
+            version: "1.0.0",
+          },
+        },
+      });
+
+    expect(response.status).toBe(429);
+    expect(response.headers["retry-after"]).toBe("60");
+    expect(response.body.error.message).toBe(
+      "Rate limit exceeded. Try again shortly.",
+    );
+  });
+
+  it("limits how often a client IP can open MCP stream requests", async () => {
+    const app = createApp({
+      mcpStreamRateLimiter: new RateLimiter({
+        maxRequests: 1,
+        windowMs: 60 * 60 * 1000,
+      }),
+    });
+    const { sessionId } = await initializeSession(app);
+    const server = app.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected TCP address for test server");
+    }
+
+    const headers = {
+      accept: "text/event-stream",
+      "mcp-session-id": sessionId,
+      "x-forwarded-for": "203.0.113.20",
+    };
+    const firstResponse = await fetch(`http://127.0.0.1:${address.port}/mcp`, {
+      headers,
+    });
+
+    expect(firstResponse.status).toBe(200);
+    await firstResponse.body?.cancel();
+
+    const secondResponse = await fetch(`http://127.0.0.1:${address.port}/mcp`, {
+      headers,
+    });
+
+    expect(secondResponse.status).toBe(429);
+    expect(secondResponse.headers.get("retry-after")).toBe("3600");
+
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+  });
+
+  it("limits concurrent MCP stream requests by client IP", async () => {
+    const app = createApp({
+      mcpStreamConcurrentLimiter: new ConcurrentLimiter(1),
+    });
+    const { sessionId } = await initializeSession(app);
+    const server = app.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected TCP address for test server");
+    }
+
+    const headers = {
+      accept: "text/event-stream",
+      "mcp-session-id": sessionId,
+      "x-forwarded-for": "203.0.113.30",
+    };
+    const firstResponse = await fetch(`http://127.0.0.1:${address.port}/mcp`, {
+      headers,
+    });
+
+    expect(firstResponse.status).toBe(200);
+
+    const secondResponse = await fetch(`http://127.0.0.1:${address.port}/mcp`, {
+      headers,
+    });
+
+    expect(secondResponse.status).toBe(429);
+    expect(secondResponse.headers.get("retry-after")).toBe("60");
+
+    await firstResponse.body?.cancel();
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
   });
 
   it("expires idle HTTP sessions even when the client never sends DELETE", async () => {

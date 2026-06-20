@@ -13,6 +13,8 @@ import {
   parseChatAllowedOrigins,
   sweepIdleChatSessions,
 } from "./chat.js";
+import { ConcurrentLimiter, RateLimiter } from "./chatRateLimit.js";
+import { getRequestIp } from "./requestIdentity.js";
 import { registerInstitutionTools } from "./tools/institutions.js";
 import { registerFailureTools } from "./tools/failures.js";
 import { registerLocationTools } from "./tools/locations.js";
@@ -198,6 +200,9 @@ interface HttpAppOptions {
   sessionSweepIntervalMs?: number;
   chatAllowedOrigins?: string[];
   geminiApiKey?: string;
+  mcpRateLimiter?: RateLimiter;
+  mcpStreamRateLimiter?: RateLimiter;
+  mcpStreamConcurrentLimiter?: ConcurrentLimiter;
   serverFactory?: () => McpServer;
   /**
    * When true, run the streamable HTTP transport in stateless JSON mode (no
@@ -216,6 +221,28 @@ interface SessionContext {
 
 const DEFAULT_SESSION_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 const DEFAULT_SESSION_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
+const DEFAULT_MCP_RATE_LIMIT_MAX_REQUESTS = 120;
+const DEFAULT_MCP_RATE_LIMIT_WINDOW_MS = 60_000;
+const DEFAULT_MCP_STREAM_RATE_LIMIT_MAX_REQUESTS = 2;
+const DEFAULT_MCP_STREAM_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const DEFAULT_MCP_MAX_CONCURRENT_STREAMS_PER_IP = 1;
+
+function parsePositiveInteger(
+  rawValue: string | undefined,
+  fallback: number,
+  name: string,
+): number {
+  if (rawValue === undefined || rawValue.trim().length === 0) {
+    return fallback;
+  }
+
+  const value = Number.parseInt(rawValue, 10);
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive integer. Received: ${rawValue}`);
+  }
+
+  return value;
+}
 
 async function closeSession(
   sessions: Map<string, SessionContext>,
@@ -264,6 +291,21 @@ function sendInvalidSessionResponse(res: express.Response): void {
   });
 }
 
+function sendMcpRateLimitResponse(
+  res: express.Response,
+  retryAfterSeconds: number,
+): void {
+  res.setHeader("Retry-After", String(retryAfterSeconds));
+  res.status(429).json({
+    jsonrpc: "2.0",
+    error: {
+      code: -32000,
+      message: "Rate limit exceeded. Try again shortly.",
+    },
+    id: null,
+  });
+}
+
 export function createApp(options: HttpAppOptions = {}): Express {
   const app = express();
   const serverFactory = options.serverFactory ?? (() => createServer());
@@ -281,6 +323,35 @@ export function createApp(options: HttpAppOptions = {}): Express {
     options.sessionSweepIntervalMs ?? DEFAULT_SESSION_SWEEP_INTERVAL_MS;
   const stateless =
     options.stateless ?? process.env.FDIC_MCP_STATELESS_HTTP === "true";
+  const mcpRateLimiter =
+    options.mcpRateLimiter ??
+    new RateLimiter({
+      maxRequests: parsePositiveInteger(
+        process.env.MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE,
+        DEFAULT_MCP_RATE_LIMIT_MAX_REQUESTS,
+        "MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE",
+      ),
+      windowMs: DEFAULT_MCP_RATE_LIMIT_WINDOW_MS,
+    });
+  const mcpStreamRateLimiter =
+    options.mcpStreamRateLimiter ??
+    new RateLimiter({
+      maxRequests: parsePositiveInteger(
+        process.env.MCP_STREAM_RATE_LIMIT_MAX_REQUESTS_PER_HOUR,
+        DEFAULT_MCP_STREAM_RATE_LIMIT_MAX_REQUESTS,
+        "MCP_STREAM_RATE_LIMIT_MAX_REQUESTS_PER_HOUR",
+      ),
+      windowMs: DEFAULT_MCP_STREAM_RATE_LIMIT_WINDOW_MS,
+    });
+  const mcpStreamConcurrentLimiter =
+    options.mcpStreamConcurrentLimiter ??
+    new ConcurrentLimiter(
+      parsePositiveInteger(
+        process.env.MCP_MAX_CONCURRENT_STREAMS_PER_IP,
+        DEFAULT_MCP_MAX_CONCURRENT_STREAMS_PER_IP,
+        "MCP_MAX_CONCURRENT_STREAMS_PER_IP",
+      ),
+    );
   app.use(express.json());
 
   if (!stateless) {
@@ -296,6 +367,35 @@ export function createApp(options: HttpAppOptions = {}): Express {
   });
 
   app.all("/mcp", async (req, res) => {
+    const requestIp = getRequestIp(req);
+    if (!mcpRateLimiter.check(requestIp)) {
+      sendMcpRateLimitResponse(
+        res,
+        Math.ceil(DEFAULT_MCP_RATE_LIMIT_WINDOW_MS / 1000),
+      );
+      return;
+    }
+
+    if (req.method === "GET") {
+      const releaseStream = mcpStreamConcurrentLimiter.acquire(requestIp);
+      if (!releaseStream) {
+        sendMcpRateLimitResponse(res, 60);
+        return;
+      }
+
+      if (!mcpStreamRateLimiter.check(requestIp)) {
+        releaseStream();
+        sendMcpRateLimitResponse(
+          res,
+          Math.ceil(DEFAULT_MCP_STREAM_RATE_LIMIT_WINDOW_MS / 1000),
+        );
+        return;
+      }
+
+      res.once("close", releaseStream);
+      res.once("finish", releaseStream);
+    }
+
     if (stateless) {
       let server: McpServer | undefined;
       let transport: StreamableHTTPServerTransport | undefined;

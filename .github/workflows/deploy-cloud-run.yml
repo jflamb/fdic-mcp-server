@@ -136,6 +136,9 @@ jobs:
           env_vars: |-
             HOST=0.0.0.0
             CHAT_ALLOWED_ORIGINS=${{ env.CHAT_ALLOWED_ORIGIN }}
+            MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE=120
+            MCP_STREAM_RATE_LIMIT_MAX_REQUESTS_PER_HOUR=2
+            MCP_MAX_CONCURRENT_STREAMS_PER_IP=1
           secrets: |-
             GEMINI_API_KEY=gemini-api-key:latest
           flags: >-
