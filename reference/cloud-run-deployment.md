@@ -48,8 +48,11 @@ Production defaults:
 - `MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE=120`
 - `MCP_STREAM_RATE_LIMIT_MAX_REQUESTS_PER_HOUR=2`
 - `MCP_MAX_CONCURRENT_STREAMS_PER_IP=1`
+- `MCP_BLOCKED_IPS=2605:a601:8119:1800::/64`
 
 The stream controls are intentionally stricter than the general request limit. Normal MCP JSON POST calls are short and inexpensive, while open stream requests can hold a Cloud Run request active until the service timeout.
+
+`MCP_BLOCKED_IPS` accepts comma- or whitespace-separated exact IP addresses and CIDR ranges. The production blocklist includes the IPv6 `/64` observed repeatedly opening long-lived `GET /mcp` streams.
 
 ## Expected Google Cloud Resources
 
