@@ -39,6 +39,18 @@ Operationally, this means the public MCP endpoint is a stateless Cloud Run revis
 - `HOST=0.0.0.0`
 - a non-root container user for the production runtime
 
+## Cost Controls
+
+The public `/mcp` endpoint applies in-process per-IP throttles before requests reach the MCP transport. This is primarily to prevent long-lived streamable HTTP `GET /mcp` connections from keeping Cloud Run continuously billable.
+
+Production defaults:
+
+- `MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE=120`
+- `MCP_STREAM_RATE_LIMIT_MAX_REQUESTS_PER_HOUR=2`
+- `MCP_MAX_CONCURRENT_STREAMS_PER_IP=1`
+
+The stream controls are intentionally stricter than the general request limit. Normal MCP JSON POST calls are short and inexpensive, while open stream requests can hold a Cloud Run request active until the service timeout.
+
 ## Expected Google Cloud Resources
 
 This repo is configured around the following resource pattern:

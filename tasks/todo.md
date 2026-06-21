@@ -510,6 +510,38 @@ Reference: 2026-03-29 investigation of failed GitHub Actions workflow `Deploy Cl
 
 ---
 
+# Cloud Run MCP IP Throttling
+
+Reference: 2026-06-20 cost investigation found repeated long-lived `GET /mcp` streams from a single client IP keeping Cloud Run billable.
+
+## Goals
+
+- [x] Add per-IP throttling for the public MCP endpoint.
+- [x] Cap expensive long-lived MCP stream requests separately from normal short MCP POST calls.
+- [x] Make production Cloud Run throttle settings explicit in deployment config.
+- [x] Validate the rate-limit behavior and TypeScript build.
+
+## Acceptance Criteria
+
+- [x] `/mcp` returns 429 with `Retry-After` when an IP exceeds the general MCP request rate.
+- [x] `/mcp` returns 429 when an IP opens too many stream requests in the stream window.
+- [x] `/mcp` returns 429 when an IP already has the maximum allowed concurrent stream requests.
+- [x] Default stream controls are cost-protective: 1 concurrent stream and 2 stream openings per hour per IP.
+- [x] Targeted tests and typecheck pass.
+
+## Validation
+
+- [x] `npx vitest run tests/chat-rate-limit.test.ts tests/mcp-http.test.ts` — 2 files, 76 tests passed
+- [x] `npm run typecheck` — clean
+- [x] `npm run build` — success
+
+## Review / Results
+
+- [x] Added shared IP extraction, general MCP request throttling, stream request throttling, and per-IP stream concurrency limiting.
+- [x] Added production Cloud Run env vars and reference documentation for throttle tuning.
+
+---
+
 # QBP Lite Data Tool
 
 Reference: 2026-04-29 request to make production of a 3-5 page QBP Lite report more efficient.

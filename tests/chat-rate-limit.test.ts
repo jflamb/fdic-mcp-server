@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { RateLimiter } from "../src/chatRateLimit.js";
+import { ConcurrentLimiter, RateLimiter } from "../src/chatRateLimit.js";
 
 describe("RateLimiter", () => {
   it("allows requests under the threshold", () => {
@@ -39,5 +39,38 @@ describe("RateLimiter", () => {
     expect(limiter.check("1.2.3.4", 60_005)).toBe(true);
 
     vi.useRealTimers();
+  });
+});
+
+describe("ConcurrentLimiter", () => {
+  it("allows acquisitions under the threshold", () => {
+    const limiter = new ConcurrentLimiter(2);
+
+    const firstRelease = limiter.acquire("1.2.3.4");
+    const secondRelease = limiter.acquire("1.2.3.4");
+
+    expect(firstRelease).toBeTypeOf("function");
+    expect(secondRelease).toBeTypeOf("function");
+  });
+
+  it("rejects acquisitions at the threshold until one is released", () => {
+    const limiter = new ConcurrentLimiter(1);
+
+    const release = limiter.acquire("1.2.3.4");
+
+    expect(release).toBeTypeOf("function");
+    expect(limiter.acquire("1.2.3.4")).toBeUndefined();
+
+    release?.();
+
+    expect(limiter.acquire("1.2.3.4")).toBeTypeOf("function");
+  });
+
+  it("tracks keys independently", () => {
+    const limiter = new ConcurrentLimiter(1);
+
+    expect(limiter.acquire("1.2.3.4")).toBeTypeOf("function");
+    expect(limiter.acquire("1.2.3.4")).toBeUndefined();
+    expect(limiter.acquire("5.6.7.8")).toBeTypeOf("function");
   });
 });

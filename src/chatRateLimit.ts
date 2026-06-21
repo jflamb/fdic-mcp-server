@@ -28,3 +28,37 @@ export class RateLimiter {
     return true;
   }
 }
+
+export class ConcurrentLimiter {
+  private readonly maxConcurrent: number;
+  private readonly active = new Map<string, number>();
+
+  constructor(maxConcurrent: number) {
+    this.maxConcurrent = maxConcurrent;
+  }
+
+  acquire(key: string): (() => void) | undefined {
+    const current = this.active.get(key) ?? 0;
+    if (current >= this.maxConcurrent) {
+      return undefined;
+    }
+
+    this.active.set(key, current + 1);
+
+    let released = false;
+    return () => {
+      if (released) {
+        return;
+      }
+      released = true;
+
+      const latest = this.active.get(key) ?? 0;
+      if (latest <= 1) {
+        this.active.delete(key);
+        return;
+      }
+
+      this.active.set(key, latest - 1);
+    };
+  }
+}
