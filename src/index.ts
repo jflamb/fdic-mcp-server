@@ -14,7 +14,12 @@ import {
   sweepIdleChatSessions,
 } from "./chat.js";
 import { ConcurrentLimiter, RateLimiter } from "./chatRateLimit.js";
-import { getRequestIp } from "./requestIdentity.js";
+import {
+  getRequestIp,
+  isBlockedIp,
+  parseBlockedIpRules,
+  type IpBlockRule,
+} from "./requestIdentity.js";
 import { registerInstitutionTools } from "./tools/institutions.js";
 import { registerFailureTools } from "./tools/failures.js";
 import { registerLocationTools } from "./tools/locations.js";
@@ -203,6 +208,7 @@ interface HttpAppOptions {
   mcpRateLimiter?: RateLimiter;
   mcpStreamRateLimiter?: RateLimiter;
   mcpStreamConcurrentLimiter?: ConcurrentLimiter;
+  mcpBlockedIpRules?: IpBlockRule[];
   serverFactory?: () => McpServer;
   /**
    * When true, run the streamable HTTP transport in stateless JSON mode (no
@@ -306,6 +312,17 @@ function sendMcpRateLimitResponse(
   });
 }
 
+function sendMcpBlockedIpResponse(res: express.Response): void {
+  res.status(403).json({
+    jsonrpc: "2.0",
+    error: {
+      code: -32000,
+      message: "Forbidden client IP.",
+    },
+    id: null,
+  });
+}
+
 export function createApp(options: HttpAppOptions = {}): Express {
   const app = express();
   const serverFactory = options.serverFactory ?? (() => createServer());
@@ -352,6 +369,8 @@ export function createApp(options: HttpAppOptions = {}): Express {
         "MCP_MAX_CONCURRENT_STREAMS_PER_IP",
       ),
     );
+  const mcpBlockedIpRules =
+    options.mcpBlockedIpRules ?? parseBlockedIpRules(process.env.MCP_BLOCKED_IPS);
   app.use(express.json());
 
   if (!stateless) {
@@ -368,6 +387,11 @@ export function createApp(options: HttpAppOptions = {}): Express {
 
   app.all("/mcp", async (req, res) => {
     const requestIp = getRequestIp(req);
+    if (isBlockedIp(requestIp, mcpBlockedIpRules)) {
+      sendMcpBlockedIpResponse(res);
+      return;
+    }
+
     if (!mcpRateLimiter.check(requestIp)) {
       sendMcpRateLimitResponse(
         res,

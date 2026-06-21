@@ -1,3 +1,34 @@
+# Cloud Run MCP IP Blocklist
+
+Reference: 2026-06-20/21 cost incident where repeated long-lived `GET /mcp` streams came from rotating IPv6 addresses in `2605:a601:8119:1800::/64`.
+
+## Goals
+
+- [x] Add an app-level exact IP/CIDR blocklist for `/mcp`.
+- [x] Block the observed abusive IPv6 `/64` in production deploy configuration.
+- [x] Keep the block ahead of MCP transport setup and rate-limit counters.
+- [x] Validate locally and deploy through `main`.
+
+## Acceptance Criteria
+
+- [x] `MCP_BLOCKED_IPS` accepts exact IPs and CIDR ranges.
+- [x] Blocked `/mcp` requests return 403 immediately.
+- [x] Production deploy config includes `MCP_BLOCKED_IPS=2605:a601:8119:1800::/64`.
+- [x] Tests, typecheck, and build pass.
+- [ ] Production returns 403 for the blocked client range after deploy.
+
+## Validation
+
+- [x] `npx vitest run tests/requestIdentity.test.ts tests/mcp-http.test.ts` — 2 files, 73 tests passed
+- [x] `npm run typecheck` — clean
+- [x] `npm run build` — success
+
+## Review / Results
+
+- [ ] Document PR, deploy, and live verification.
+
+---
+
 # Issue #222: Peer Percentile Deprecation Plan
 
 Reference: https://github.com/jflamb/fdic-mcp-server/issues/222

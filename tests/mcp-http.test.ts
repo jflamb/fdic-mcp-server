@@ -339,6 +339,41 @@ describe("HTTP MCP server", () => {
     );
   });
 
+  it("blocks MCP requests from configured client IP ranges", async () => {
+    const app = createApp({
+      mcpBlockedIpRules: [
+        {
+          raw: "2605:a601:8119:1800::/64",
+          version: 6,
+          address: 0x2605a601811918000000000000000000n,
+          prefixLength: 64,
+        },
+      ],
+    });
+
+    const response = await request(app)
+      .post("/mcp")
+      .set("content-type", "application/json")
+      .set("accept", mcpAcceptHeader)
+      .set("x-forwarded-for", "2605:a601:8119:1800:b10e:b915:d83c:13e1")
+      .send({
+        jsonrpc: "2.0",
+        id: 0,
+        method: "initialize",
+        params: {
+          protocolVersion: defaultProtocolVersion,
+          capabilities: {},
+          clientInfo: {
+            name: "vitest",
+            version: "1.0.0",
+          },
+        },
+      });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error.message).toBe("Forbidden client IP.");
+  });
+
   it("limits how often a client IP can open MCP stream requests", async () => {
     const app = createApp({
       mcpStreamRateLimiter: new RateLimiter({
