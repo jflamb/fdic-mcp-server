@@ -7,7 +7,7 @@ This section holds repository-rendered technical documentation for maintainers a
 - [Technical Specification](./specification.md)
 - [Architecture](./architecture.md)
 - [Key Decisions](./decisions.md)
-- [Cloud Run Deployment](./cloud-run-deployment.md)
+- [Self-Hosted HTTP Deployment](./self-hosting.md)
 
 ## Operations
 

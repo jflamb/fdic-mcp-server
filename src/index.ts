@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import type { ChatContent } from "./chat.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -8,11 +7,6 @@ import express from "express";
 import type { Express } from "express";
 
 import { VERSION } from "./constants.js";
-import {
-  createChatRouter,
-  parseChatAllowedOrigins,
-  sweepIdleChatSessions,
-} from "./chat.js";
 import { ConcurrentLimiter, RateLimiter } from "./chatRateLimit.js";
 import {
   getRequestIp,
@@ -203,8 +197,6 @@ interface HttpAppOptions {
   allowedOrigins?: string[];
   sessionIdleTimeoutMs?: number;
   sessionSweepIntervalMs?: number;
-  chatAllowedOrigins?: string[];
-  geminiApiKey?: string;
   mcpRateLimiter?: RateLimiter;
   mcpStreamRateLimiter?: RateLimiter;
   mcpStreamConcurrentLimiter?: ConcurrentLimiter;
@@ -330,10 +322,6 @@ export function createApp(options: HttpAppOptions = {}): Express {
   const allowedOrigins =
     options.allowedOrigins ?? parseAllowedOrigins(undefined, port);
   const sessions = new Map<string, SessionContext>();
-  const chatSessions = new Map<
-    string,
-    { history: ChatContent[]; lastActivityAt: number }
-  >();
   const sessionIdleTimeoutMs =
     options.sessionIdleTimeoutMs ?? DEFAULT_SESSION_IDLE_TIMEOUT_MS;
   const sessionSweepIntervalMs =
@@ -376,7 +364,6 @@ export function createApp(options: HttpAppOptions = {}): Express {
   if (!stateless) {
     const sessionSweepTimer = setInterval(() => {
       void sweepIdleSessions(sessions, sessionIdleTimeoutMs, Date.now());
-      sweepIdleChatSessions(chatSessions, sessionIdleTimeoutMs, Date.now());
     }, sessionSweepIntervalMs);
     sessionSweepTimer.unref?.();
   }
@@ -526,18 +513,6 @@ export function createApp(options: HttpAppOptions = {}): Express {
     }
   });
 
-  app.use(
-    "/chat",
-    createChatRouter({
-      allowedOrigins:
-        options.chatAllowedOrigins ??
-        parseChatAllowedOrigins(process.env.CHAT_ALLOWED_ORIGINS),
-      geminiApiKey: options.geminiApiKey ?? process.env.GEMINI_API_KEY,
-      sessions: chatSessions,
-      serverFactory,
-    }),
-  );
-
   return app;
 }
 
@@ -547,10 +522,6 @@ async function runHTTP(): Promise<void> {
   const app = createApp({
     port,
     allowedOrigins: parseAllowedOrigins(process.env.ALLOWED_ORIGINS, port),
-    chatAllowedOrigins: parseChatAllowedOrigins(
-      process.env.CHAT_ALLOWED_ORIGINS,
-    ),
-    geminiApiKey: process.env.GEMINI_API_KEY,
   });
 
   app.listen(port, host, () => {

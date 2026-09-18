@@ -4,8 +4,8 @@ const path = require("path");
 const pkg = require("../package.json");
 
 async function main() {
-  // Prefer BUILD_VERSION when supplied (the deploy workflow passes the
-  // tagged release version via Docker build arg). Fall back to package.json
+  // Prefer BUILD_VERSION when supplied by a self-hosted container build.
+  // Fall back to package.json
   // so local `npm run build` keeps working unchanged.
   const version = process.env.BUILD_VERSION || pkg.version;
   const define = {
@@ -24,7 +24,6 @@ async function main() {
         "express",
         "axios",
         "zod",
-        "@google/genai",
       ],
       format: "cjs",
       define,
@@ -40,7 +39,6 @@ async function main() {
         "express",
         "axios",
         "zod",
-        "@google/genai",
       ],
       format: "cjs",
       define,

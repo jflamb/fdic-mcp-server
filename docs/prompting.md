@@ -50,12 +50,6 @@ This section covers how to get the most from the FDIC BankFind MCP tools — pro
 MCP tools are the foundation. Skills build on top of them. If you're not sure which to use, start with [Choose a Workflow]({{ '/choose-a-workflow/' | relative_url }}).
 
 <section class="doc-callout doc-callout--hero">
-  <p class="doc-callout__eyebrow">Try It</p>
-  <h2>Test prompts from the docs</h2>
-  <p>
-    Use the floating chat button in the lower-right corner or press <code>?</code> to open the hosted demo assistant without leaving this page.
-  </p>
-  <p>
-    <button type="button" class="chatbot-inline-open" data-chatbot-open>Open The Chat Launcher</button>
-  </p>
+  <h2>Try a prompt in your MCP client</h2>
+  <p>Connect a local or self-hosted server, then use the <a href="{{ '/prompting-guide/' | relative_url }}">Prompting Guide</a>. The live website chatbot is retired.</p>
 </section>

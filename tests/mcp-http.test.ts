@@ -203,6 +203,22 @@ describe("HTTP MCP server", () => {
     });
   });
 
+  it("retires chat routes while preserving HTTP MCP and health", async () => {
+    const app = createApp({ stateless: true });
+    expect((await request(app).get("/chat/status")).status).toBe(404);
+    expect((await request(app).post("/chat").send({ messages: [] })).status).toBe(404);
+    expect((await request(app).get("/health")).status).toBe(200);
+    const response = await request(app)
+      .post("/mcp")
+      .set("accept", mcpAcceptHeader)
+      .send({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
+    expect(response.status).toBe(200);
+    expect(response.headers["mcp-session-id"]).toBeUndefined();
+    expect(response.body.result.tools).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: "fdic_search_institutions" }),
+    ]));
+  });
+
   it("parses the default HTTP port when PORT is not set", () => {
     expect(parseHttpPort(undefined)).toBe(3000);
   });

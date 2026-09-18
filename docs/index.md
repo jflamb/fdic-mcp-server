@@ -54,7 +54,7 @@ body_class: overview-page
   <a class="card" href="{{ '/setup/' | relative_url }}">
     <span class="card__eyebrow">Get Started</span>
     <h3>Choose the fastest setup path</h3>
-    <p>Start with the hosted MCP URL when your host accepts remote servers. Use the local install path only when your host requires stdio.</p>
+    <p>Install the server in a local MCP client. For remote clients, use an HTTP endpoint you operate.</p>
   </a>
   <a class="card" href="{{ '/choose-a-workflow/' | relative_url }}">
     <span class="card__eyebrow">Navigate</span>
@@ -72,11 +72,11 @@ body_class: overview-page
   <p class="doc-callout__eyebrow">Fastest path</p>
   <div class="doc-callout__title-row">
     <div>
-      <h2>Use the live hosted MCP endpoint</h2>
-      <p>When your MCP host accepts remote HTTP servers, this is the lowest-friction way to get started. Copy the endpoint, connect it in your host, then move to client setup or prompting guidance.</p>
+      <h2>Run the MCP server locally</h2>
+      <p>Configure your client to run the command below with Node.js 20 or later. The project-operated public endpoint and website chatbot are retired; the documentation and self-hosted HTTP option remain available.</p>
     </div>
   </div>
-  <pre><code>https://bankfind.jflamb.com/mcp</code></pre>
+  <pre><code>npx -y fdic-mcp-server</code></pre>
 </div>
 
 ## Browse by need

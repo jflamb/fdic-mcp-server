@@ -49,7 +49,7 @@ TRANSPORT=http PORT=3000 node dist/index.js
 Container note:
 
 - Local HTTP examples default to port `3000`.
-- The production Docker and Cloud Run runtime default to port `8080`.
+- The self-hosted Docker runtime default to port `8080`.
 
 ## Node Version Policy
 

@@ -16,3 +16,6 @@ docs/_data/latest_release.json
 docs/_data/releases.json
 .claude/running-servers.md
 .claude/settings.local.json
+
+# Local documentation build cache
+.sass-cache/

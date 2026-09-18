@@ -2,7 +2,7 @@
 title: Getting Started
 nav_group: setup
 kicker: Setup
-summary: Start with a hosted MCP URL when your host supports it, or use the local install path when you need a stdio server on your own machine.
+summary: Install a local MCP server or operate your own HTTP endpoint.
 breadcrumbs:
   - title: Overview
     url: /
@@ -12,37 +12,16 @@ breadcrumbs:
 
 This server gives MCP-compatible clients access to public FDIC BankFind datasets plus built-in comparison and peer-benchmarking tools.
 
-## Easiest Option: Use The Hosted Endpoint
+## Local Installation
 
-If your MCP host supports connecting to a remote MCP server by URL, that is the lowest-friction way to get started because it avoids local installation entirely.
+The project-operated public endpoint and website chatbot are retired. Use local stdio in a compatible client, or supply your own reachable HTTP endpoint. A chat product that only accepts remote URLs cannot launch a local npm package.
 
-<div class="hosted-url-block">
-  <p>Hosted MCP URL:</p>
-  <pre><code>https://bankfind.jflamb.com/mcp</code></pre>
-</div>
-
-Use this path when:
-
-- your host supports remote MCP URLs or hosted apps
-- you want to skip local `npm` and terminal setup
-
-Do not assume a plain chat product can install the npm package for you just from a prompt. That only works in agentic environments that can actually run shell commands or edit MCP configuration on your machine.
-
-Examples:
-
-- ChatGPT Developer Mode can connect to the hosted endpoint directly
-- Any MCP host that accepts a public streamable HTTP MCP URL can use the same endpoint
-- Local coding agents such as Codex or Claude Code may be able to install the npm package for you, but that is a separate workflow from connecting to a hosted MCP URL
-
-If your host only supports local stdio servers, use the local install path below.
-
-## Local Install Path
 
 ### Prerequisites
 
 - Node.js 20 or later
 - npm
-- An MCP-compatible host such as Claude Desktop, ChatGPT Developer Mode, Gemini CLI, or GitHub Copilot CLI
+- An MCP-compatible host that can launch a local stdio process
 
 ### Install
 
@@ -84,17 +63,13 @@ TRANSPORT=http PORT=3000 node dist/index.js
 
 The HTTP MCP endpoint is available at `http://127.0.0.1:3000/mcp` by default.
 
-The Docker image and Cloud Run deployment use port `8080` by default; `3000` is the local shell example for direct runs outside the container. Advanced transport and deployment details live in the repository reference docs.
+The Docker image uses port `8080` by default; `3000` is the local shell example for direct runs outside the container. Advanced transport and deployment details live in the repository reference docs.
 
 ### Connect A Client
 
 Use the client-specific instructions in [Client Setup]({{ '/clients/' | relative_url }}).
 
-For remote-URL hosts, use:
-
-```text
-https://bankfind.jflamb.com/mcp
-```
+For remote-URL hosts, supply your own reachable HTTPS endpoint ending in `/mcp`. Your local loopback URL is not reachable from a cloud-hosted client.
 
 For most local MCP hosts, the minimal stdio configuration looks like this:
 

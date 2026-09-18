@@ -1,19 +1,19 @@
 {
   "name": "fdic-mcp-server",
   "version": "1.1.3",
-  "description": "FDIC BankFind MCP tools and conventions skill — search institutions, financials, branches, failures, and run peer analysis.",
+  "description": "FDIC BankFind MCP tools and conventions skill \u2014 search institutions, financials, branches, failures, and run peer analysis.",
   "author": "jflamb",
   "homepage": "https://github.com/jflamb/fdic-mcp-server",
   "repository": "https://github.com/jflamb/fdic-mcp-server",
   "mcpServers": {
     "fdic": {
-      "url": "https://bankfind.jflamb.com/mcp",
-      "stdioFallback": {
-        "command": "npx",
-        "args": ["-y", "fdic-mcp-server"],
-        "env": {
-          "FDIC_MCP_PROFILE": "core,analysis,chatgpt-aliases,prompts,resources"
-        }
+      "command": "npx",
+      "args": [
+        "-y",
+        "fdic-mcp-server"
+      ],
+      "env": {
+        "FDIC_MCP_PROFILE": "core,analysis,chatgpt-aliases,prompts,resources"
       }
     }
   },
