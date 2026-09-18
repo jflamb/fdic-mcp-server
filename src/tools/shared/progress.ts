@@ -1,5 +1,5 @@
 export interface ProgressNotificationSender {
-  notification: (notification: {
+  notify: (notify: {
     method: "notifications/progress";
     params: {
       progressToken: string | number;
@@ -31,7 +31,7 @@ export async function sendProgressNotification(
     return;
   }
 
-  await sender.notification({
+  await sender.notify({
     method: "notifications/progress",
     params: {
       progressToken: token,

@@ -16,8 +16,9 @@
  */
 
 import { createServer } from '../../src/index.js';
-import { Client } from '@modelcontextprotocol/sdk/client';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { InMemoryTransport } from "@modelcontextprotocol/server";
+
+import { Client } from '@modelcontextprotocol/client';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

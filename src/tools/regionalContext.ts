@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -131,6 +131,7 @@ const RegionalContextSchema = z.object({
 });
 
 export function registerRegionalContextTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_regional_context",
     {
@@ -144,7 +145,7 @@ Output includes:
   - Structured JSON for programmatic consumption
 
 NOTE: Requires FRED_API_KEY environment variable for reliable data access. Degrades gracefully without it.`,
-      inputSchema: RegionalContextSchema,
+      inputSchema: RegionalContextSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -153,10 +154,10 @@ NOTE: Requires FRED_API_KEY environment variable for reliable data access. Degra
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         // Validate: at least one of cert or state required
@@ -171,7 +172,7 @@ NOTE: Requires FRED_API_KEY environment variable for reliable data access. Degra
         const repdte = rawParams.repdte ?? getDefaultReportDate();
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.1,
           "Resolving state",
@@ -221,7 +222,7 @@ NOTE: Requires FRED_API_KEY environment variable for reliable data access. Degra
         const startDate = twoYearsBefore(repdte);
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.3,
           "Fetching FRED economic data",
@@ -277,7 +278,7 @@ NOTE: Requires FRED_API_KEY environment variable for reliable data access. Degra
         }
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.7,
           "Computing macro context",

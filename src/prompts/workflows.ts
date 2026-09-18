@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 
 const BankDeepDiveArgs = {
   bank: z
@@ -64,13 +64,14 @@ function userText(text: string) {
 }
 
 export function registerWorkflowPrompts(server: McpServer): void {
+
   server.registerPrompt(
     "bank_deep_dive",
     {
       title: "Comprehensive Bank Deep Dive",
       description:
         "Produce a comprehensive single-institution analysis report (health, financials, peer benchmarking, credit concentration, funding profile, securities, franchise footprint, regional context).",
-      argsSchema: BankDeepDiveArgs,
+      argsSchema: z.object(BankDeepDiveArgs),
     },
     ({ bank, repdte }) => ({
       messages: [
@@ -99,7 +100,7 @@ export function registerWorkflowPrompts(server: McpServer): void {
       title: "Failed Bank Forensics",
       description:
         "Reconstruct the pre-failure financial timeline of a failed FDIC institution and identify the earliest visible warning signals.",
-      argsSchema: FailureForensicsArgs,
+      argsSchema: z.object(FailureForensicsArgs),
     },
     ({ bank, lookback_quarters }) => ({
       messages: [
@@ -128,7 +129,7 @@ export function registerWorkflowPrompts(server: McpServer): void {
       title: "Portfolio Surveillance Watchlist",
       description:
         "Screen a universe of FDIC institutions and produce a decision-ready watchlist tiered Escalate / Monitor / No Immediate Concern.",
-      argsSchema: PortfolioSurveillanceArgs,
+      argsSchema: z.object(PortfolioSurveillanceArgs),
     },
     ({ scope, repdte }) => ({
       messages: [
@@ -163,7 +164,7 @@ export function registerWorkflowPrompts(server: McpServer): void {
       title: "Examiner Overlay Assessment",
       description:
         "Layer qualitative analyst/examiner inputs on top of the public CAMELS proxy and produce a blended assessment with explicit provenance.",
-      argsSchema: ExaminerOverlayArgs,
+      argsSchema: z.object(ExaminerOverlayArgs),
     },
     ({ bank, qualitative_notes }) => ({
       messages: [

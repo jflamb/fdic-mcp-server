@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -191,6 +191,7 @@ const BankHealthInputSchema = z.object({
 });
 
 export function registerBankHealthTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_analyze_bank_health",
     {
@@ -208,7 +209,7 @@ Output includes:
   - Structured JSON for programmatic consumption (legacy + proxy fields)
 
 NOTE: Management (M) is omitted from component scoring — cannot be assessed from public data. Sensitivity (S) uses proxy metrics (NIM trend, securities concentration). This is a public off-site analytical proxy, not an official CAMELS rating.`,
-      inputSchema: BankHealthInputSchema,
+      inputSchema: BankHealthInputSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -217,11 +218,11 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const params = { ...rawParams, repdte: rawParams.repdte ?? getDefaultReportDate() };
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         const dateError = validateQuarterEndDate(params.repdte, "repdte");
@@ -229,7 +230,7 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
           return formatToolError(new Error(dateError));
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.1, "Fetching institution profile");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.1, "Fetching institution profile");
 
         const [profileResponse, financialsResponse] = await Promise.all([
           queryEndpoint(
@@ -269,7 +270,7 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
         }
         const currentFinancials = financialRecords[0];
 
-        await sendProgressNotification(server.server, progressToken, 0.3, "Fetching prior quarters and history");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.3, "Fetching prior quarters and history");
 
         const priorDates = getPriorQuarterDates(params.repdte, params.quarters);
 
@@ -292,7 +293,7 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
 
         const [priorQuarters, historyEvents] = await Promise.all([priorPromise, historyPromise]);
 
-        await sendProgressNotification(server.server, progressToken, 0.6, "Computing CAMELS scores");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.6, "Computing CAMELS scores");
 
         const metrics = computeCamelsMetrics(currentFinancials, priorQuarters);
 
@@ -301,7 +302,7 @@ NOTE: Management (M) is omitted from component scoring — cannot be assessed fr
         );
         const composite = compositeScore(components);
 
-        await sendProgressNotification(server.server, progressToken, 0.8, "Analyzing trends");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.8, "Analyzing trends");
 
         const allQuarters = [currentFinancials, ...priorQuarters];
         const trends: TrendAnalysis[] = [];

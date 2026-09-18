@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   computeMedian,
@@ -389,6 +389,7 @@ function formatPeerGroupText(
 }
 
 export function registerPeerGroupTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_peer_group_analysis",
     {
@@ -414,7 +415,7 @@ Output includes:
   - Metric definitions with directionality metadata
 
 Override precedence: cert derives defaults, then explicit params override them.`,
-      inputSchema: PeerGroupInputSchema,
+      inputSchema: PeerGroupInputSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -423,11 +424,11 @@ Override precedence: cert derives defaults, then explicit params override them.`
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const params = { ...rawParams, repdte: rawParams.repdte ?? getDefaultReportDate() };
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         const validationError = validatePeerGroupParams(params);
@@ -446,7 +447,7 @@ Override precedence: cert derives defaults, then explicit params override them.`
         }
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.1,
           "Resolving subject and peer criteria",
@@ -523,7 +524,7 @@ Override precedence: cert derives defaults, then explicit params override them.`
 
         // --- Phase 2: Build peer roster ---
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.4,
           "Fetching peer roster",
@@ -639,7 +640,7 @@ Override precedence: cert derives defaults, then explicit params override them.`
           .filter((c): c is number => c !== null);
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.7,
           "Fetching peer financials",
@@ -723,7 +724,7 @@ Override precedence: cert derives defaults, then explicit params override them.`
 
         // --- Phase 4: Rank and assemble ---
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.9,
           "Computing peer rankings",
@@ -811,7 +812,7 @@ Override precedence: cert derives defaults, then explicit params override them.`
         );
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           1,
           "Analysis complete",

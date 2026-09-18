@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -93,6 +93,7 @@ const CreditConcentrationSchema = z.object({
 });
 
 export function registerCreditConcentrationTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_analyze_credit_concentration",
     {
@@ -107,7 +108,7 @@ Output includes:
   - Structured JSON for programmatic consumption
 
 NOTE: This is an analytical tool based on public financial data.`,
-      inputSchema: CreditConcentrationSchema,
+      inputSchema: CreditConcentrationSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -116,11 +117,11 @@ NOTE: This is an analytical tool based on public financial data.`,
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const params = { ...rawParams, repdte: rawParams.repdte ?? getDefaultReportDate() };
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         const dateError = validateQuarterEndDate(params.repdte, "repdte");
@@ -128,7 +129,7 @@ NOTE: This is an analytical tool based on public financial data.`,
           return formatToolError(new Error(dateError));
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.1, "Fetching institution profile");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.1, "Fetching institution profile");
 
         const [profileResponse, financialsResponse] = await Promise.all([
           queryEndpoint(
@@ -168,12 +169,12 @@ NOTE: This is an analytical tool based on public financial data.`,
         }
         const currentFinancials = financialRecords[0];
 
-        await sendProgressNotification(server.server, progressToken, 0.5, "Computing credit metrics");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.5, "Computing credit metrics");
 
         const metrics = computeCreditMetrics(currentFinancials);
         const signals = scoreCreditConcentration(metrics);
 
-        await sendProgressNotification(server.server, progressToken, 0.9, "Formatting results");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.9, "Formatting results");
 
         const summary: CreditConcentrationSummary = {
           institution: {

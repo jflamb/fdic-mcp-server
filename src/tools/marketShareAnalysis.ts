@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -128,6 +128,7 @@ const MarketShareInputSchema = z.object({
 });
 
 export function registerMarketShareAnalysisTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_market_share_analysis",
     {
@@ -147,7 +148,7 @@ Output includes:
   - Structured JSON for programmatic consumption
 
 Requires at least one of: msa (numeric MSABR code), or city + state.`,
-      inputSchema: MarketShareInputSchema,
+      inputSchema: MarketShareInputSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -156,10 +157,10 @@ Requires at least one of: msa (numeric MSABR code), or city + state.`,
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         // Validate inputs
@@ -193,7 +194,7 @@ Requires at least one of: msa (numeric MSABR code), or city + state.`,
         }
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.1,
           "Fetching SOD records for market",
@@ -222,7 +223,7 @@ Requires at least one of: msa (numeric MSABR code), or city + state.`,
         }
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.5,
           "Computing market shares",
@@ -240,7 +241,7 @@ Requires at least one of: msa (numeric MSABR code), or city + state.`,
         const concentration = buildMarketConcentration(participants);
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.8,
           "Formatting results",

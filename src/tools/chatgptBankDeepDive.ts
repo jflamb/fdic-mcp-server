@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -189,13 +188,14 @@ function buildDashboardMarkdown(data: DashboardStructured): string {
 }
 
 export function registerChatGptBankDeepDiveTool(server: McpServer): void {
+
   server.registerTool(
     "fdic_show_bank_deep_dive",
     {
       title: "Show Bank Deep Dive Dashboard",
       description:
         "Use this when the user wants a scannable single-institution dashboard with identity, public financial metrics, risk signals, and source links. ChatGPT renders an interactive widget; Claude and other MCP clients render the same data as a Markdown table.",
-      inputSchema: BankDeepDiveInputSchema,
+      inputSchema: BankDeepDiveInputSchema.meta({ additionalProperties: false }),
       outputSchema: FdicBankDeepDiveOutputSchema,
       annotations: {
         readOnlyHint: true,

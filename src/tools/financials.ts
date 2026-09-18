@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { ENDPOINTS, CHARACTER_LIMIT } from "../constants.js";
 import {
   queryEndpoint,
@@ -56,13 +56,14 @@ const SummaryQuerySchema = CommonQuerySchema.extend({
 });
 
 export function registerFinancialTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_search_financials",
     {
       title: "Search Institution Financial Data",
       description:
         "Use this when the user wants quarterly Call Report data (balance sheet, income, capital, performance ratios) for FDIC-insured institutions. Filter by CERT and/or REPDTE plus optional ElasticSearch filters. See fdic://schemas/financials for the full 1,100+ field catalog.",
-      inputSchema: FinancialQuerySchema,
+      inputSchema: FinancialQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicFinancialsSearchOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -120,7 +121,7 @@ export function registerFinancialTools(server: McpServer): void {
       title: "Search Annual Financial Summary Data",
       description:
         "Use this when the user wants annual financial-summary snapshots (assets, deposits, ROA, ROE, offices) for FDIC-insured institutions, filtered by CERT and/or year. See fdic://schemas/summary for the full field catalog.",
-      inputSchema: SummaryQuerySchema,
+      inputSchema: SummaryQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicSummarySearchOutputSchema,
       annotations: {
         readOnlyHint: true,

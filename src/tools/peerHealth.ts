@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -238,6 +238,7 @@ function sortKeyToComponent(key: string): string | null {
 }
 
 export function registerPeerHealthTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_compare_peer_health",
     {
@@ -254,7 +255,7 @@ Optionally provide cert to highlight a subject institution's position in the ran
 Output: structuredContent includes {model, official_status, report_date, institutions, metrics, peer_context, proxy_summary, proxy, deprecations}. Institutions include proxy scores and name_source. When a subject cert is provided, metrics[] is the preferred subject-vs-peer array for new UI bindings and proxy_summary is a flattened subject proxy. peer_context.subject_percentiles is deprecated, remains for backward compatibility, and is targeted for removal only in a future coordinated major release. Auto-peer selection derives asset bands from report-date financials and broadens the cohort if fewer than 10 peers match.
 
 NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
-      inputSchema: PeerHealthInputSchema,
+      inputSchema: PeerHealthInputSchema.meta({ additionalProperties: false }),
       outputSchema: FdicPeerHealthOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -263,11 +264,11 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const params = { ...rawParams, repdte: rawParams.repdte ?? getDefaultReportDate() };
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         if (!params.certs && !params.state && params.asset_min === undefined && params.asset_max === undefined && !params.cert) {
@@ -279,7 +280,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           return formatToolError(new Error(dateError));
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.1, "Building peer roster");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.1, "Building peer roster");
 
         const MIN_PEER_COUNT = 10;
         let peerCerts: number[];
@@ -440,7 +441,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           return formatToolError(new Error("No institutions matched the specified criteria."));
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.4, `Fetching financials for ${peerCerts.length} institutions`);
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.4, `Fetching financials for ${peerCerts.length} institutions`);
 
         const certFilters = buildCertFilters(peerCerts);
         const financialResponses = await mapWithConcurrency(
@@ -512,7 +513,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           }
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.7, "Computing proxy assessments");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.7, "Computing proxy assessments");
 
         // Fetch history for subject bank if specified (best-effort, additive)
         const subjectHistory = params.cert
@@ -687,7 +688,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
 
         const returned = entries.slice(0, params.limit);
 
-        await sendProgressNotification(server.server, progressToken, 0.9, "Formatting results");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.9, "Formatting results");
 
         const parts: string[] = [];
         parts.push(`Peer Health Comparison — ${entries.length} institutions ranked by ${params.sort_by}`);

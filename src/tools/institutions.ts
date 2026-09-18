@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { ENDPOINTS, CHARACTER_LIMIT } from "../constants.js";
 import {
   queryEndpoint,
@@ -17,13 +17,14 @@ import {
 } from "../schemas/output.js";
 
 export function registerInstitutionTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_search_institutions",
     {
       title: "Search FDIC Institutions",
       description:
         "Use this when the user needs FDIC-insured institution search results by name, state, CERT, asset size, charter class, or regulatory status. Returns institution profile rows with pagination; use fdic://schemas/institutions for the full field catalog.",
-      inputSchema: CommonQuerySchema,
+      inputSchema: CommonQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicInstitutionsSearchOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -73,7 +74,7 @@ export function registerInstitutionTools(server: McpServer): void {
       title: "Get Institution by Certificate Number",
       description:
         "Use this when the user knows an exact FDIC Certificate Number and needs one institution profile. To discover a CERT first, call fdic_search_institutions or fdic_search.",
-      inputSchema: CertSchema,
+      inputSchema: CertSchema.meta({ additionalProperties: false }),
       outputSchema: FdicInstitutionLookupOutputSchema,
       annotations: {
         readOnlyHint: true,

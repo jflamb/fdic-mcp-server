@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-
+import { McpServer } from "@modelcontextprotocol/server";
 import { ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -515,12 +514,13 @@ const FETCH_DESCRIPTION =
   "Use this when the model needs the full citation text for a result returned by search. Pass the search result id (e.g. 'institution:3511', 'failure:1234', 'branch:<UNINUM>', 'schema:institutions').";
 
 function registerSearchTool(server: McpServer, name: string): void {
+
   server.registerTool(
     name,
     {
       title: "Search FDIC BankFind",
       description: SEARCH_DESCRIPTION,
-      inputSchema: SearchInputSchema,
+      inputSchema: SearchInputSchema.meta({ additionalProperties: false }),
       outputSchema: ChatGptSearchResultSchema,
       annotations: {
         readOnlyHint: true,
@@ -540,12 +540,13 @@ function registerSearchTool(server: McpServer, name: string): void {
 }
 
 function registerFetchTool(server: McpServer, name: string): void {
+
   server.registerTool(
     name,
     {
       title: "Fetch FDIC BankFind Result",
       description: FETCH_DESCRIPTION,
-      inputSchema: FetchInputSchema,
+      inputSchema: FetchInputSchema.meta({ additionalProperties: false }),
       outputSchema: ChatGptFetchResultSchema,
       annotations: {
         readOnlyHint: true,

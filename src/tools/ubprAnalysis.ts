@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -110,6 +110,7 @@ const UbprAnalysisSchema = z.object({
 });
 
 export function registerUbprAnalysisTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_ubpr_analysis",
     {
@@ -125,7 +126,7 @@ Output includes:
   - Structured JSON for programmatic consumption
 
 NOTE: This is an analytical tool based on public financial data.`,
-      inputSchema: UbprAnalysisSchema,
+      inputSchema: UbprAnalysisSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -134,11 +135,11 @@ NOTE: This is an analytical tool based on public financial data.`,
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const params = { ...rawParams, repdte: rawParams.repdte ?? getDefaultReportDate() };
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         const dateError = validateQuarterEndDate(params.repdte, "repdte");
@@ -148,7 +149,7 @@ NOTE: This is an analytical tool based on public financial data.`,
 
         const priorRepdte = getReportDateOneYearPrior(params.repdte);
 
-        await sendProgressNotification(server.server, progressToken, 0.1, "Fetching institution profile");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.1, "Fetching institution profile");
 
         const [profileResponse, currentResponse, priorResponse] = await Promise.all([
           queryEndpoint(
@@ -197,7 +198,7 @@ NOTE: This is an analytical tool based on public financial data.`,
         }
         const currentFinancials = currentRecords[0];
 
-        await sendProgressNotification(server.server, progressToken, 0.5, "Computing UBPR-equivalent ratios");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.5, "Computing UBPR-equivalent ratios");
 
         const ratios = computeUbprRatios(currentFinancials);
 
@@ -205,7 +206,7 @@ NOTE: This is an analytical tool based on public financial data.`,
         const priorFinancials = priorRecords.length > 0 ? priorRecords[0] : {};
         const growth = computeGrowthRates(currentFinancials, priorFinancials);
 
-        await sendProgressNotification(server.server, progressToken, 0.9, "Formatting results");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.9, "Formatting results");
 
         const summary: UbprAnalysisSummary = {
           institution: {
