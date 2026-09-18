@@ -655,3 +655,28 @@ Recover the existing semantic-release-owned v2.0.0 identity, without republishin
 Run focused recovery tests plus the repository typecheck, test, build, and extension checks. Exercise recovery preparation against the existing v2.0.0 npm artifact without publishing. Recovery must fail on invalid versions, draft releases, mismatched commits, registry metadata conflicts, and authorization failures. Verify idempotent skip when registry metadata already exists. A registry failure must not gate GitHub Packages. Rollback is reverting the workflow/script change; previously published artifacts and release tags remain immutable.
 
 Local recovery validation passed: 25 focused tests; 583 total tests across 46 files; typecheck, build, extension validation, and package dry-run. Read-only recovery preparation downloaded the existing npm v2.0.0 artifact and matched commit ca8c9644037d3aa619ef0af280fc79f7253acc6b. Registry preflight correctly reported v2.0.0 missing. CI/merge and actual downstream publication are pending.
+
+# Stateless MCP migration
+
+## Scope and acceptance criteria
+
+Adopt stable SDK v2 and MCP 2026-07-28 using `createMcpHandler`/`toNodeHandler` for Express and `serveStdio` for local processes. Keep a single server factory and SDK-provided legacy compatibility. Remove owned HTTP sessions, sweeps, and GET-stream/session-delete machinery. Preserve request throttling and origin/host protections, all tool inputs/results, profiles, resources, prompts, and FDIC calculations. Progress must be request-scoped and correctly isolated during concurrent streaming calls. Existing caches and limiters remain process-local; protocol statelessness does not require a new service or data store.
+
+- [x] Refresh main and isolate work; preserve original dirty checkout.
+- [x] Snapshot existing public tool/resource/prompt contracts.
+- [x] Apply official SDK codemod, then resolve schema/context changes.
+- [x] Replace HTTP/stdio serving with native v2 helpers; remove session machinery.
+- [x] Adapt progress and HTTP tests; add pinned-modern, legacy, cross-instance, and packaged stdio coverage.
+- [x] Run focused tests during changes, then full validation and live FDIC smoke.
+- [x] Update self-hosting/client docs and breaking-change guidance.
+- [ ] Open PR, pass CI, merge, and verify release destinations.
+
+## Delivery and rollback
+
+One PR with logical commits for SDK adaptation, transport/compatibility, and release documentation. Existing Node 20/22 CI remains; no new jobs or services. Release as a breaking change because self-hosted HTTP sessions and exported SDK types change. semantic-release owns version/tag creation. Roll back installed clients by pinning the previous npm release; do not restore hosted infrastructure. Unit tests use fixtures; final smoke uses an existing tool implementation against FDIC.
+
+## Review/results
+
+Local validation passed: typecheck; 589 tests across 47 files; build; extension validation; package dry-run; diff whitespace checks. Modern and legacy stdio fingerprint tests preserve all 29 tool, resource, template, and prompt contracts after normalizing documented SDK/Zod representation changes. An isolated installed npm archive completed real FDIC institution calls over pinned-modern stdio and HTTP and interoperated with an actual SDK v1 client. HTTP tests cover request independence across app instances, protocol/header mismatch, origin/host/IP/rate/payload rejection, and concurrent POST progress isolation. Independent code review reported no actionable defects. Generated adapter freshness requires committing regenerated metadata before the full suite; the final suite passed.
+
+PR CI, merge, and release readback remain to be recorded in issue #234. No CI jobs or matrices were added. Existing Node 20/22 validation and Docker builds remain. The migration removes session maps/sweeps and delegates per-request lifecycle to the SDK; failures are isolated to their request and installation rollback is a package-version pin.

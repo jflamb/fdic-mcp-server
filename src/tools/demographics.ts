@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { ENDPOINTS, CHARACTER_LIMIT } from "../constants.js";
 import {
   queryEndpoint,
@@ -30,13 +30,14 @@ const DemographicsQuerySchema = CommonQuerySchema.extend({
 });
 
 export function registerDemographicsTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_search_demographics",
     {
       title: "Search Institution Demographics Data",
       description:
         "Use this when the user wants quarterly demographic and market-structure attributes (office counts, metro classification, county/territory codes, geographic reference data) for FDIC-insured institutions. Filter by CERT and/or REPDTE. See fdic://schemas/demographics for the full field catalog.",
-      inputSchema: DemographicsQuerySchema,
+      inputSchema: DemographicsQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicDemographicsSearchOutputSchema,
       annotations: {
         readOnlyHint: true,

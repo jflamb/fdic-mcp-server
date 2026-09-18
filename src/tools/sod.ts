@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { ENDPOINTS, CHARACTER_LIMIT } from "../constants.js";
 import {
   queryEndpoint,
@@ -32,13 +32,14 @@ const SodQuerySchema = CommonQuerySchema.extend({
 });
 
 export function registerSodTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_search_sod",
     {
       title: "Search Summary of Deposits (SOD)",
       description:
         "Use this when the user wants annual branch-level deposit data (SOD, as of June 30 each year) — branch deposits, MSAs, geographic distribution. Filter by CERT and/or year. See fdic://schemas/sod for the full field catalog.",
-      inputSchema: SodQuerySchema,
+      inputSchema: SodQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicSodSearchOutputSchema,
       annotations: {
         readOnlyHint: true,

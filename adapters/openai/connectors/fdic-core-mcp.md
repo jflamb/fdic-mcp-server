@@ -34,38 +34,39 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
       "type": "object",
       "properties": {
         "filters": {
-          "type": "string",
-          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\""
+          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\"",
+          "type": "string"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP"
+          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP",
+          "type": "string"
         },
         "limit": {
+          "default": 20,
+          "description": "Maximum number of records to return (1-10000, default: 20)",
           "type": "integer",
           "minimum": 1,
-          "maximum": 10000,
-          "default": 20,
-          "description": "Maximum number of records to return (1-10000, default: 20)"
+          "maximum": 10000
         },
         "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination (default: 0)",
           "type": "integer",
           "minimum": 0,
-          "default": 0,
-          "description": "Number of records to skip for pagination (default: 0)"
+          "maximum": 9007199254740991
         },
         "sort_by": {
-          "type": "string",
-          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE"
+          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE",
+          "type": "string"
         },
         "sort_order": {
+          "default": "ASC",
+          "description": "Sort direction: ASC (ascending) or DESC (descending)",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "ASC",
-          "description": "Sort direction: ASC (ascending) or DESC (descending)"
+          ]
         }
       },
       "additionalProperties": false
@@ -86,11 +87,12 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
         "cert": {
           "type": "integer",
           "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
           "description": "FDIC Certificate Number — the unique identifier for an institution"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of fields to return"
+          "description": "Comma-separated list of fields to return",
+          "type": "string"
         }
       },
       "required": [
@@ -112,38 +114,39 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
       "type": "object",
       "properties": {
         "filters": {
-          "type": "string",
-          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\""
+          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\"",
+          "type": "string"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP"
+          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP",
+          "type": "string"
         },
         "limit": {
+          "default": 20,
+          "description": "Maximum number of records to return (1-10000, default: 20)",
           "type": "integer",
           "minimum": 1,
-          "maximum": 10000,
-          "default": 20,
-          "description": "Maximum number of records to return (1-10000, default: 20)"
+          "maximum": 10000
         },
         "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination (default: 0)",
           "type": "integer",
           "minimum": 0,
-          "default": 0,
-          "description": "Number of records to skip for pagination (default: 0)"
+          "maximum": 9007199254740991
         },
         "sort_by": {
-          "type": "string",
-          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE"
+          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE",
+          "type": "string"
         },
         "sort_order": {
+          "default": "ASC",
+          "description": "Sort direction: ASC (ascending) or DESC (descending)",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "ASC",
-          "description": "Sort direction: ASC (ascending) or DESC (descending)"
+          ]
         }
       },
       "additionalProperties": false
@@ -164,11 +167,12 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
         "cert": {
           "type": "integer",
           "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
           "description": "FDIC Certificate Number — the unique identifier for an institution"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of fields to return"
+          "description": "Comma-separated list of fields to return",
+          "type": "string"
         }
       },
       "required": [
@@ -190,47 +194,49 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
       "type": "object",
       "properties": {
         "filters": {
-          "type": "string",
-          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\""
+          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\"",
+          "type": "string"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP"
+          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP",
+          "type": "string"
         },
         "limit": {
+          "default": 20,
+          "description": "Maximum number of records to return (1-10000, default: 20)",
           "type": "integer",
           "minimum": 1,
-          "maximum": 10000,
-          "default": 20,
-          "description": "Maximum number of records to return (1-10000, default: 20)"
+          "maximum": 10000
         },
         "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination (default: 0)",
           "type": "integer",
           "minimum": 0,
-          "default": 0,
-          "description": "Number of records to skip for pagination (default: 0)"
+          "maximum": 9007199254740991
         },
         "sort_by": {
-          "type": "string",
-          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE"
+          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE",
+          "type": "string"
         },
         "sort_order": {
+          "default": "DESC",
+          "description": "Sort direction: DESC (descending, default for most recent first) or ASC (ascending)",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "DESC",
-          "description": "Sort direction: DESC (descending, default for most recent first) or ASC (ascending)"
+          ]
         },
         "cert": {
+          "description": "Filter by FDIC Certificate Number to get financials for a specific institution",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Filter by FDIC Certificate Number to get financials for a specific institution"
+          "maximum": 9007199254740991
         },
         "repdte": {
-          "type": "string",
-          "description": "Filter by Report Date (REPDTE) in YYYYMMDD format (quarter-end: 0331, 0630, 0930, 1231). If omitted, returns all available dates (sorted most recent first)."
+          "description": "Filter by Report Date (REPDTE) in YYYYMMDD format (quarter-end: 0331, 0630, 0930, 1231). If omitted, returns all available dates (sorted most recent first).",
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -249,48 +255,51 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
       "type": "object",
       "properties": {
         "filters": {
-          "type": "string",
-          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\""
+          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\"",
+          "type": "string"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP"
+          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP",
+          "type": "string"
         },
         "limit": {
+          "default": 20,
+          "description": "Maximum number of records to return (1-10000, default: 20)",
           "type": "integer",
           "minimum": 1,
-          "maximum": 10000,
-          "default": 20,
-          "description": "Maximum number of records to return (1-10000, default: 20)"
+          "maximum": 10000
         },
         "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination (default: 0)",
           "type": "integer",
           "minimum": 0,
-          "default": 0,
-          "description": "Number of records to skip for pagination (default: 0)"
+          "maximum": 9007199254740991
         },
         "sort_by": {
-          "type": "string",
-          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE"
+          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE",
+          "type": "string"
         },
         "sort_order": {
+          "default": "ASC",
+          "description": "Sort direction: ASC (ascending) or DESC (descending)",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "ASC",
-          "description": "Sort direction: ASC (ascending) or DESC (descending)"
+          ]
         },
         "cert": {
+          "description": "Filter by FDIC Certificate Number",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Filter by FDIC Certificate Number"
+          "maximum": 9007199254740991
         },
         "year": {
+          "description": "Filter by specific year (e.g., 2022)",
           "type": "integer",
           "minimum": 1934,
-          "description": "Filter by specific year (e.g., 2022)"
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": false
@@ -309,43 +318,45 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
       "type": "object",
       "properties": {
         "filters": {
-          "type": "string",
-          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\""
+          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\"",
+          "type": "string"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP"
+          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP",
+          "type": "string"
         },
         "limit": {
+          "default": 20,
+          "description": "Maximum number of records to return (1-10000, default: 20)",
           "type": "integer",
           "minimum": 1,
-          "maximum": 10000,
-          "default": 20,
-          "description": "Maximum number of records to return (1-10000, default: 20)"
+          "maximum": 10000
         },
         "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination (default: 0)",
           "type": "integer",
           "minimum": 0,
-          "default": 0,
-          "description": "Number of records to skip for pagination (default: 0)"
+          "maximum": 9007199254740991
         },
         "sort_by": {
-          "type": "string",
-          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE"
+          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE",
+          "type": "string"
         },
         "sort_order": {
+          "default": "ASC",
+          "description": "Sort direction: ASC (ascending) or DESC (descending)",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "ASC",
-          "description": "Sort direction: ASC (ascending) or DESC (descending)"
+          ]
         },
         "cert": {
+          "description": "Filter by FDIC Certificate Number to get all branches of a specific institution",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Filter by FDIC Certificate Number to get all branches of a specific institution"
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": false
@@ -364,43 +375,45 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
       "type": "object",
       "properties": {
         "filters": {
-          "type": "string",
-          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\""
+          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\"",
+          "type": "string"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP"
+          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP",
+          "type": "string"
         },
         "limit": {
+          "default": 20,
+          "description": "Maximum number of records to return (1-10000, default: 20)",
           "type": "integer",
           "minimum": 1,
-          "maximum": 10000,
-          "default": 20,
-          "description": "Maximum number of records to return (1-10000, default: 20)"
+          "maximum": 10000
         },
         "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination (default: 0)",
           "type": "integer",
           "minimum": 0,
-          "default": 0,
-          "description": "Number of records to skip for pagination (default: 0)"
+          "maximum": 9007199254740991
         },
         "sort_by": {
-          "type": "string",
-          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE"
+          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE",
+          "type": "string"
         },
         "sort_order": {
+          "default": "ASC",
+          "description": "Sort direction: ASC (ascending) or DESC (descending)",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "ASC",
-          "description": "Sort direction: ASC (ascending) or DESC (descending)"
+          ]
         },
         "cert": {
+          "description": "Filter by FDIC Certificate Number to get history for a specific institution",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Filter by FDIC Certificate Number to get history for a specific institution"
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": false
@@ -419,48 +432,51 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
       "type": "object",
       "properties": {
         "filters": {
-          "type": "string",
-          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\""
+          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\"",
+          "type": "string"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP"
+          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP",
+          "type": "string"
         },
         "limit": {
+          "default": 20,
+          "description": "Maximum number of records to return (1-10000, default: 20)",
           "type": "integer",
           "minimum": 1,
-          "maximum": 10000,
-          "default": 20,
-          "description": "Maximum number of records to return (1-10000, default: 20)"
+          "maximum": 10000
         },
         "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination (default: 0)",
           "type": "integer",
           "minimum": 0,
-          "default": 0,
-          "description": "Number of records to skip for pagination (default: 0)"
+          "maximum": 9007199254740991
         },
         "sort_by": {
-          "type": "string",
-          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE"
+          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE",
+          "type": "string"
         },
         "sort_order": {
+          "default": "ASC",
+          "description": "Sort direction: ASC (ascending) or DESC (descending)",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "ASC",
-          "description": "Sort direction: ASC (ascending) or DESC (descending)"
+          ]
         },
         "cert": {
+          "description": "Filter by FDIC Certificate Number",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Filter by FDIC Certificate Number"
+          "maximum": 9007199254740991
         },
         "year": {
+          "description": "Filter by specific year (1994-present). SOD data is annual.",
           "type": "integer",
           "minimum": 1994,
-          "description": "Filter by specific year (1994-present). SOD data is annual."
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": false
@@ -479,47 +495,49 @@ Core FDIC BankFind data retrieval tool bundle. Provides institution lookup, fina
       "type": "object",
       "properties": {
         "filters": {
-          "type": "string",
-          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\""
+          "description": "FDIC API filter using ElasticSearch query string syntax. Combine conditions with AND/OR, use quotes for multi-word values, and [min TO max] for ranges (* = unbounded). Common fields: NAME (institution name), STNAME (state name), STALP (two-letter state code), CERT (certificate number), ASSET (total assets in $thousands), ACTIVE (1=active, 0=inactive). Examples: STNAME:\"California\", ACTIVE:1 AND ASSET:[1000000 TO *], NAME:\"Chase\"",
+          "type": "string"
         },
         "fields": {
-          "type": "string",
-          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP"
+          "description": "Comma-separated list of FDIC field names to return. Leave empty to return all fields. Field names are ALL_CAPS (e.g., NAME, CERT, ASSET, DEP, STALP). Example: NAME,CERT,ASSET,DEP,STALP",
+          "type": "string"
         },
         "limit": {
+          "default": 20,
+          "description": "Maximum number of records to return (1-10000, default: 20)",
           "type": "integer",
           "minimum": 1,
-          "maximum": 10000,
-          "default": 20,
-          "description": "Maximum number of records to return (1-10000, default: 20)"
+          "maximum": 10000
         },
         "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination (default: 0)",
           "type": "integer",
           "minimum": 0,
-          "default": 0,
-          "description": "Number of records to skip for pagination (default: 0)"
+          "maximum": 9007199254740991
         },
         "sort_by": {
-          "type": "string",
-          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE"
+          "description": "Field name to sort results by. Example: ASSET, NAME, FAILDATE",
+          "type": "string"
         },
         "sort_order": {
+          "default": "ASC",
+          "description": "Sort direction: ASC (ascending) or DESC (descending)",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "ASC",
-          "description": "Sort direction: ASC (ascending) or DESC (descending)"
+          ]
         },
         "cert": {
+          "description": "Filter by FDIC Certificate Number",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Filter by FDIC Certificate Number"
+          "maximum": 9007199254740991
         },
         "repdte": {
-          "type": "string",
-          "description": "Filter by Report Date (REPDTE) in YYYYMMDD format (quarter-end: 0331, 0630, 0930, 1231)."
+          "description": "Filter by Report Date (REPDTE) in YYYYMMDD format (quarter-end: 0331, 0630, 0930, 1231).",
+          "type": "string"
         }
       },
       "additionalProperties": false

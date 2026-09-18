@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { ENDPOINTS, CHARACTER_LIMIT } from "../constants.js";
 import {
   queryEndpoint,
@@ -17,13 +17,14 @@ import {
 } from "../schemas/output.js";
 
 export function registerFailureTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_search_failures",
     {
       title: "Search Bank Failures",
       description:
         "Use this when the user wants details on failed FDIC-insured institutions filtered by name, state, date range, resolution type, or cost. Returns failure records with pagination; see fdic://schemas/failures for the full field catalog.",
-      inputSchema: CommonQuerySchema,
+      inputSchema: CommonQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicFailuresSearchOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -74,7 +75,7 @@ export function registerFailureTools(server: McpServer): void {
       title: "Get Failure Details by Certificate Number",
       description:
         "Use this when the user knows the CERT of a failed institution and needs its specific failure record. Returns failure details (date, resolution type, cost, acquirer); responds with `found: false` if the institution did not fail.",
-      inputSchema: CertSchema,
+      inputSchema: CertSchema.meta({ additionalProperties: false }),
       outputSchema: FdicFailureLookupOutputSchema,
       annotations: {
         readOnlyHint: true,

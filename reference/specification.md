@@ -72,9 +72,13 @@ Contract stability matters because MCP clients may automate against either or bo
 ## HTTP Transport Notes
 
 - The streamable HTTP MCP endpoint is served at `/mcp`.
-- HTTP MCP sessions are initialized once and then resumed by reusing the returned `MCP-Session-Id` header.
+- MCP `2026-07-28` requests carry per-request protocol metadata and require no initialization or session identifier. SDK v2 compatibility handling also supports older clients.
+- Each HTTP request uses a fresh server instance; multiple instances need no session affinity.
+- Progress notifications stream on the originating POST response. Standalone GET streams and DELETE session teardown are unsupported (405).
+- Inbound JSON request bodies are limited to 100 KiB.
 - Local HTTP runs bind to `127.0.0.1` by default unless `HOST` is set.
-- Browser-origin access can be restricted with `ALLOWED_ORIGINS`.
+- `ALLOWED_HOSTS` validates hostnames (defaults: `localhost`, `127.0.0.1`, `[::1]`); `ALLOWED_ORIGINS` validates exact browser origins. Neither control provides authentication.
+- `MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE` and `MCP_BLOCKED_IPS` continue to apply. Session and standalone-stream controls are retired.
 - `FDIC_MAX_RESPONSE_BYTES` controls the upstream FDIC response-size guard.
 
 ## FDIC Data Constraints

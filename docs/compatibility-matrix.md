@@ -22,6 +22,12 @@ Last reviewed: March 15, 2026.
 | GitHub Copilot CLI | ✓ | — | Good | Local config is straightforward |
 | Other MCP hosts | — | — | Best effort | Validate transport support before relying on the server |
 
+## Protocol Compatibility
+
+The server supports MCP `2026-07-28` over stdio and stateless HTTP. SDK v2 compatibility handling also supports older clients; a host does not need to adopt the new protocol immediately. This server-side compatibility does not constitute a new review of each host listed above.
+
+Modern HTTP requests carry protocol metadata individually and do not require `MCP-Session-Id`. Progress uses the originating POST response; standalone GET streams and DELETE session teardown are unsupported. Custom integrations that depend on session IDs must migrate. Remote deployments must configure their endpoint hostname in `ALLOWED_HOSTS` as well as any browser origins in `ALLOWED_ORIGINS`.
+
 ## Support Level Meanings
 
 - `Good`: documented in this repo and expected to work with the current guidance

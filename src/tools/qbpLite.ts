@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -693,13 +693,14 @@ function formatQbpLiteText(data: Awaited<ReturnType<typeof buildQbpLiteData>>): 
 }
 
 export function registerQbpLiteTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_qbp_lite_data",
     {
       title: "Generate QBP Lite Data Bundle",
       description:
         "Build chart-ready data for a concise QBP Lite report from reproducible public BankFind quarterly financials. Includes executive snapshot metrics, trend series, community-bank comparison data, source notes, and explicit exclusions for non-public or non-BankFind QBP items.",
-      inputSchema: QbpLiteSchema,
+      inputSchema: QbpLiteSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,

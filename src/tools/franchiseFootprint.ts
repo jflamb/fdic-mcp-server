@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -94,6 +94,7 @@ const FranchiseFootprintInputSchema = z.object({
 });
 
 export function registerFranchiseFootprintTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_franchise_footprint",
     {
@@ -108,7 +109,7 @@ Output includes:
   - Structured JSON for programmatic consumption
 
 Branches outside MSAs are grouped under "Non-MSA / Rural".`,
-      inputSchema: FranchiseFootprintInputSchema,
+      inputSchema: FranchiseFootprintInputSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -117,16 +118,16 @@ Branches outside MSAs are grouped under "Non-MSA / Rural".`,
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         const year = rawParams.year ?? getDefaultSodYear();
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.1,
           "Fetching institution profile",
@@ -174,7 +175,7 @@ Branches outside MSAs are grouped under "Non-MSA / Rural".`,
         }
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.5,
           "Grouping branches by market",
@@ -222,7 +223,7 @@ Branches outside MSAs are grouped under "Non-MSA / Rural".`,
         markets.sort((a, b) => b.total_deposits - a.total_deposits);
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.8,
           "Formatting results",

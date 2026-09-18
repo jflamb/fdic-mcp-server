@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -193,6 +193,7 @@ const RiskSignalsInputSchema = z.object({
 });
 
 export function registerRiskSignalTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_detect_risk_signals",
     {
@@ -212,7 +213,7 @@ Three scan modes:
 Output: Per-institution risk signals ranked by severity count. The proxy engine drives signal generation internally; the output is signal-shaped, not assessment-shaped.
 
 NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
-      inputSchema: RiskSignalsInputSchema,
+      inputSchema: RiskSignalsInputSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -221,11 +222,11 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const params = { ...rawParams, repdte: rawParams.repdte ?? getDefaultReportDate() };
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         if (!params.certs && !params.state && params.asset_min === undefined && params.asset_max === undefined) {
@@ -237,7 +238,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           return formatToolError(new Error(dateError));
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.1, "Building institution roster");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.1, "Building institution roster");
 
         let targetCerts: number[];
 
@@ -272,7 +273,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           return formatToolError(new Error("No institutions matched the specified criteria."));
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.3, `Fetching financials for ${targetCerts.length} institutions`);
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.3, `Fetching financials for ${targetCerts.length} institutions`);
 
         // Fetch current quarter financials
         const certFilters = buildCertFilters(targetCerts);
@@ -299,7 +300,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
         let priorByInstitution = new Map<number, Record<string, unknown>[]>();
 
         if (priorDates.length > 0) {
-          await sendProgressNotification(server.server, progressToken, 0.5, "Fetching prior quarters for trends");
+          await sendProgressNotification(ctx.mcpReq, progressToken, 0.5, "Fetching prior quarters for trends");
 
           const dateFilter = priorDates.map((d) => `REPDTE:${d}`).join(" OR ");
           const priorResponses = await mapWithConcurrency(
@@ -348,7 +349,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
           if (c !== null) profileMap.set(c, r);
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.7, "Fetching history and analyzing risk signals");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.7, "Fetching history and analyzing risk signals");
 
         // Fetch history events for all target certs in parallel (best-effort)
         const historyByCert = new Map<number, Awaited<ReturnType<typeof fetchHistoryEvents>>>();
@@ -428,7 +429,7 @@ NOTE: Public off-site analytical proxy — not official supervisory ratings.`,
 
         const returned = results.slice(0, params.limit);
 
-        await sendProgressNotification(server.server, progressToken, 0.9, "Formatting results");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.9, "Formatting results");
 
         const parts: string[] = [];
         parts.push(`Risk Signal Scan — ${results.length} flagged of ${allCurrentFinancials.length} institutions scanned`);

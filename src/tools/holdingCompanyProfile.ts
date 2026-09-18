@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -117,6 +117,7 @@ const HoldingCompanyProfileSchema = z.object({
 });
 
 export function registerHoldingCompanyProfileTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_holding_company_profile",
     {
@@ -129,7 +130,7 @@ Output includes:
   - Structured JSON for programmatic consumption
 
 NOTE: This is an analytical tool based on public financial data.`,
-      inputSchema: HoldingCompanyProfileSchema,
+      inputSchema: HoldingCompanyProfileSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -138,10 +139,10 @@ NOTE: This is an analytical tool based on public financial data.`,
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         if (!rawParams.hc_name && !rawParams.cert) {
@@ -157,7 +158,7 @@ NOTE: This is an analytical tool based on public financial data.`,
         // Step 1: Resolve holding company name
         if (rawParams.cert && !rawParams.hc_name) {
           await sendProgressNotification(
-            server.server,
+            ctx.mcpReq,
             progressToken,
             0.1,
             "Looking up subsidiary to find holding company",
@@ -195,7 +196,7 @@ NOTE: This is an analytical tool based on public financial data.`,
 
         // Step 2: Fetch all institutions under this holding company
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.2,
           `Fetching subsidiaries for ${hcName}`,
@@ -224,7 +225,7 @@ NOTE: This is an analytical tool based on public financial data.`,
 
         // Step 3: Fetch financials for active subsidiaries
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.4,
           "Fetching financial data for subsidiaries",
@@ -268,7 +269,7 @@ NOTE: This is an analytical tool based on public financial data.`,
 
         // Step 4: Build subsidiary records
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.7,
           "Aggregating metrics",
@@ -286,7 +287,7 @@ NOTE: This is an analytical tool based on public financial data.`,
         const aggregate = aggregateSubsidiaryMetrics(targetSubs);
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.9,
           "Formatting results",

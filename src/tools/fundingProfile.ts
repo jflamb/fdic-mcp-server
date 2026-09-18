@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   extractRecords,
@@ -92,6 +92,7 @@ const FundingProfileSchema = z.object({
 });
 
 export function registerFundingProfileTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_analyze_funding_profile",
     {
@@ -106,7 +107,7 @@ Output includes:
   - Structured JSON for programmatic consumption
 
 NOTE: This is an analytical tool based on public financial data.`,
-      inputSchema: FundingProfileSchema,
+      inputSchema: FundingProfileSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -115,11 +116,11 @@ NOTE: This is an analytical tool based on public financial data.`,
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const params = { ...rawParams, repdte: rawParams.repdte ?? getDefaultReportDate() };
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         const dateError = validateQuarterEndDate(params.repdte, "repdte");
@@ -127,7 +128,7 @@ NOTE: This is an analytical tool based on public financial data.`,
           return formatToolError(new Error(dateError));
         }
 
-        await sendProgressNotification(server.server, progressToken, 0.1, "Fetching institution profile");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.1, "Fetching institution profile");
 
         const [profileResponse, financialsResponse] = await Promise.all([
           queryEndpoint(
@@ -167,12 +168,12 @@ NOTE: This is an analytical tool based on public financial data.`,
         }
         const currentFinancials = financialRecords[0];
 
-        await sendProgressNotification(server.server, progressToken, 0.5, "Computing funding metrics");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.5, "Computing funding metrics");
 
         const metrics = computeFundingMetrics(currentFinancials);
         const signals = scoreFundingRisks(metrics);
 
-        await sendProgressNotification(server.server, progressToken, 0.9, "Formatting results");
+        await sendProgressNotification(ctx.mcpReq, progressToken, 0.9, "Formatting results");
 
         const summary: FundingProfileSummary = {
           institution: {

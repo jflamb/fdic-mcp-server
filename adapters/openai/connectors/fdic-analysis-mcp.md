@@ -39,19 +39,20 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
         "cert": {
           "type": "integer",
           "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
           "description": "FDIC Certificate Number of the institution to analyze."
         },
         "repdte": {
+          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter likely to have published data.",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter likely to have published data."
+          "pattern": "^\\d{8}$"
         },
         "quarters": {
+          "default": 8,
+          "description": "Number of prior quarters to fetch for trend analysis (default 8).",
           "type": "integer",
           "minimum": 1,
-          "maximum": 20,
-          "default": 8,
-          "description": "Number of prior quarters to fetch for trend analysis (default 8)."
+          "maximum": 20
         }
       },
       "required": [
@@ -73,40 +74,44 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
       "type": "object",
       "properties": {
         "cert": {
+          "description": "Subject institution CERT to highlight in the ranking. Optional.",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Subject institution CERT to highlight in the ranking. Optional."
+          "maximum": 9007199254740991
         },
         "certs": {
+          "description": "Explicit list of CERTs to compare (max 50).",
+          "maxItems": 50,
           "type": "array",
           "items": {
             "type": "integer",
-            "exclusiveMinimum": 0
-          },
-          "maxItems": 50,
-          "description": "Explicit list of CERTs to compare (max 50)."
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
         },
         "state": {
+          "description": "Two-letter state code to select all active institutions (e.g., \"WY\").",
           "type": "string",
-          "pattern": "^[A-Z]{2}$",
-          "description": "Two-letter state code to select all active institutions (e.g., \"WY\")."
+          "pattern": "^[A-Z]{2}$"
         },
         "asset_min": {
+          "description": "Minimum total assets ($thousands) for peer selection.",
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Minimum total assets ($thousands) for peer selection."
+          "exclusiveMinimum": 0
         },
         "asset_max": {
+          "description": "Maximum total assets ($thousands) for peer selection.",
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Maximum total assets ($thousands) for peer selection."
+          "exclusiveMinimum": 0
         },
         "repdte": {
+          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter.",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter."
+          "pattern": "^\\d{8}$"
         },
         "sort_by": {
+          "default": "composite",
+          "description": "Sort results by composite or a specific CAMELS component rating.",
           "type": "string",
           "enum": [
             "composite",
@@ -115,16 +120,14 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
             "earnings",
             "liquidity",
             "sensitivity"
-          ],
-          "default": "composite",
-          "description": "Sort results by composite or a specific CAMELS component rating."
+          ]
         },
         "limit": {
+          "default": 25,
+          "description": "Max institutions to return in the response.",
           "type": "integer",
           "minimum": 1,
-          "maximum": 100,
-          "default": 25,
-          "description": "Max institutions to return in the response."
+          "maximum": 100
         }
       },
       "additionalProperties": false
@@ -143,57 +146,58 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
       "type": "object",
       "properties": {
         "state": {
+          "description": "Scan all active institutions in this state.",
           "type": "string",
-          "pattern": "^[A-Z]{2}$",
-          "description": "Scan all active institutions in this state."
+          "pattern": "^[A-Z]{2}$"
         },
         "certs": {
+          "description": "Specific CERTs to scan (max 50).",
+          "maxItems": 50,
           "type": "array",
           "items": {
             "type": "integer",
-            "exclusiveMinimum": 0
-          },
-          "maxItems": 50,
-          "description": "Specific CERTs to scan (max 50)."
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
         },
         "asset_min": {
+          "description": "Minimum total assets ($thousands) filter.",
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Minimum total assets ($thousands) filter."
+          "exclusiveMinimum": 0
         },
         "asset_max": {
+          "description": "Maximum total assets ($thousands) filter.",
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Maximum total assets ($thousands) filter."
+          "exclusiveMinimum": 0
         },
         "repdte": {
+          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter.",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Report Date (YYYYMMDD). Defaults to the most recent quarter."
+          "pattern": "^\\d{8}$"
         },
         "min_severity": {
+          "default": "warning",
+          "description": "Minimum severity level to include in results (default: warning).",
           "type": "string",
           "enum": [
             "info",
             "warning",
             "critical"
-          ],
-          "default": "warning",
-          "description": "Minimum severity level to include in results (default: warning)."
+          ]
         },
         "quarters": {
+          "default": 4,
+          "description": "Prior quarters to fetch for trend analysis (default 4).",
           "type": "integer",
           "minimum": 1,
-          "maximum": 12,
-          "default": 4,
-          "description": "Prior quarters to fetch for trend analysis (default 4)."
+          "maximum": 12
         },
         "limit": {
+          "default": 25,
+          "description": "Max flagged institutions to return.",
           "type": "integer",
           "minimum": 1,
-          "maximum": 100,
-          "default": 25,
-          "description": "Max flagged institutions to return."
+          "maximum": 100
         }
       },
       "additionalProperties": false
@@ -212,59 +216,62 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
       "type": "object",
       "properties": {
         "state": {
-          "type": "string",
-          "description": "State name for the institution roster filter. Example: \"North Carolina\""
+          "description": "State name for the institution roster filter. Example: \"North Carolina\"",
+          "type": "string"
         },
         "certs": {
+          "description": "Optional list of FDIC certificate numbers to compare directly. Max 100.",
+          "maxItems": 100,
           "type": "array",
           "items": {
             "type": "integer",
-            "exclusiveMinimum": 0
-          },
-          "maxItems": 100,
-          "description": "Optional list of FDIC certificate numbers to compare directly. Max 100."
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
         },
         "institution_filters": {
-          "type": "string",
-          "description": "Additional institution-level filter used when building the comparison set. Example: BKCLASS:N or CITY:\"Charlotte\""
+          "description": "Additional institution-level filter used when building the comparison set. Example: BKCLASS:N or CITY:\"Charlotte\"",
+          "type": "string"
         },
         "active_only": {
-          "type": "boolean",
           "default": true,
-          "description": "Limit the comparison set to currently active institutions."
+          "description": "Limit the comparison set to currently active institutions.",
+          "type": "boolean"
         },
         "start_repdte": {
+          "description": "Starting Report Date (REPDTE) in YYYYMMDD format. Must be a quarter-end date: March 31 (0331), June 30 (0630), September 30 (0930), or December 31 (1231). Example: 20210331 for Q1 2021. If omitted, defaults to the same quarter one year before end_repdte.",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Starting Report Date (REPDTE) in YYYYMMDD format. Must be a quarter-end date: March 31 (0331), June 30 (0630), September 30 (0930), or December 31 (1231). Example: 20210331 for Q1 2021. If omitted, defaults to the same quarter one year before end_repdte."
+          "pattern": "^\\d{8}$"
         },
         "end_repdte": {
+          "description": "Ending Report Date (REPDTE) in YYYYMMDD format. Must be a quarter-end date: March 31 (0331), June 30 (0630), September 30 (0930), or December 31 (1231). Must be later than start_repdte. Example: 20251231 for Q4 2025. If omitted, defaults to the most recent quarter-end date with published data (~90-day lag).",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Ending Report Date (REPDTE) in YYYYMMDD format. Must be a quarter-end date: March 31 (0331), June 30 (0630), September 30 (0930), or December 31 (1231). Must be later than start_repdte. Example: 20251231 for Q4 2025. If omitted, defaults to the most recent quarter-end date with published data (~90-day lag)."
+          "pattern": "^\\d{8}$"
         },
         "analysis_mode": {
+          "default": "snapshot",
+          "description": "Use snapshot for two-point comparison or timeseries for quarterly trend analysis across the date range.",
           "type": "string",
           "enum": [
             "snapshot",
             "timeseries"
-          ],
-          "default": "snapshot",
-          "description": "Use snapshot for two-point comparison or timeseries for quarterly trend analysis across the date range."
+          ]
         },
         "include_demographics": {
-          "type": "boolean",
           "default": true,
-          "description": "Include office-count changes from the demographics dataset when available."
+          "description": "Include office-count changes from the demographics dataset when available.",
+          "type": "boolean"
         },
         "limit": {
+          "default": 10,
+          "description": "Maximum number of ranked comparisons to return.",
           "type": "integer",
           "minimum": 1,
-          "maximum": 100,
-          "default": 10,
-          "description": "Maximum number of ranked comparisons to return."
+          "maximum": 100
         },
         "sort_by": {
+          "default": "asset_growth",
+          "description": "Comparison field used to rank institutions. Valid options: asset_growth, asset_growth_pct, dep_growth, dep_growth_pct, netinc_change, netinc_change_pct, roa_change, roe_change, offices_change, assets_per_office_change, deposits_per_office_change, deposits_to_assets_change.",
           "type": "string",
           "enum": [
             "asset_growth",
@@ -279,18 +286,16 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
             "assets_per_office_change",
             "deposits_per_office_change",
             "deposits_to_assets_change"
-          ],
-          "default": "asset_growth",
-          "description": "Comparison field used to rank institutions. Valid options: asset_growth, asset_growth_pct, dep_growth, dep_growth_pct, netinc_change, netinc_change_pct, roa_change, roe_change, offices_change, assets_per_office_change, deposits_per_office_change, deposits_to_assets_change."
+          ]
         },
         "sort_order": {
+          "default": "DESC",
+          "description": "Sort direction for the ranked comparisons.",
           "type": "string",
           "enum": [
             "ASC",
             "DESC"
-          ],
-          "default": "DESC",
-          "description": "Sort direction for the ranked comparisons."
+          ]
         }
       },
       "additionalProperties": false
@@ -309,59 +314,60 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
       "type": "object",
       "properties": {
         "cert": {
+          "description": "Subject institution CERT number. When provided, auto-derives peer criteria and ranks this bank against peers.",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Subject institution CERT number. When provided, auto-derives peer criteria and ranks this bank against peers."
+          "maximum": 9007199254740991
         },
         "repdte": {
+          "description": "Report Date (REPDTE) in YYYYMMDD format. FDIC data is published quarterly on: March 31, June 30, September 30, and December 31. Example: 20231231 for Q4 2023. If omitted, defaults to the most recent quarter-end date likely to have published data (~90-day lag).",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Report Date (REPDTE) in YYYYMMDD format. FDIC data is published quarterly on: March 31, June 30, September 30, and December 31. Example: 20231231 for Q4 2023. If omitted, defaults to the most recent quarter-end date likely to have published data (~90-day lag)."
+          "pattern": "^\\d{8}$"
         },
         "asset_min": {
+          "description": "Minimum total assets ($thousands) for peer selection. Defaults to 50% of subject's report-date assets when cert is provided.",
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Minimum total assets ($thousands) for peer selection. Defaults to 50% of subject's report-date assets when cert is provided."
+          "exclusiveMinimum": 0
         },
         "asset_max": {
+          "description": "Maximum total assets ($thousands) for peer selection. Defaults to 200% of subject's report-date assets when cert is provided.",
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Maximum total assets ($thousands) for peer selection. Defaults to 200% of subject's report-date assets when cert is provided."
+          "exclusiveMinimum": 0
         },
         "charter_classes": {
+          "description": "Charter class codes to include (e.g., [\"N\", \"SM\"]). Defaults to the subject's charter class when cert is provided.",
           "type": "array",
           "items": {
             "type": "string"
-          },
-          "description": "Charter class codes to include (e.g., [\"N\", \"SM\"]). Defaults to the subject's charter class when cert is provided."
+          }
         },
         "state": {
+          "description": "Two-letter state code (e.g., \"NC\", \"TX\").",
           "type": "string",
-          "pattern": "^[A-Z]{2}$",
-          "description": "Two-letter state code (e.g., \"NC\", \"TX\")."
+          "pattern": "^[A-Z]{2}$"
         },
         "raw_filter": {
-          "type": "string",
-          "description": "Advanced: raw ElasticSearch query string appended to peer selection criteria with AND."
+          "description": "Advanced: raw ElasticSearch query string appended to peer selection criteria with AND.",
+          "type": "string"
         },
         "active_only": {
-          "type": "boolean",
           "default": true,
-          "description": "Limit to institutions where ACTIVE:1 (currently operating, FDIC-insured)."
+          "description": "Limit to institutions where ACTIVE:1 (currently operating, FDIC-insured).",
+          "type": "boolean"
         },
         "extra_fields": {
+          "description": "Additional FDIC field names to include as raw values in the response. Does not affect peer selection.",
           "type": "array",
           "items": {
             "type": "string"
-          },
-          "description": "Additional FDIC field names to include as raw values in the response. Does not affect peer selection."
+          }
         },
         "limit": {
+          "default": 50,
+          "description": "Max peer records returned in the response. All matched peers are used for ranking regardless of this limit.",
           "type": "integer",
           "minimum": 1,
-          "maximum": 500,
-          "default": 50,
-          "description": "Max peer records returned in the response. All matched peers are used for ranking regardless of this limit."
+          "maximum": 500
         }
       },
       "additionalProperties": false
@@ -382,12 +388,13 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
         "cert": {
           "type": "integer",
           "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
           "description": "FDIC Certificate Number"
         },
         "repdte": {
+          "description": "Report date (YYYYMMDD). Defaults to most recent quarter.",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Report date (YYYYMMDD). Defaults to most recent quarter."
+          "pattern": "^\\d{8}$"
         }
       },
       "required": [
@@ -411,12 +418,13 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
         "cert": {
           "type": "integer",
           "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
           "description": "FDIC Certificate Number"
         },
         "repdte": {
+          "description": "Report date (YYYYMMDD). Defaults to most recent quarter.",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Report date (YYYYMMDD). Defaults to most recent quarter."
+          "pattern": "^\\d{8}$"
         }
       },
       "required": [
@@ -440,12 +448,13 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
         "cert": {
           "type": "integer",
           "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
           "description": "FDIC Certificate Number"
         },
         "repdte": {
+          "description": "Report date (YYYYMMDD). Defaults to most recent quarter.",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Report date (YYYYMMDD). Defaults to most recent quarter."
+          "pattern": "^\\d{8}$"
         }
       },
       "required": [
@@ -469,13 +478,14 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
         "cert": {
           "type": "integer",
           "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
           "description": "FDIC Certificate Number"
         },
         "repdte": {
+          "description": "Report date (YYYYMMDD). Defaults to most recent quarter.",
           "type": "string",
           "minLength": 8,
-          "maxLength": 8,
-          "description": "Report date (YYYYMMDD). Defaults to most recent quarter."
+          "maxLength": 8
         }
       },
       "required": [
@@ -497,29 +507,32 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
       "type": "object",
       "properties": {
         "msa": {
+          "description": "FDIC MSABR numeric code for the Metropolitan Statistical Area (e.g., 19100 for Dallas-Fort Worth-Arlington, 42660 for Seattle-Tacoma-Bellevue). Use fdic_search_sod with MSABR to look up codes.",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "FDIC MSABR numeric code for the Metropolitan Statistical Area (e.g., 19100 for Dallas-Fort Worth-Arlington, 42660 for Seattle-Tacoma-Bellevue). Use fdic_search_sod with MSABR to look up codes."
+          "maximum": 9007199254740991
         },
         "city": {
-          "type": "string",
-          "description": "City name (e.g., \"Austin\"). Requires state."
+          "description": "City name (e.g., \"Austin\"). Requires state.",
+          "type": "string"
         },
         "state": {
+          "description": "Two-letter state abbreviation (e.g., TX). Required when using city filter.",
           "type": "string",
           "minLength": 2,
-          "maxLength": 2,
-          "description": "Two-letter state abbreviation (e.g., TX). Required when using city filter."
+          "maxLength": 2
         },
         "year": {
+          "description": "SOD report year (1994-present). Defaults to most recent.",
           "type": "integer",
           "minimum": 1994,
-          "description": "SOD report year (1994-present). Defaults to most recent."
+          "maximum": 9007199254740991
         },
         "cert": {
+          "description": "Highlight a specific institution in the results.",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "Highlight a specific institution in the results."
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": false
@@ -540,12 +553,14 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
         "cert": {
           "type": "integer",
           "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
           "description": "FDIC Certificate Number"
         },
         "year": {
+          "description": "SOD report year. Defaults to most recent.",
           "type": "integer",
           "minimum": 1994,
-          "description": "SOD report year. Defaults to most recent."
+          "maximum": 9007199254740991
         }
       },
       "required": [
@@ -567,13 +582,14 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
       "type": "object",
       "properties": {
         "hc_name": {
-          "type": "string",
-          "description": "Holding company name (e.g., \"JPMORGAN CHASE & CO\"). Uses NAMEHCR field."
+          "description": "Holding company name (e.g., \"JPMORGAN CHASE & CO\"). Uses NAMEHCR field.",
+          "type": "string"
         },
         "cert": {
+          "description": "CERT of any subsidiary — looks up its holding company, then profiles the entire HC.",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "CERT of any subsidiary — looks up its holding company, then profiles the entire HC."
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": false
@@ -592,20 +608,21 @@ FDIC analytical and comparison tool bundle. Provides health assessment, peer ben
       "type": "object",
       "properties": {
         "cert": {
+          "description": "FDIC Certificate Number — auto-detects state from institution record.",
           "type": "integer",
           "exclusiveMinimum": 0,
-          "description": "FDIC Certificate Number — auto-detects state from institution record."
+          "maximum": 9007199254740991
         },
         "state": {
+          "description": "Two-letter state abbreviation (e.g., TX). Alternative to cert-based lookup.",
           "type": "string",
           "minLength": 2,
-          "maxLength": 2,
-          "description": "Two-letter state abbreviation (e.g., TX). Alternative to cert-based lookup."
+          "maxLength": 2
         },
         "repdte": {
+          "description": "Reference report date (YYYYMMDD). FRED data fetched for 2 years before this date.",
           "type": "string",
-          "pattern": "^\\d{8}$",
-          "description": "Reference report date (YYYYMMDD). FRED data fetched for 2 years before this date."
+          "pattern": "^\\d{8}$"
         }
       },
       "additionalProperties": false

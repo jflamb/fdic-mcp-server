@@ -113,7 +113,11 @@ Notes:
 
 - Local HTTP runs bind to `127.0.0.1` by default. Set `HOST` if you intentionally want a different bind address.
 - Browser-origin requests are checked against `ALLOWED_ORIGINS`. If unset, the server allows the local defaults for `localhost` and `127.0.0.1` on the configured port, plus non-browser requests with no `Origin` header.
-- The HTTP transport is session-based. Clients initialize once, then reuse `MCP-Session-Id` on later POST, GET, and DELETE requests.
+- HTTP requests are stateless by default and support MCP `2026-07-28`. Each request carries its own protocol metadata; no `MCP-Session-Id` or instance affinity is required. SDK compatibility handling also serves older clients.
+- `ALLOWED_HOSTS` accepts comma-separated hostnames (without schemes or ports). Defaults are `localhost`, `127.0.0.1`, and `[::1]`. Add your endpoint hostname for remote deployments; setting `HOST` alone does not authorize a hostname.
+- Requests are limited to 100 KiB. Progress updates stream on the originating POST response. Standalone GET streams and DELETE session teardown are no longer supported.
+
+See [self-hosting and migration notes](./reference/self-hosting.md) for deployment controls and SDK integration changes.
 
 Container builds use `PORT=8080` by default for self-hosted containers.
 

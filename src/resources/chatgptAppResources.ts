@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 
 export const BANK_DEEP_DIVE_WIDGET_URI =
   "ui://widget/fdic-bank-deep-dive-v1.html";

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { ENDPOINTS, CHARACTER_LIMIT } from "../constants.js";
 import {
   queryEndpoint,
@@ -26,13 +26,14 @@ const LocationQuerySchema = CommonQuerySchema.extend({
 });
 
 export function registerLocationTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_search_locations",
     {
       title: "Search Institution Locations / Branches",
       description:
         "Use this when the user wants branch/office locations for FDIC-insured institutions, filtered by CERT, state, city, county, metro area, or branch type. Returns address, coordinates, branch number, and service-type rows; see fdic://schemas/locations for the full field catalog.",
-      inputSchema: LocationQuerySchema,
+      inputSchema: LocationQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicLocationsSearchOutputSchema,
       annotations: {
         readOnlyHint: true,

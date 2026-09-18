@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const FdicRecord = z.record(z.unknown());
+const FdicRecord = z.record(z.string(), z.unknown());
 
 const FdicFinancialRecord = z.object({
   CERT: z.number().int().optional(),
@@ -86,7 +86,7 @@ export const ChatGptFetchResultSchema = z.object({
   title: z.string(),
   text: z.string(),
   url: z.string(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 const Source = z.object({ title: z.string(), url: z.string() });
@@ -159,7 +159,7 @@ const PeerHealthInstitutionSchema = z.object({
   proxy_band: z.string(),
   composite_rating: z.number(),
   composite_label: z.string(),
-  component_ratings: z.record(z.number()),
+  component_ratings: z.record(z.string(), z.number()),
   flags: z.array(z.string()),
 });
 
@@ -182,7 +182,7 @@ const PeerHealthProxySummarySchema = z.object({
     category: z.string(),
     label: z.string(),
     binding_constraint: z.string().nullable(),
-    ratios_used: z.record(z.number().nullable()),
+    ratios_used: z.record(z.string(), z.number().nullable()),
   }),
   management_overlay: z.object({
     level: z.string(),
@@ -190,7 +190,7 @@ const PeerHealthProxySummarySchema = z.object({
     reason_codes: z.array(z.string()),
   }),
   risk_signal_count: z.number().int(),
-  risk_signal_severities: z.record(z.number().int()),
+  risk_signal_severities: z.record(z.string(), z.number().int()),
   trend_count: z.number().int(),
   data_quality: z.object({
     report_date: z.string(),
@@ -211,7 +211,7 @@ const DeprecationNoticeSchema = z.object({
 export const FdicPeerHealthOutputSchema = z.object({
   model: z.literal("public_camels_proxy_v1"),
   official_status: z.literal("public off-site proxy, not official CAMELS"),
-  proxy: z.unknown().nullable(),
+  proxy: z.unknown().nullable().optional(),
   proxy_summary: PeerHealthProxySummarySchema.nullable(),
   report_date: z.string(),
   sort_by: z.string(),
@@ -228,8 +228,8 @@ export const FdicPeerHealthOutputSchema = z.object({
       peer_definition: z.string(),
       broadening_steps: z.array(z.string()),
       subject_rank: z.number().int().nullable(),
-      subject_percentiles: z.record(PeerStatsSchema),
-      weighted_peer_averages: z.record(z.number()),
+      subject_percentiles: z.record(z.string(), PeerStatsSchema),
+      weighted_peer_averages: z.record(z.string(), z.number()),
     })
     .nullable(),
 }).passthrough();

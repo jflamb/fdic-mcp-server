@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { ENDPOINTS, CHARACTER_LIMIT } from "../constants.js";
 import {
   queryEndpoint,
@@ -26,13 +26,14 @@ const HistoryQuerySchema = CommonQuerySchema.extend({
 });
 
 export function registerHistoryTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_search_history",
     {
       title: "Search Institution History / Structure Changes",
       description:
         "Use this when the user wants structural-change events (mergers, acquisitions, name changes, charter conversions, failures) for FDIC-insured institutions, filtered by CERT, type, change code, date range, or state. See fdic://schemas/history for the full field catalog.",
-      inputSchema: HistoryQuerySchema,
+      inputSchema: HistoryQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicHistorySearchOutputSchema,
       annotations: {
         readOnlyHint: true,

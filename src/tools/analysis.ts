@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { CHARACTER_LIMIT, ENDPOINTS } from "../constants.js";
 import {
   buildPaginationInfo,
@@ -879,6 +879,7 @@ function buildSnapshotComparison(
 }
 
 export function registerAnalysisTools(server: McpServer): void {
+
   server.registerTool(
     "fdic_compare_bank_snapshots",
     {
@@ -905,7 +906,7 @@ Inputs:
   - limit: maximum ranked results to return
 
 Returns concise comparison text plus structured deltas, derived metrics, and insight tags for each institution.`,
-      inputSchema: SnapshotAnalysisSchema,
+      inputSchema: SnapshotAnalysisSchema.meta({ additionalProperties: false }),
       outputSchema: FdicAnalysisOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -914,7 +915,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         openWorldHint: true,
       },
     },
-    async (rawParams, extra) => {
+    async (rawParams, ctx) => {
       const {
         state,
         certs,
@@ -930,7 +931,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
       } = resolveSnapshotDefaults(rawParams);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
-      const progressToken = extra._meta?.progressToken;
+      const progressToken = ctx.mcpReq._meta?.progressToken;
 
       try {
         const validationError = validateSnapshotAnalysisParams({
@@ -951,7 +952,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         }
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           0.1,
           "Fetching institution roster",
@@ -1011,7 +1012,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
 
         if (analysis_mode === "timeseries") {
           await sendProgressNotification(
-            server.server,
+            ctx.mcpReq,
             progressToken,
             0.3,
             include_demographics
@@ -1048,7 +1049,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           );
 
           await sendProgressNotification(
-            server.server,
+            ctx.mcpReq,
             progressToken,
             0.9,
             "Computing metrics and insights",
@@ -1073,7 +1074,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
             .filter((comparison): comparison is ComparisonRecord => comparison !== null);
         } else {
           await sendProgressNotification(
-            server.server,
+            ctx.mcpReq,
             progressToken,
             0.3,
             include_demographics
@@ -1108,7 +1109,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
           );
 
           await sendProgressNotification(
-            server.server,
+            ctx.mcpReq,
             progressToken,
             0.9,
             "Computing metrics and insights",
@@ -1185,7 +1186,7 @@ Returns concise comparison text plus structured deltas, derived metrics, and ins
         );
 
         await sendProgressNotification(
-          server.server,
+          ctx.mcpReq,
           progressToken,
           1,
           "Analysis complete",
