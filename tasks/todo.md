@@ -636,3 +636,22 @@ The confirmed service is `fdic-mcp-server` in project `fdic-mcp-prod`, region `u
 Local validation passed: `npm run typecheck`, `npm test` (45 files, 558 tests), `npm run build`, `npm run extensions:validate`, and `npm run pack:check`. A built stdio client listed 29 tools and returned CERT 3511 from FDIC. Jekyll build and Pagefind indexing passed using a task-local bundle, six rendered entry pages contain no retired endpoint/chat loader, and browser inspection confirmed navigation and layout. Deployment verification and infrastructure shutdown remain pending.
 
 Removing the chatbot-only Playwright job removes a browser installation and test job from relevant PRs. Existing Node 20/22 validation, Docker builds, actionlint, commitlint, Pages, and release workflows remain. Cloud Run container build/deploy and its live smoke checks are retired, with local HTTP regression coverage retained.
+
+# Recover release publication (#232)
+
+## Scope and acceptance criteria
+
+Recover the existing semantic-release-owned v2.0.0 identity, without republishing npm or changing tags. Add an optional version input to the existing release workflow; validate its GitHub release/tag and npm package commit, wait at most two retries for npm visibility, and reuse the published npm artifact. Check the MCP Registry before publishing, verify matching metadata afterward, and allow GitHub Packages to proceed independently of a registry failure. Keep one Ubuntu release job with a 15-minute timeout; no added PR jobs or matrices.
+
+- [x] Confirm the failed boundary, current npm availability, and existing release workflow.
+- [x] Delete the authorized DNS record and Cloud Run mapping; verify DNSimple, authoritative DNS, and GCP readbacks.
+- [x] Implement recovery and bounded npm visibility checks with focused regression tests.
+- [ ] Validate locally, open PR, pass CI, and merge.
+- [ ] Dispatch v2.0.0 recovery and verify MCP Registry metadata and GitHub Packages version.
+- [ ] Record final receipts and close issues after authoritative readback.
+
+## Validation and rollback
+
+Run focused recovery tests plus the repository typecheck, test, build, and extension checks. Exercise recovery preparation against the existing v2.0.0 npm artifact without publishing. Recovery must fail on invalid versions, draft releases, mismatched commits, registry metadata conflicts, and authorization failures. Verify idempotent skip when registry metadata already exists. A registry failure must not gate GitHub Packages. Rollback is reverting the workflow/script change; previously published artifacts and release tags remain immutable.
+
+Local recovery validation passed: 25 focused tests; 583 total tests across 46 files; typecheck, build, extension validation, and package dry-run. Read-only recovery preparation downloaded the existing npm v2.0.0 artifact and matched commit ca8c9644037d3aa619ef0af280fc79f7253acc6b. Registry preflight correctly reported v2.0.0 missing. CI/merge and actual downstream publication are pending.

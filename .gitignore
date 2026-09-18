@@ -19,3 +19,5 @@ docs/_data/releases.json
 
 # Local documentation build cache
 .sass-cache/
+
+.tmp-publication-*/
