@@ -14,17 +14,9 @@ This page collects setup notes for common MCP clients.
 
 ## Before You Configure A Client
 
-Hosted MCP endpoint:
+The project-operated public endpoint and website chatbot are retired. Use a local stdio client, or supply your own HTTP deployment. Remote-only clients require an operator-provided, reachable HTTPS URL.
 
-```text
-https://bankfind.jflamb.com/mcp
-```
-
-If your host supports remote MCP URLs, prefer the hosted endpoint over a local install.
-
-Asking a model to install `https://www.npmjs.com/package/fdic-mcp-server` for you only works in agentic environments that can run commands or edit local MCP config. It is not the normal path for chat products that only accept a remote MCP URL.
-
-## When You Need Local Installation
+## Local Installation
 
 Prefer `npx` in client configs when you need a local server. It avoids hard-coding an install path and works across macOS, Linux, and Windows.
 
@@ -56,21 +48,21 @@ Add the marketplace and install:
 ```
 
 This gives you:
-- **MCP tools** — the hosted endpoint at `https://bankfind.jflamb.com/mcp`, giving you all 20+ search, analysis, and comparison tools that work in any MCP client
+- **MCP tools** — a local stdio server launched with `npx`, giving you all 20+ search, analysis, and comparison tools that work in any MCP client
 - **Claude Code skills** — guided analyst workflows like [Bank Deep Dive](/skills/bank-deep-dive/), [Examiner Support](/skills/examiner-support/), [Portfolio Surveillance](/skills/portfolio-surveillance/), and [Failure Forensics](/skills/failure-forensics/) (Claude Code only)
 
 Skills complement the MCP tools. Tools give you raw data access; skills build structured, multi-step workflows on top of those tools. See [Skills](/skills/) for details.
 
-To use a local server instead, override the MCP config after installing the plugin:
+Manual local setup without the plugin:
 
 ```bash
 claude mcp add fdic -- npx -y fdic-mcp-server
 ```
 
-Manual setup without the plugin (MCP tools only, no skills):
+For a self-hosted HTTP server (replace the example URL with your own):
 
 ```bash
-claude mcp add fdic --transport http https://bankfind.jflamb.com/mcp
+claude mcp add fdic --transport http https://your-server.example/mcp
 ```
 
 Or add directly to your project or user `.mcp.json`:
@@ -79,7 +71,7 @@ Or add directly to your project or user `.mcp.json`:
 {
   "mcpServers": {
     "fdic": {
-      "url": "https://bankfind.jflamb.com/mcp"
+      "url": "https://your-server.example/mcp"
     }
   }
 }
@@ -87,25 +79,7 @@ Or add directly to your project or user `.mcp.json`:
 
 ## Claude Desktop
 
-Claude Desktop supports remote MCP connectors. If you have a supported Claude plan, use the hosted endpoint instead of a local binary.
-
-Use this hosted URL:
-
-```text
-https://bankfind.jflamb.com/mcp
-```
-
-In Claude Desktop:
-
-1. Go to `Settings -> Connectors`.
-2. Click `Add connector`.
-3. Name it `FDIC BankFind`.
-4. Paste `https://bankfind.jflamb.com/mcp` as the connector URL.
-5. Save the connector and enable the tools you want available.
-
-Local stdio fallback:
-
-Use this only when you specifically need a local install or do not have access to Claude's remote connector flow.
+Use local stdio with Node.js 20 or later. If you operate an HTTPS MCP endpoint, you can instead configure your own remote connector. The project provides no hosted URL.
 
 Config file:
 
@@ -136,17 +110,17 @@ Official docs:
 
 ChatGPT Developer Mode supports MCP apps/connectors, but it expects a remote MCP server over streaming HTTP or SSE, not a local stdio process.
 
-Use this hosted URL:
+Use your own HTTPS MCP URL (example placeholder):
 
 ```text
-https://bankfind.jflamb.com/mcp
+https://your-server.example/mcp
 ```
 
 In ChatGPT:
 
 1. Go to `Settings -> Apps -> Advanced settings -> Developer mode` and enable Developer mode.
 2. Open the Apps settings page and create an app for your MCP server.
-3. Use `https://bankfind.jflamb.com/mcp`.
+3. Use `https://your-server.example/mcp`.
 4. Refresh tools from the app details page if needed.
 
 ### Local ChatGPT App Validation
@@ -189,7 +163,7 @@ Suggested smoke prompts:
 - `Show branches for CERT 3511.`
 - `What data date basis are you using?`
 
-Before submitting a public ChatGPT app, confirm the production endpoint and app materials are ready:
+If you independently operate and submit a ChatGPT app, provide your own hosting and app materials:
 
 - stable public HTTPS `/mcp` endpoint
 - app name, description, icon, and screenshots
@@ -212,21 +186,21 @@ Official docs:
 
 Gemini CLI supports MCP servers through `~/.gemini/settings.json` for user scope or `.gemini/settings.json` for project scope.
 
-Hosted endpoint example:
+Self-hosted endpoint example (replace the placeholder):
 
 ```json
 {
   "mcpServers": {
     "fdic": {
-      "httpUrl": "https://bankfind.jflamb.com/mcp"
+      "httpUrl": "https://your-server.example/mcp"
     }
   }
 }
 ```
 
-Use the hosted endpoint when you want the simplest setup and your Gemini CLI environment can reach a public HTTPS MCP server.
+Use this HTTP configuration only when you operate the endpoint. For local setup, use stdio below.
 
-Local stdio fallback:
+Local stdio:
 
 Config example:
 

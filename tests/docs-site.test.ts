@@ -44,19 +44,29 @@ describe("docs site review v2 follow-up", () => {
     expect(docsCss).toContain(".site-footer");
   });
 
-  it("loads the chatbot launcher from the shared layout and keeps the fallback page", () => {
+  it("keeps the retired demo page useful without loading a chat service", () => {
     const layout = readRepoFile("docs/_layouts/default.html");
     const tryItPage = readRepoFile("docs/try-it.md");
-    const chatbotScript = readRepoFile("docs/assets/js/chatbot.js");
 
-    expect(layout).toContain("data-chat-endpoint=\"https://bankfind.jflamb.com/chat\"");
-    expect(layout).toContain("/assets/js/chatbot.js");
-    expect(tryItPage).toContain("data-chatbot-open");
-    expect(tryItPage).toContain("press <code>?</code>");
-    expect(chatbotScript).toContain("data-chatbot-launcher");
-    expect(chatbotScript).toContain("Open the FDIC BankFind chat demo");
-    expect(chatbotScript).toContain("Rate limit reached");
-    expect(chatbotScript).toContain("sanitizeHref");
-    expect(chatbotScript).toContain("startsWith(\"```\")");
+    expect(layout).not.toContain("data-chat-endpoint");
+    expect(layout).not.toContain("/assets/js/chatbot.js");
+    expect(tryItPage).not.toContain("data-chatbot-open");
+    expect(tryItPage).toContain("retired");
+    expect(tryItPage).toContain("/getting-started/");
+  });
+
+  it("distributes local MCP configuration without a retired public remote", () => {
+    const registry = JSON.parse(readRepoFile("server.json"));
+    const plugin = JSON.parse(readRepoFile(".claude-plugin/plugin.json"));
+
+    expect(registry.remotes ?? []).toEqual([]);
+    expect(registry.packages).toEqual(expect.arrayContaining([
+      expect.objectContaining({ identifier: "fdic-mcp-server", transport: { type: "stdio" } }),
+    ]));
+    expect(plugin.mcpServers.fdic).toEqual({
+      command: "npx",
+      args: ["-y", "fdic-mcp-server"],
+      env: { FDIC_MCP_PROFILE: "core,analysis,chatgpt-aliases,prompts,resources" },
+    });
   });
 });

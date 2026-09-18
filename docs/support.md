@@ -19,7 +19,7 @@ breadcrumbs:
 ## What To Include In An Issue
 
 - the MCP host you used
-- whether you used the hosted URL or a local setup
+- whether you used local stdio or a self-hosted HTTP setup
 - the exact prompt and any relevant setup details
 - the expected behavior
 - the actual behavior

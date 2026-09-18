@@ -10,9 +10,11 @@ breadcrumbs:
     url: /project-information/
 ---
 
-This privacy policy applies to the public documentation site, any hosted BankFind MCP Server instance operated from this repository, and the related ChatGPT app listing.
+This privacy policy applies to the public documentation site, project-operated services before retirement.
 
-Effective date: 2026-03-30
+Effective date: 2026-09-18
+
+The project-operated public MCP endpoint and website chatbot are retired. This documentation site does not provide a live chat service. Self-hosted operators are responsible for their own deployment policies. Historical service-data provisions below remain applicable to records from before retirement.
 
 ## Independent Project Notice
 

@@ -56,5 +56,5 @@ All three tools include `model: "public_camels_proxy_v1"` and `official_status` 
 - The package supports both direct CLI execution and imported server construction via `dist/server.js`.
 - Short-lived caching is used to make repeated analysis prompts more efficient.
 - The HTTP transport is intended for hosts that cannot launch local stdio processes.
-- The public HTTP endpoint at `https://bankfind.jflamb.com/mcp` is hosted on Google Cloud Run behind a custom domain.
+- The project-operated public endpoint and website chatbot are retired. Operators can run the HTTP transport themselves; see [Self-hosting](./self-hosting.md).
 - Release tags are configured to publish `server.json` metadata to the official MCP Registry, with publication status verified separately from deployment.

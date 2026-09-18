@@ -16,11 +16,5 @@
         "type": "stdio"
       }
     }
-  ],
-  "remotes": [
-    {
-      "type": "streamable-http",
-      "url": "https://bankfind.jflamb.com/mcp"
-    }
   ]
 }

@@ -1,8 +1,7 @@
 ARG NODE_VERSION=22.22.1
 # Version baked into dist/server.js via esbuild's __APP_VERSION__ define.
-# The deploy workflow passes the latest published git tag here so /health
-# reflects the actual deployed release. Falls back to package.json when
-# unset (local builds, CI smoke builds, etc.).
+# Pass VERSION to identify a self-hosted build in /health.
+# Falls back to package.json when unset.
 ARG VERSION
 
 FROM node:${NODE_VERSION}-bookworm-slim AS build
@@ -23,7 +22,8 @@ FROM node:${NODE_VERSION}-bookworm-slim
 
 ENV NODE_ENV=production
 ENV TRANSPORT=http
-# Cloud Run injects PORT=8080, so the image uses the same container default.
+# Listen on the container interface; the host controls the published bind address.
+ENV HOST=0.0.0.0
 ENV PORT=8080
 
 WORKDIR /app

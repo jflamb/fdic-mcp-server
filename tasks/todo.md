@@ -610,3 +610,29 @@ Reference: 2026-04-29 request to make production of a 3-5 page QBP Lite report m
 - [x] Refreshed `extensions/shared/tool-schemas.json` and documented the new tool in `docs/tool-reference.md`.
 - [x] Branch: `codex/qbp-lite-data-tool`
 - [x] Local commit created with message `feat: add QBP Lite data bundle tool`.
+
+
+# Retire Public Hosting (#230)
+
+## Scope and acceptance criteria
+
+Keep npm distribution, local stdio, self-hosted HTTP MCP, tools, resources, prompts, and GitHub Pages documentation. Retire the operated Cloud Run endpoint and live website chatbot. Protocol/SDK migration remains separate. Preserve unrelated work in the original checkout and historical plans/releases.
+
+- [x] Inspect current main and isolate work in `codex/retire-public-hosting`.
+- [x] Confirm the Cloud Run service and exact domain mapping.
+- [x] Remove chatbot wiring/assets/dependencies and dedicated browser tests; preserve shared MCP throttling.
+- [x] Replace hosted onboarding, registry remote, and plugin URL with local/self-hosted paths.
+- [x] Remove Cloud Run deployment; preserve Pages and release publishing.
+- [x] Validate types, tests, build, extensions, package contents, and rendered documentation.
+- [ ] Open PR, pass CI, merge, and verify published package/docs.
+- [ ] Retire dedicated live service/domain after publication and verify absence.
+
+## Infrastructure boundary and rollback
+
+The confirmed service is `fdic-mcp-server` in project `fdic-mcp-prod`, region `us-central1`; `bankfind.jflamb.com` maps to it. The project contains unrelated secrets, so do not delete the project, shared identities, or secrets. Preserve a private service/domain export and existing image for rollback. Do not publish credentials. Remove only the named service and exact domain/DNS record after the client migration is published.
+
+## Validation and results
+
+Local validation passed: `npm run typecheck`, `npm test` (45 files, 558 tests), `npm run build`, `npm run extensions:validate`, and `npm run pack:check`. A built stdio client listed 29 tools and returned CERT 3511 from FDIC. Jekyll build and Pagefind indexing passed using a task-local bundle, six rendered entry pages contain no retired endpoint/chat loader, and browser inspection confirmed navigation and layout. Deployment verification and infrastructure shutdown remain pending.
+
+Removing the chatbot-only Playwright job removes a browser installation and test job from relevant PRs. Existing Node 20/22 validation, Docker builds, actionlint, commitlint, Pages, and release workflows remain. Cloud Run container build/deploy and its live smoke checks are retired, with local HTTP regression coverage retained.

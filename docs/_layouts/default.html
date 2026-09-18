@@ -5,19 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
     <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
-    <meta property="og:image" content="{{ '/assets/images/social-card.png' | relative_url }}">
-    <meta name="twitter:image" content="{{ '/assets/images/social-card.png' | relative_url }}">
     <link rel="stylesheet" href="{{ '/assets/css/docs.css' | relative_url }}">
     <script>
       (function(){var t=localStorage.getItem("theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t;})();
     </script>
     <script defer src="{{ '/assets/js/docs.js' | relative_url }}"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded",function(){if(document.body.dataset.chatEndpoint){var s=document.createElement("script");s.src="{{ '/assets/js/chatbot.js' | relative_url }}";document.head.appendChild(s);}});
-    </script>
     {% seo %}
   </head>
-  <body class="{% if page.body_class %}{{ page.body_class }}{% endif %}" data-pagefind-script="{{ '/pagefind/pagefind.js' | relative_url }}" data-chat-endpoint="https://bankfind.jflamb.com/chat" data-chat-prompting-guide-url="{{ '/prompting-guide/' | relative_url }}">
+  <body class="{% if page.body_class %}{{ page.body_class }}{% endif %}" data-pagefind-script="{{ '/pagefind/pagefind.js' | relative_url }}">
     <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="site-shell">
       <header class="site-header">

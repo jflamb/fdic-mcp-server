@@ -14,7 +14,7 @@ Get the server running in your MCP host, then use the troubleshooting guide if a
   <a class="card" href="{{ '/getting-started/' | relative_url }}">
     <span class="card__eyebrow">Start Here</span>
     <h3>Getting Started</h3>
-    <p>Start with a hosted MCP URL when your host supports it, or use the local install path when it does not.</p>
+    <p>Install the server locally, or configure your own HTTP deployment for remote clients.</p>
   </a>
   <a class="card" href="{{ '/clients/' | relative_url }}">
     <span class="card__eyebrow">Connect</span>
@@ -29,12 +29,6 @@ Get the server running in your MCP host, then use the troubleshooting guide if a
 </div>
 
 <section class="doc-callout doc-callout--hero">
-  <p class="doc-callout__eyebrow">Try It</p>
-  <h2>Test the server from the docs</h2>
-  <p>
-    Use the floating chat button in the lower-right corner or press <code>?</code> to open the hosted demo assistant without leaving this page.
-  </p>
-  <p>
-    <button type="button" class="chatbot-inline-open" data-chatbot-open>Open The Chat Launcher</button>
-  </p>
+  <h2>Try a prompt in your MCP client</h2>
+  <p>Connect a local or self-hosted server, then use the <a href="{{ '/prompting-guide/' | relative_url }}">Prompting Guide</a>. The live website chatbot is retired.</p>
 </section>

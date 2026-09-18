@@ -2,7 +2,7 @@
 title: Terms of Service
 nav_group: project
 kicker: Project Info
-summary: The basic rules for using the hosted app, public docs, and related services from this repository.
+summary: Terms for the documentation and prior project-operated services; self-hosted operators supply their own terms.
 breadcrumbs:
   - title: Overview
     url: /
@@ -10,9 +10,11 @@ breadcrumbs:
     url: /project-information/
 ---
 
-These terms apply to the public documentation site, any hosted BankFind MCP Server instance operated from this repository, and the related ChatGPT app listing.
+These terms apply to the public documentation site, project-operated services before retirement.
 
-Effective date: 2026-03-30
+Effective date: 2026-09-18
+
+The project-operated public MCP endpoint and website chatbot are retired. This documentation site does not provide a live chat service. Self-hosted operators are responsible for their own deployment policies. Historical service-data provisions below remain applicable to records from before retirement.
 
 ## Independent Project Notice
 

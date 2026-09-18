@@ -42,7 +42,7 @@ Repo reference docs:
 - [Technical specification](./reference/specification.md)
 - [Architecture](./reference/architecture.md)
 - [Key decisions](./reference/decisions.md)
-- [Cloud Run deployment](./reference/cloud-run-deployment.md)
+- [Self-hosted HTTP deployment](./reference/self-hosting.md)
 - [Plans and design notes](./reference/plans/README.md)
 
 Project and release info:
@@ -89,13 +89,9 @@ npm run build
 
 ## Usage
 
-### Hosted Endpoint
+### Hosting
 
-If your MCP host supports remote MCP URLs, use:
-
-```text
-https://bankfind.jflamb.com/mcp
-```
+The project-operated public endpoint and website chatbot are retired. Install the server locally or operate your own HTTP deployment. GitHub Pages remains the documentation site. Remote-only clients require a reachable HTTPS endpoint supplied by you or your operator.
 
 ### Run Locally
 
@@ -119,7 +115,7 @@ Notes:
 - Browser-origin requests are checked against `ALLOWED_ORIGINS`. If unset, the server allows the local defaults for `localhost` and `127.0.0.1` on the configured port, plus non-browser requests with no `Origin` header.
 - The HTTP transport is session-based. Clients initialize once, then reuse `MCP-Session-Id` on later POST, GET, and DELETE requests.
 
-Container builds use `PORT=8080` by default for Cloud Run compatibility.
+Container builds use `PORT=8080` by default for self-hosted containers.
 
 Set `FDIC_MAX_RESPONSE_BYTES` to override the upstream FDIC response-size guard. The default is `5242880` bytes (5 MiB).
 
