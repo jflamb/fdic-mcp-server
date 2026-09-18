@@ -1,13 +1,11 @@
-import { randomUUID } from "node:crypto";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import { hostHeaderValidation, toNodeHandler } from "@modelcontextprotocol/node";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import express from "express";
 import type { Express } from "express";
 
 import { VERSION } from "./constants.js";
-import { ConcurrentLimiter, RateLimiter } from "./chatRateLimit.js";
+import { RateLimiter } from "./chatRateLimit.js";
 import {
   getRequestIp,
   isBlockedIp,
@@ -152,9 +150,9 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
 }
 
 async function runStdio(): Promise<void> {
-  const server = createServer();
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  serveStdio(() => createServer(), {
+    onerror: (error) => console.error("MCP stdio error:", error),
+  });
   console.error("FDIC BankFind MCP server running on stdio");
 }
 
@@ -195,35 +193,20 @@ export function parseAllowedOrigins(
 interface HttpAppOptions {
   port?: number;
   allowedOrigins?: string[];
-  sessionIdleTimeoutMs?: number;
-  sessionSweepIntervalMs?: number;
+  allowedHosts?: string[];
   mcpRateLimiter?: RateLimiter;
-  mcpStreamRateLimiter?: RateLimiter;
-  mcpStreamConcurrentLimiter?: ConcurrentLimiter;
   mcpBlockedIpRules?: IpBlockRule[];
   serverFactory?: () => McpServer;
-  /**
-   * When true, run the streamable HTTP transport in stateless JSON mode (no
-   * session map, no idle sweep). Recommended for multi-tenant remote
-   * deployments. Default false to preserve backward compatibility with the
-   * session-based contract that existing clients and tests depend on.
-   */
-  stateless?: boolean;
 }
 
-interface SessionContext {
-  server: McpServer;
-  transport: StreamableHTTPServerTransport;
-  lastActivityAt: number;
-}
-
-const DEFAULT_SESSION_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
-const DEFAULT_SESSION_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
 const DEFAULT_MCP_RATE_LIMIT_MAX_REQUESTS = 120;
 const DEFAULT_MCP_RATE_LIMIT_WINDOW_MS = 60_000;
-const DEFAULT_MCP_STREAM_RATE_LIMIT_MAX_REQUESTS = 2;
-const DEFAULT_MCP_STREAM_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const DEFAULT_MCP_MAX_CONCURRENT_STREAMS_PER_IP = 1;
+
+export function parseAllowedHosts(rawHosts: string | undefined): string[] {
+  return rawHosts === undefined
+    ? ["localhost", "127.0.0.1", "[::1]"]
+    : rawHosts.split(",").map((host) => host.trim()).filter(Boolean);
+}
 
 function parsePositiveInteger(
   rawValue: string | undefined,
@@ -240,53 +223,6 @@ function parsePositiveInteger(
   }
 
   return value;
-}
-
-async function closeSession(
-  sessions: Map<string, SessionContext>,
-  sessionId: string,
-): Promise<void> {
-  const session = sessions.get(sessionId);
-  if (!session) {
-    return;
-  }
-
-  sessions.delete(sessionId);
-  await session.server.close().catch(() => {});
-  await session.transport.close().catch(() => {});
-}
-
-function touchSession(session: SessionContext, now: number): void {
-  session.lastActivityAt = now;
-}
-
-async function sweepIdleSessions(
-  sessions: Map<string, SessionContext>,
-  idleTimeoutMs: number,
-  now: number,
-): Promise<void> {
-  const expiredSessionIds: string[] = [];
-
-  for (const [sessionId, session] of sessions.entries()) {
-    if (now - session.lastActivityAt >= idleTimeoutMs) {
-      expiredSessionIds.push(sessionId);
-    }
-  }
-
-  await Promise.all(
-    expiredSessionIds.map((sessionId) => closeSession(sessions, sessionId)),
-  );
-}
-
-function sendInvalidSessionResponse(res: express.Response): void {
-  res.status(400).json({
-    jsonrpc: "2.0",
-    error: {
-      code: -32000,
-      message: "Bad Request: No valid session ID provided",
-    },
-    id: null,
-  });
 }
 
 function sendMcpRateLimitResponse(
@@ -319,198 +255,49 @@ export function createApp(options: HttpAppOptions = {}): Express {
   const app = express();
   const serverFactory = options.serverFactory ?? (() => createServer());
   const port = options.port ?? 3000;
-  const allowedOrigins =
-    options.allowedOrigins ?? parseAllowedOrigins(undefined, port);
-  const sessions = new Map<string, SessionContext>();
-  const sessionIdleTimeoutMs =
-    options.sessionIdleTimeoutMs ?? DEFAULT_SESSION_IDLE_TIMEOUT_MS;
-  const sessionSweepIntervalMs =
-    options.sessionSweepIntervalMs ?? DEFAULT_SESSION_SWEEP_INTERVAL_MS;
-  const stateless =
-    options.stateless ?? process.env.FDIC_MCP_STATELESS_HTTP === "true";
-  const mcpRateLimiter =
-    options.mcpRateLimiter ??
-    new RateLimiter({
-      maxRequests: parsePositiveInteger(
-        process.env.MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE,
-        DEFAULT_MCP_RATE_LIMIT_MAX_REQUESTS,
-        "MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE",
-      ),
-      windowMs: DEFAULT_MCP_RATE_LIMIT_WINDOW_MS,
-    });
-  const mcpStreamRateLimiter =
-    options.mcpStreamRateLimiter ??
-    new RateLimiter({
-      maxRequests: parsePositiveInteger(
-        process.env.MCP_STREAM_RATE_LIMIT_MAX_REQUESTS_PER_HOUR,
-        DEFAULT_MCP_STREAM_RATE_LIMIT_MAX_REQUESTS,
-        "MCP_STREAM_RATE_LIMIT_MAX_REQUESTS_PER_HOUR",
-      ),
-      windowMs: DEFAULT_MCP_STREAM_RATE_LIMIT_WINDOW_MS,
-    });
-  const mcpStreamConcurrentLimiter =
-    options.mcpStreamConcurrentLimiter ??
-    new ConcurrentLimiter(
-      parsePositiveInteger(
-        process.env.MCP_MAX_CONCURRENT_STREAMS_PER_IP,
-        DEFAULT_MCP_MAX_CONCURRENT_STREAMS_PER_IP,
-        "MCP_MAX_CONCURRENT_STREAMS_PER_IP",
-      ),
-    );
-  const mcpBlockedIpRules =
-    options.mcpBlockedIpRules ?? parseBlockedIpRules(process.env.MCP_BLOCKED_IPS);
-  app.use(express.json());
-
-  if (!stateless) {
-    const sessionSweepTimer = setInterval(() => {
-      void sweepIdleSessions(sessions, sessionIdleTimeoutMs, Date.now());
-    }, sessionSweepIntervalMs);
-    sessionSweepTimer.unref?.();
-  }
+  const allowedOrigins = options.allowedOrigins ?? parseAllowedOrigins(undefined, port);
+  const validateHost = hostHeaderValidation(
+    options.allowedHosts ?? parseAllowedHosts(process.env.ALLOWED_HOSTS),
+  );
+  const mcpRateLimiter = options.mcpRateLimiter ?? new RateLimiter({
+    maxRequests: parsePositiveInteger(
+      process.env.MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE,
+      DEFAULT_MCP_RATE_LIMIT_MAX_REQUESTS,
+      "MCP_RATE_LIMIT_MAX_REQUESTS_PER_MINUTE",
+    ),
+    windowMs: DEFAULT_MCP_RATE_LIMIT_WINDOW_MS,
+  });
+  const mcpBlockedIpRules = options.mcpBlockedIpRules ?? parseBlockedIpRules(process.env.MCP_BLOCKED_IPS);
+  const handler = toNodeHandler(createMcpHandler(serverFactory), {
+    onerror: (error) => console.error("MCP request error:", error),
+  });
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", server: "fdic-mcp-server", version: VERSION });
   });
 
-  app.all("/mcp", async (req, res) => {
+  app.all("/mcp", (req, res, next) => {
+    if (!validateHost(req, res)) return;
+    const origin = req.headers.origin;
+    if (origin !== undefined && !allowedOrigins.includes(origin)) {
+      res.status(403).json({
+        jsonrpc: "2.0", error: { code: -32000, message: "Forbidden Origin." }, id: null,
+      });
+      return;
+    }
     const requestIp = getRequestIp(req);
     if (isBlockedIp(requestIp, mcpBlockedIpRules)) {
       sendMcpBlockedIpResponse(res);
       return;
     }
-
     if (!mcpRateLimiter.check(requestIp)) {
-      sendMcpRateLimitResponse(
-        res,
-        Math.ceil(DEFAULT_MCP_RATE_LIMIT_WINDOW_MS / 1000),
-      );
+      sendMcpRateLimitResponse(res, Math.ceil(DEFAULT_MCP_RATE_LIMIT_WINDOW_MS / 1000));
       return;
     }
-
-    if (req.method === "GET") {
-      const releaseStream = mcpStreamConcurrentLimiter.acquire(requestIp);
-      if (!releaseStream) {
-        sendMcpRateLimitResponse(res, 60);
-        return;
-      }
-
-      if (!mcpStreamRateLimiter.check(requestIp)) {
-        releaseStream();
-        sendMcpRateLimitResponse(
-          res,
-          Math.ceil(DEFAULT_MCP_STREAM_RATE_LIMIT_WINDOW_MS / 1000),
-        );
-        return;
-      }
-
-      res.once("close", releaseStream);
-      res.once("finish", releaseStream);
-    }
-
-    if (stateless) {
-      let server: McpServer | undefined;
-      let transport: StreamableHTTPServerTransport | undefined;
-      try {
-        server = serverFactory();
-        transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: undefined,
-          enableJsonResponse: true,
-          enableDnsRebindingProtection: true,
-          allowedOrigins,
-        });
-        res.on("close", () => {
-          void transport?.close().catch(() => {});
-          void server?.close().catch(() => {});
-        });
-        await server.connect(transport);
-        await transport.handleRequest(req, res, req.body);
-      } catch (error: unknown) {
-        console.error("MCP request error:", error);
-        if (!res.headersSent) {
-          res.status(500).json({
-            jsonrpc: "2.0",
-            error: { code: -32603, message: "Internal server error" },
-            id: null,
-          });
-        }
-        await transport?.close().catch(() => {});
-        await server?.close().catch(() => {});
-      }
-      return;
-    }
-
-    const sessionIdHeader = req.headers["mcp-session-id"];
-    const sessionId =
-      typeof sessionIdHeader === "string" ? sessionIdHeader : undefined;
-
-    try {
-      if (sessionId) {
-        const session = sessions.get(sessionId);
-        if (!session) {
-          res.status(404).json({
-            jsonrpc: "2.0",
-            error: {
-              code: -32001,
-              message: "Session not found",
-            },
-            id: null,
-          });
-          return;
-        }
-
-        touchSession(session, Date.now());
-        await session.transport.handleRequest(req, res, req.body);
-        if (req.method === "DELETE") {
-          await closeSession(sessions, sessionId);
-        }
-        return;
-      }
-
-      if (req.method !== "POST" || !isInitializeRequest(req.body)) {
-        sendInvalidSessionResponse(res);
-        return;
-      }
-
-      const server = serverFactory();
-      const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: () => randomUUID(),
-        enableJsonResponse: true,
-        enableDnsRebindingProtection: true,
-        allowedOrigins,
-        onsessioninitialized: (newSessionId) => {
-          sessions.set(newSessionId, {
-            server,
-            transport,
-            lastActivityAt: Date.now(),
-          });
-        },
-      });
-
-      transport.onclose = () => {
-        if (transport.sessionId) {
-          sessions.delete(transport.sessionId);
-        }
-      };
-
-      await server.connect(transport);
-      await transport.handleRequest(req, res, req.body);
-    } catch (error: unknown) {
-      console.error("MCP request error:", error);
-      if (!res.headersSent) {
-        res.status(500).json({
-          jsonrpc: "2.0",
-          error: {
-            code: -32603,
-            message: "Internal server error",
-          },
-          id: null,
-        });
-      }
-
-      if (sessionId) {
-        await closeSession(sessions, sessionId);
-      }
-    }
+    next();
+  }, express.json({ limit: "100kb" }), async (req, res) => {
+    // Express has consumed the body; pass it explicitly to the SDK adapter.
+    await handler(req, res, req.body);
   });
 
   return app;

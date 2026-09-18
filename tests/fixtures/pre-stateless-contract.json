@@ -1,0 +1,53 @@
+{
+  "source": "v2.0.0 / ca8c9644037d3aa619ef0af280fc79f7253acc6b (SDK v1 contract)",
+  "tools": {
+    "fdic_search_institutions": "10f92f85ba679a9cb53d2e81df011327aa7f4627e9b42b8cecd0d935e5450a06",
+    "fdic_get_institution": "8f30a70c1d54bb2f2650422f1ff052b6052da067760cc813c739a62ca9930dd4",
+    "fdic_search_failures": "91d57bb2854e4fa72eb9a61a0171782c08e1196ac280f2b908860f517104fa6a",
+    "fdic_get_institution_failure": "e5c0d1b6c0fc9f02f0fc8b1a3356610c9ec4219f7cd1f106dd4723a783df09fc",
+    "fdic_search_locations": "d324f3503f6f0534f3131ddafbf37d52c5cc269630b2d0b3f315a35833325b45",
+    "fdic_search_history": "3ae6f38ab6961de3056b04699224cdcf7d3c0d55d28ddbc2a83eb1996144574e",
+    "fdic_search_financials": "a0bf4836fcd101fd478f0a61af34917dffc3923e7a5c7e869b026377e26a59cf",
+    "fdic_search_summary": "a216e93c305aa8b9bfd2f54f827d5e111552b138540736004360c1fb81a70b34",
+    "fdic_search_sod": "5010d849fa2e7fad785d9223bf2b546bd5cf23463ca9aed6bf23e0f93526aa1f",
+    "fdic_search_demographics": "f0877c01df1bd38353854574dd3650cdf94e965ec6921b8bac0d0ee51b81b90a",
+    "fdic_compare_bank_snapshots": "8fcf9b5b50c0e9faf0b72fdd6b848ba3635cd2d8c4aa276c0a6a9bfb286dc10c",
+    "fdic_peer_group_analysis": "39205db82b64420ec1448178fe8a3c60955a950073603e8ed52424330d9c542f",
+    "fdic_analyze_bank_health": "7e3eca4266bf5f5ae5e89b8b6e808314077c69597df08bec82ccada7382814a9",
+    "fdic_compare_peer_health": "5fa8336ef09b75f06ae121a07d035e4b3f5874519aedacbe08bc38c9470b8c50",
+    "fdic_detect_risk_signals": "1024596b49f37f5327657a078dcda4cc94661d98a82527b7a7b6f86b4eee7579",
+    "fdic_analyze_credit_concentration": "cc399c0ce7ab207a0fc6dd03b3cd601d9b087e4f133d458b5a20fbe805ac3688",
+    "fdic_analyze_funding_profile": "e88abd0e994d5028f3480d9d1d934af618d04b7a5c230cf14ee47f2539bc7dd9",
+    "fdic_analyze_securities_portfolio": "38256bc5de516acf197342fe8efddc2b2183ac058e20a77333efba0294bed799",
+    "fdic_ubpr_analysis": "10dac4d58250e4ed466b85254ad1f0f1cd74b4365e3942e30e964f097945dfa0",
+    "fdic_market_share_analysis": "f34f37d2ba5106e4682c2f67bfb430e21178ba36885a961f333faddc454c0788",
+    "fdic_franchise_footprint": "49d1f1e9c546229f8c454722a8d7a90040bf0d5d20943cace3cbb70c2838f0d6",
+    "fdic_holding_company_profile": "d781063056225e857b24ba790676f0542fe2db42e860922cf018bbd0e12762e6",
+    "fdic_regional_context": "f8b71134a5c664b2a82214a5617428e11a4db855b914016dd73ac6d647934045",
+    "fdic_qbp_lite_data": "2f0daf359a24a7f2ac7a3b9b2d50291e4f26cca5d2ae4de19452f9d5a718d93a",
+    "search": "ca75d49cfe48f65ec93849ef93a1121d2c033745b4269d241789553470066ab0",
+    "fetch": "a37417f1bb30312d3b71b38222cad8bcc0810c9131cda3d052c42ae097abd467",
+    "fdic_search": "43283ef784ffa55a2908c3ee9c7ea878c5624d83850df47912c5fa95802c90f6",
+    "fdic_fetch": "13d63953bdafa12b9e9a797806a90e6aa7ff6ae0bc9ab9481c12dfaf4dd82e6d",
+    "fdic_show_bank_deep_dive": "a153e747bf04342c9bc3c5c67d59170bb9c65b9f5d5890b8767c9bca042fbb7e"
+  },
+  "resources": {
+    "fdic-bank-deep-dive-widget": "c6ce43132244b84dfaf2843554d56d843e3f1ceed95b2838b52028bc7e7639c7",
+    "fdic-schema-index": "9dd8660cb17aa7c6e4884cae47584819171ca327d736177306ef6e7510c82cdf",
+    "fdic-schema-demographics": "59863fc2cb4983d3ea10d11f78f572a6413389a234a0c4102a6cad0ee7672ad3",
+    "fdic-schema-failures": "d72a3c81fdef799b2c51e2671f1f4d6b9015793016c2936f3dd3682957739f01",
+    "fdic-schema-financials": "4dde7d1db889476e7030115558a68edf51480d49a9ec32d72adc875d587b6ff5",
+    "fdic-schema-history": "bf0c05d4c24a20d49b72de9ae4607a80480d207224a5545b406074d33ef1dcc0",
+    "fdic-schema-institutions": "acc5c3bd14d4eb400a8d0048450cb7af5df9801ecaf0df91cb2f214476e2a6f6",
+    "fdic-schema-locations": "22d758d6acf55d98eef178224c6d4f803eed602a6d7ae208ae1326a6b2e97e4b",
+    "fdic-schema-sod": "799161974e33a4bc13c6b45d63bff4ed316f8d83b0cdb3b190bc884dbab66d13",
+    "fdic-schema-summary": "89d481c297b515f7ee82c6a0450e635ef7dd7872d5513632be1a0e9778162bfd"
+  },
+  "templates": {},
+  "prompts": {
+    "bank_deep_dive": "02427f42e5569bd3675ce448ea1358bbf9d02e5c43b5037a3ba7fcf7c9aedd71",
+    "failure_forensics": "e56f75661f571cddb1123d47ccdc077ab7b61bb7d9dc3785b30c4d19739f3c0d",
+    "portfolio_surveillance": "2952783ca3e769948d6f1629da3d2c1506449452eb4b107bb20ddc02efb68f89",
+    "examiner_overlay": "4f43ab11c0254cc0d2b55a7669c196bc313e2af05fd7caecb0da080bbca39326"
+  }
+}

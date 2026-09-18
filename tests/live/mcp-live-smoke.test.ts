@@ -27,63 +27,59 @@ const STABLE_REPDTE = "20231231"; // Q4 2023 — fully published
 
 const app = createApp();
 const mcpAcceptHeader = "application/json, text/event-stream";
-const defaultProtocolVersion = "2025-03-26";
+const protocolVersion = "2026-07-28";
+let nextId = 1;
 
-/**
- * Initialize an MCP session and return a helper for calling tools.
- */
-async function initSession() {
-  const initRes = await request(app)
+/** Send an independent modern request, without initialization or session state. */
+async function mcpRequest(method: string, params: Record<string, unknown> = {}) {
+  const id = nextId++;
+  const pending = request(app)
     .post("/mcp")
     .set("content-type", "application/json")
     .set("accept", mcpAcceptHeader)
-    .send({
-      jsonrpc: "2.0",
-      id: 0,
-      method: "initialize",
-      params: {
-        protocolVersion: defaultProtocolVersion,
-        capabilities: {},
-        clientInfo: { name: "live-smoke-test", version: "1.0.0" },
+    .set("MCP-Protocol-Version", protocolVersion)
+    .set("Mcp-Method", method);
+  if (typeof params.name === "string") pending.set("Mcp-Name", params.name);
+
+  const res = await pending.send({
+    jsonrpc: "2.0",
+    id,
+    method,
+    params: {
+      ...params,
+      _meta: {
+        "io.modelcontextprotocol/protocolVersion": protocolVersion,
+        "io.modelcontextprotocol/clientInfo": {
+          name: "live-smoke-test",
+          version: "1.0.0",
+        },
+        "io.modelcontextprotocol/clientCapabilities": {},
       },
-    });
+    },
+  });
 
-  expect(initRes.status).toBe(200);
-  const sessionId = initRes.headers["mcp-session-id"];
-  expect(sessionId).toBeTruthy();
+  expect(res.status).toBe(200);
+  expect(res.headers["mcp-session-id"]).toBeUndefined();
+  // Progress, when requested, shares the POST response with its terminal result.
+  const messages = res.headers["content-type"]?.includes("text/event-stream")
+    ? res.text.split(/\r?\n\r?\n/).flatMap((event) => {
+        const data = event.split(/\r?\n/)
+          .filter((line) => line.startsWith("data:"))
+          .map((line) => line.slice(5).trimStart()).join("\n");
+        return data ? [JSON.parse(data)] : [];
+      })
+    : [res.body];
+  const body = messages.find((message) => message.id === id);
+  expect(body).toBeDefined();
+  expect(body.jsonrpc).toBe("2.0");
+  expect(body.error).toBeUndefined();
+  expect(body.result).toBeDefined();
+  expect(body.result.resultType).toBe("complete");
+  return body.result;
+}
 
-  // Send initialized notification
-  await request(app)
-    .post("/mcp")
-    .set("content-type", "application/json")
-    .set("accept", mcpAcceptHeader)
-    .set("mcp-session-id", sessionId)
-    .send({ jsonrpc: "2.0", method: "notifications/initialized" });
-
-  let nextId = 1;
-
-  async function callTool(name: string, args: Record<string, unknown>) {
-    const res = await request(app)
-      .post("/mcp")
-      .set("content-type", "application/json")
-      .set("accept", mcpAcceptHeader)
-      .set("mcp-session-id", sessionId)
-      .send({
-        jsonrpc: "2.0",
-        id: nextId++,
-        method: "tools/call",
-        params: { name, arguments: args },
-      });
-
-    expect(res.status).toBe(200);
-    const body = res.body;
-    expect(body.jsonrpc).toBe("2.0");
-    expect(body.error).toBeUndefined();
-    expect(body.result).toBeDefined();
-    return body.result;
-  }
-
-  return { sessionId, callTool };
+function callTool(name: string, args: Record<string, unknown>) {
+  return mcpRequest("tools/call", { name, arguments: args });
 }
 
 describe("Live FDIC API smoke tests", () => {
@@ -94,8 +90,6 @@ describe("Live FDIC API smoke tests", () => {
     it(
       "fdic_search_institutions returns records with expected fields",
       async () => {
-        const { callTool } = await initSession();
-
         const result = await callTool("fdic_search_institutions", {
           filters: `CERT:${BANK_OF_AMERICA_CERT}`,
           limit: 1,
@@ -135,8 +129,6 @@ describe("Live FDIC API smoke tests", () => {
     it(
       "fdic_get_institution returns a single institution profile",
       async () => {
-        const { callTool } = await initSession();
-
         const result = await callTool("fdic_get_institution", {
           cert: BANK_OF_AMERICA_CERT,
         });
@@ -157,8 +149,6 @@ describe("Live FDIC API smoke tests", () => {
     it(
       "fdic_search_financials returns records for a known institution and date",
       async () => {
-        const { callTool } = await initSession();
-
         const result = await callTool("fdic_search_financials", {
           cert: BANK_OF_AMERICA_CERT,
           repdte: STABLE_REPDTE,
@@ -185,8 +175,6 @@ describe("Live FDIC API smoke tests", () => {
     it(
       "fdic_search_summary returns annual aggregate records",
       async () => {
-        const { callTool } = await initSession();
-
         // Summary is aggregate (not per-institution); filter by year only
         const result = await callTool("fdic_search_summary", {
           year: 2023,
@@ -211,8 +199,6 @@ describe("Live FDIC API smoke tests", () => {
     it(
       "fdic_search_demographics returns records with office data",
       async () => {
-        const { callTool } = await initSession();
-
         const result = await callTool("fdic_search_demographics", {
           cert: BANK_OF_AMERICA_CERT,
           repdte: STABLE_REPDTE,
@@ -236,8 +222,6 @@ describe("Live FDIC API smoke tests", () => {
     it(
       "fdic_analyze_bank_health returns a structured health assessment",
       async () => {
-        const { callTool } = await initSession();
-
         const result = await callTool("fdic_analyze_bank_health", {
           cert: BANK_OF_AMERICA_CERT,
           quarters: 4,
@@ -270,39 +254,9 @@ describe("Live FDIC API smoke tests", () => {
     it(
       "tools/list includes expected tool names",
       async () => {
-        const initRes = await request(app)
-          .post("/mcp")
-          .set("content-type", "application/json")
-          .set("accept", mcpAcceptHeader)
-          .send({
-            jsonrpc: "2.0",
-            id: 0,
-            method: "initialize",
-            params: {
-              protocolVersion: defaultProtocolVersion,
-              capabilities: {},
-              clientInfo: { name: "live-smoke-test", version: "1.0.0" },
-            },
-          });
-
-        const sessionId = initRes.headers["mcp-session-id"];
-
-        await request(app)
-          .post("/mcp")
-          .set("content-type", "application/json")
-          .set("accept", mcpAcceptHeader)
-          .set("mcp-session-id", sessionId)
-          .send({ jsonrpc: "2.0", method: "notifications/initialized" });
-
-        const res = await request(app)
-          .post("/mcp")
-          .set("content-type", "application/json")
-          .set("accept", mcpAcceptHeader)
-          .set("mcp-session-id", sessionId)
-          .send({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
-
-        expect(res.status).toBe(200);
-        const tools = res.body.result.tools;
+        const discovery = await mcpRequest("server/discover");
+        expect(discovery.capabilities.tools).toBeDefined();
+        const { tools } = await mcpRequest("tools/list");
         expect(Array.isArray(tools)).toBe(true);
 
         const toolNames = tools.map((t: { name: string }) => t.name);
