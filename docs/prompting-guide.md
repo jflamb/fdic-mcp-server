@@ -143,7 +143,7 @@ Build a peer group for CERT 29846, then compare the bank to peer medians on ROA,
 ```
 
 ```text
-Which bank failures since 2008 had the highest losses? For the top 3, show their pre-failure financials and risk signals.
+Which bank failures since 2008 had the highest estimated DIF costs? Sort failures by `COST` descending. For the top 3, show their pre-failure financials and risk signals.
 ```
 
 For structured multi-tool workflows without manual orchestration, consider the [Claude Code skills]({{ '/skills/' | relative_url }}).

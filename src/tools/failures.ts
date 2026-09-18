@@ -23,7 +23,7 @@ export function registerFailureTools(server: McpServer): void {
     {
       title: "Search Bank Failures",
       description:
-        "Use this when the user wants details on failed FDIC-insured institutions filtered by name, state, date range, resolution type, or cost. Returns failure records with pagination; see fdic://schemas/failures for the full field catalog.",
+        "Use this when the user wants details on failed FDIC-insured institutions filtered by name, state, date range, resolution type, estimated loss, or DIF cost. The failures field for estimated loss (DIF cost) is COST; for highest-cost failures use sort_by: COST and sort_order: DESC. Do not use ESTIMATED_LOSS. Returns failure records with pagination; see fdic://schemas/failures for the full field catalog.",
       inputSchema: CommonQuerySchema.meta({ additionalProperties: false }),
       outputSchema: FdicFailuresSearchOutputSchema,
       annotations: {
@@ -74,7 +74,7 @@ export function registerFailureTools(server: McpServer): void {
     {
       title: "Get Failure Details by Certificate Number",
       description:
-        "Use this when the user knows the CERT of a failed institution and needs its specific failure record. Returns failure details (date, resolution type, cost, acquirer); responds with `found: false` if the institution did not fail.",
+        "Use this when the user knows the CERT of a failed institution and needs its specific failure record. Returns failure details (date, resolution type, estimated DIF cost in the COST field, acquirer); responds with `found: false` if the institution did not fail.",
       inputSchema: CertSchema.meta({ additionalProperties: false }),
       outputSchema: FdicFailureLookupOutputSchema,
       annotations: {

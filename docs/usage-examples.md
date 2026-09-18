@@ -243,7 +243,7 @@ Scan all active banks in Wyoming for risk signals. For any bank with critical si
 ### Failure analysis (manual multi-tool approach)
 
 ```text
-Which bank failures since 2008 had the highest estimated losses? For the top 3, show their quarterly financials from the year before they failed and identify which risk signals were present.
+Which bank failures since 2008 had the highest estimated DIF costs? Sort failures by `COST` descending. For the top 3, show their quarterly financials from the year before they failed and identify which risk signals were present.
 ```
 
 For a more structured failure analysis workflow, use the [Failure Forensics]({{ '/skills/failure-forensics/' | relative_url }}) skill in Claude Code.
