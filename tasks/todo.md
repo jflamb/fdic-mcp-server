@@ -680,3 +680,18 @@ One PR with logical commits for SDK adaptation, transport/compatibility, and rel
 Local validation passed: typecheck; 589 tests across 47 files; build; extension validation; package dry-run; diff whitespace checks. Modern and legacy stdio fingerprint tests preserve all 29 tool, resource, template, and prompt contracts after normalizing documented SDK/Zod representation changes. An isolated installed npm archive completed real FDIC institution calls over pinned-modern stdio and HTTP and interoperated with an actual SDK v1 client. HTTP tests cover request independence across app instances, protocol/header mismatch, origin/host/IP/rate/payload rejection, and concurrent POST progress isolation. Independent code review reported no actionable defects. Generated adapter freshness requires committing regenerated metadata before the full suite; the final suite passed.
 
 PR CI, merge, and release readback remain to be recorded in issue #234. No CI jobs or matrices were added. Existing Node 20/22 validation and Docker builds remain. The migration removes session maps/sweeps and delegates per-request lifecycle to the SDK; failures are isolated to their request and installation rollback is a package-version pin.
+
+# Clarify failure cost guidance (#236)
+
+Carry forward only the useful pre-migration edits: identify COST as estimated DIF cost in both failure tools, specify descending sorting, and correct the two docs examples. Preserve names, schemas, and execution behavior. Remove obsolete local chatbot/config edits and the clean nested worktree after an external recovery archive.
+
+- [x] Verify current main, original edits, metadata field definition, and nested worktree state.
+- [x] Archive original edits and Git history outside the repo; clean obsolete local state.
+- [x] Apply tool/docs clarification and client-visible discovery regression coverage.
+- [x] Regenerate derived tool metadata and approve only the two description fingerprint changes.
+- [x] Run typecheck, full tests, build, extension validation, and package check.
+- [ ] Open PR, pass checks, merge, verify package/registry/Pages publication, and leave clean main.
+
+## Review and results
+
+No runtime logic, dependencies, tool schemas, or CI workflow changes. Expected release impact: patch. Local validation passed: typecheck, 590 tests across 47 files, build, extensions:validate, pack:check, and git diff --check. Only the two intentional failure-description fingerprints changed; tool schemas remain unchanged. Release readbacks will be recorded on issue #236.

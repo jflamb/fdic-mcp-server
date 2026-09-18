@@ -1537,6 +1537,18 @@ describe("HTTP MCP server", () => {
     );
   });
 
+  it("exposes the failure cost field and descending ranking guidance to clients", async () => {
+    const response = await mcpPost({ jsonrpc: "2.0", id: 611, method: "tools/list" });
+    expect(response.status).toBe(200);
+    const tools = response.body.result.tools;
+    const search = tools.find((tool: { name: string }) => tool.name === "fdic_search_failures");
+    const lookup = tools.find((tool: { name: string }) => tool.name === "fdic_get_institution_failure");
+    expect(search.description).toContain("estimated loss (DIF cost) is COST");
+    expect(search.description).toContain("sort_by: COST and sort_order: DESC");
+    expect(search.description).toContain("Do not use ESTIMATED_LOSS");
+    expect(lookup.description).toContain("estimated DIF cost in the COST field");
+  });
+
   it("returns failure lookup details for a certificate number", async () => {
     getMock.mockResolvedValueOnce({
       data: {

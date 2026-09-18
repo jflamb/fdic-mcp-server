@@ -1,10 +1,10 @@
 {
-  "source": "v2.0.0 / ca8c9644037d3aa619ef0af280fc79f7253acc6b (SDK v1 contract)",
+  "source": "v2.0.0 / ca8c9644037d3aa619ef0af280fc79f7253acc6b (SDK v1 contract); failure descriptions updated in #236",
   "tools": {
     "fdic_search_institutions": "10f92f85ba679a9cb53d2e81df011327aa7f4627e9b42b8cecd0d935e5450a06",
     "fdic_get_institution": "8f30a70c1d54bb2f2650422f1ff052b6052da067760cc813c739a62ca9930dd4",
-    "fdic_search_failures": "91d57bb2854e4fa72eb9a61a0171782c08e1196ac280f2b908860f517104fa6a",
-    "fdic_get_institution_failure": "e5c0d1b6c0fc9f02f0fc8b1a3356610c9ec4219f7cd1f106dd4723a783df09fc",
+    "fdic_search_failures": "cbe6e4dd726c2fd5a4aa6aa63860b756ceff5d4c5076523ca5f54d8a9cc7de6b",
+    "fdic_get_institution_failure": "40c3da82d0a0034bbc342fd55278ef6d2e0b0b7b2eb36d87509478544a138526",
     "fdic_search_locations": "d324f3503f6f0534f3131ddafbf37d52c5cc269630b2d0b3f315a35833325b45",
     "fdic_search_history": "3ae6f38ab6961de3056b04699224cdcf7d3c0d55d28ddbc2a83eb1996144574e",
     "fdic_search_financials": "a0bf4836fcd101fd478f0a61af34917dffc3923e7a5c7e869b026377e26a59cf",
