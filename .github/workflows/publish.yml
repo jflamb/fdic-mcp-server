@@ -2,6 +2,11 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      recover_version:
+        description: Existing release version to recover (for example 2.0.0); blank creates a normal release
+        required: false
+        type: string
   workflow_run:
     workflows:
       - CI
@@ -29,6 +34,7 @@ jobs:
         !contains(github.event.workflow_run.head_commit.message, '[skip release]')
       )
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository
@@ -68,39 +74,67 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        if: github.event_name != 'workflow_run' || steps.release_target.outputs.current == 'true'
+        if: inputs.recover_version == '' && (github.event_name != 'workflow_run' || steps.release_target.outputs.current == 'true')
         run: npm ci
 
       - name: Validate release inputs
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.recover_version == ''
         run: npm run prepublishOnly
 
       - name: Run semantic-release
         id: semantic
-        if: github.event_name != 'workflow_run' || steps.release_target.outputs.current == 'true'
+        if: inputs.recover_version == '' && (github.event_name != 'workflow_run' || steps.release_target.outputs.current == 'true')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/run-semantic-release.mjs
 
+      - name: Prepare exact published release
+        id: publication
+        if: steps.semantic.outputs.new_release_published == 'true' || inputs.recover_version != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ inputs.recover_version || steps.semantic.outputs.new_release_version }}
+        run: node scripts/prepare-publication.mjs "$RELEASE_VERSION"
+
+      - name: Check MCP Registry version
+        id: registry
+        if: steps.publication.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/check-registry-publication.mjs
+
       - name: Install MCP Registry publisher
-        if: steps.semantic.outputs.new_release_published == 'true'
+        id: registry_install
+        if: steps.registry.outcome == 'success' && steps.registry.outputs.exists == 'false'
+        continue-on-error: true
         run: |
-          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+          curl --fail --show-error -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
 
       - name: Authenticate to MCP Registry
-        if: steps.semantic.outputs.new_release_published == 'true'
+        id: registry_auth
+        if: steps.registry_install.outcome == 'success'
+        continue-on-error: true
         run: ./mcp-publisher login github-oidc
 
       - name: Publish to official MCP Registry
-        if: steps.semantic.outputs.new_release_published == 'true'
+        id: registry_publish
+        if: steps.registry_auth.outcome == 'success'
+        continue-on-error: true
         run: ./mcp-publisher publish
 
+      - name: Verify MCP Registry publication
+        id: registry_verify
+        if: steps.registry.outputs.exists == 'true' || steps.registry_publish.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/check-registry-publication.mjs --verify
+
       - name: Prepare GitHub Packages bundle
-        if: steps.semantic.outputs.new_release_published == 'true'
-        run: node scripts/prepare-gpr-package.mjs
+        id: gpr_prepare
+        if: ${{ !cancelled() && steps.publication.outcome == 'success' }}
+        working-directory: ${{ steps.publication.outputs.package_directory }}
+        run: node "$GITHUB_WORKSPACE/scripts/prepare-gpr-package.mjs"
 
       - name: Set up Node.js for GitHub Packages
-        if: steps.semantic.outputs.new_release_published == 'true'
+        if: steps.gpr_prepare.outcome == 'success'
         uses: actions/setup-node@v6
         with:
           node-version: "22"
@@ -108,32 +142,42 @@ jobs:
           scope: "@jflamb"
 
       - name: Check for existing GitHub Packages version
-        if: steps.semantic.outputs.new_release_published == 'true'
+        if: steps.gpr_prepare.outcome == 'success'
         id: gpr
-        working-directory: .tmp/github-package
+        working-directory: ${{ steps.publication.outputs.package_directory }}/.tmp/github-package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          if npm view @jflamb/fdic-mcp-server@"$VERSION" version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: node "$GITHUB_WORKSPACE/scripts/check-github-package.mjs"
 
       - name: Publish to GitHub Packages
-        if: steps.semantic.outputs.new_release_published == 'true' && steps.gpr.outputs.exists != 'true'
-        working-directory: .tmp/github-package
-        run: npm publish
+        if: steps.gpr.outputs.exists == 'false'
+        working-directory: ${{ steps.publication.outputs.package_directory }}/.tmp/github-package
+        run: npm publish --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify GitHub Packages publication
+        id: gpr_verify
+        if: steps.gpr.outcome == 'success'
+        working-directory: ${{ steps.publication.outputs.package_directory }}/.tmp/github-package
+        run: node "$GITHUB_WORKSPACE/scripts/check-github-package.mjs" --verify
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Summarize release result
+        if: ${{ !cancelled() }}
+        env:
+          PREPARATION: ${{ steps.publication.outcome }}
+          VERSION: ${{ steps.publication.outputs.version }}
+          REGISTRY_RESULT: ${{ steps.registry_verify.outcome }}
+          PACKAGES_RESULT: ${{ steps.gpr_verify.outcome }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ] && [ "${{ steps.release_target.outputs.current }}" = "false" ]; then
-            echo "Skipped release because a newer main commit is already present."
-          elif [ "${{ steps.semantic.outputs.new_release_published }}" = "true" ]; then
-            echo "Published release v${{ steps.semantic.outputs.new_release_version }}."
+          if [ "$PREPARATION" = "success" ]; then
+            echo "Release v$VERSION: MCP Registry=$REGISTRY_RESULT; GitHub Packages=$PACKAGES_RESULT" | tee -a "$GITHUB_STEP_SUMMARY"
+            test "$REGISTRY_RESULT" = "success" && test "$PACKAGES_RESULT" = "success"
+          elif [ "$PREPARATION" = "failure" ]; then
+            echo "Publication preparation failed; recover the existing release after resolving the reported cause."
+            exit 1
           else
-            echo "No releasable conventional commits were found."
+            echo "No release artifacts selected for publication."
           fi
