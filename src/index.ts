@@ -91,10 +91,24 @@ export function resolveProfile(raw: string | undefined): ResolvedProfile {
   };
 }
 
+// The SDK cap counts array entries and object keys across a tool's arguments.
+const MAX_MCP_TOOL_INPUT_ELEMENTS = 4_096;
+// Keep the existing Express ceiling in bytes, including the SDK fallback.
+const MAX_MCP_HTTP_BODY_BYTES = 100 * 1_024;
+
 export function createServer(options: CreateServerOptions = {}): McpServer {
+  return createServerForTransport(options);
+}
+
+function createServerForTransport(
+  options: CreateServerOptions,
+  maxToolInputElements?: number,
+): McpServer {
   const server = new McpServer({
     name: "fdic-mcp-server",
     version: VERSION,
+  }, {
+    maxToolInputElements,
   });
 
   const profile = resolveProfile(options.profile ?? process.env.FDIC_MCP_PROFILE);
@@ -253,7 +267,8 @@ function sendMcpBlockedIpResponse(res: express.Response): void {
 
 export function createApp(options: HttpAppOptions = {}): Express {
   const app = express();
-  const serverFactory = options.serverFactory ?? (() => createServer());
+  const serverFactory = options.serverFactory ??
+    (() => createServerForTransport({}, MAX_MCP_TOOL_INPUT_ELEMENTS));
   const port = options.port ?? 3000;
   const allowedOrigins = options.allowedOrigins ?? parseAllowedOrigins(undefined, port);
   const validateHost = hostHeaderValidation(
@@ -268,9 +283,10 @@ export function createApp(options: HttpAppOptions = {}): Express {
     windowMs: DEFAULT_MCP_RATE_LIMIT_WINDOW_MS,
   });
   const mcpBlockedIpRules = options.mcpBlockedIpRules ?? parseBlockedIpRules(process.env.MCP_BLOCKED_IPS);
-  const handler = toNodeHandler(createMcpHandler(serverFactory), {
-    onerror: (error) => console.error("MCP request error:", error),
-  });
+  const handler = toNodeHandler(
+    createMcpHandler(serverFactory, { maxRequestBodySize: MAX_MCP_HTTP_BODY_BYTES }),
+    { onerror: (error) => console.error("MCP request error:", error) },
+  );
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", server: "fdic-mcp-server", version: VERSION });
@@ -295,7 +311,7 @@ export function createApp(options: HttpAppOptions = {}): Express {
       return;
     }
     next();
-  }, express.json({ limit: "100kb" }), async (req, res) => {
+  }, express.json({ limit: MAX_MCP_HTTP_BODY_BYTES }), async (req, res) => {
     // Express has consumed the body; pass it explicitly to the SDK adapter.
     await handler(req, res, req.body);
   });
