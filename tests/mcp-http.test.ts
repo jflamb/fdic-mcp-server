@@ -401,6 +401,19 @@ describe("HTTP MCP server", () => {
     expect(disallowedInit.status).toBe(403);
   });
 
+  it("preserves the request-body ceiling before creating a server", async () => {
+    const serverFactory = vi.fn(() => new McpServer({ name: "test", version: "1" }));
+    const app = createApp({ serverFactory });
+    app.set("env", "test");
+
+    const response = await request(app).post("/mcp")
+      .set("accept", mcpAcceptHeader)
+      .send({ description: " ".repeat(100 * 1024) });
+
+    expect(response.status).toBe(413);
+    expect(serverFactory).not.toHaveBeenCalled();
+  });
+
   it("rejects untrusted Host headers before invoking the server factory", async () => {
     const serverFactory = vi.fn(() => new McpServer({ name: "test", version: "1" }));
     const response = await mcpRequest(createApp({ serverFactory }), {
