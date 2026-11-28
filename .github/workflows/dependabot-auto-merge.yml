@@ -1,0 +1,16 @@
+name: Dependabot Auto-Merge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    uses: SlateLabs/github-project-automation/.github/workflows/dependabot-auto-merge.yml@main
