@@ -60,7 +60,7 @@ jobs:
 
       - name: Upload diff artifact
         if: steps.diff.outputs.drift == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fdic-schema-drift-${{ github.run_id }}
           path: /tmp/metadata-diff.txt
